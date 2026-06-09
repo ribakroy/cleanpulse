@@ -1,0 +1,35 @@
+export const designTokens = {
+  colors: {
+    brand: "#1E88E5",
+    brandWater: "#38BDF8",
+    brandDeep: "#0F2742",
+    brandSoft: "#F4FAFF",
+    background: "#F4FAFF",
+    surface: "#FFFFFF",
+    surfaceMuted: "#EEF7FF",
+    foreground: "#0F2742",
+    muted: "#64748B",
+    border: "#D8ECFA",
+    danger: "#D97A7A",
+    statusOpen: "#DCEBFA",
+    statusAcknowledged: "#BFE4FA",
+    statusInProgress: "#EFD9A0",
+    statusResolved: "#6FD29D",
+    statusDismissed: "#D7E2ED",
+  },
+  radius: {
+    sm: "0.875rem",
+    md: "1.125rem",
+    lg: "1.5rem",
+    xl: "2rem",
+  },
+  shadow: {
+    soft: "0 14px 36px rgba(15, 39, 66, 0.08)",
+    panel: "0 28px 80px rgba(15, 39, 66, 0.1)",
+  },
+  spacing: {
+    section: "clamp(2.5rem, 5vw, 5rem)",
+    card: "1.5rem",
+    gap: "1rem",
+  },
+} as const;

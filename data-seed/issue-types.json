@@ -1,0 +1,65 @@
+[
+  {
+    "id": "issue_missing_paper",
+    "key": "missing_paper",
+    "labelHe": "חסר נייר",
+    "icon": "file-text",
+    "severity": "medium",
+    "isActive": true,
+    "sortOrder": 10
+  },
+  {
+    "id": "issue_missing_soap",
+    "key": "missing_soap",
+    "labelHe": "חסר סבון",
+    "icon": "droplets",
+    "severity": "medium",
+    "isActive": true,
+    "sortOrder": 20
+  },
+  {
+    "id": "issue_dirty",
+    "key": "not_clean",
+    "labelHe": "לא נקי",
+    "icon": "sparkles",
+    "severity": "high",
+    "isActive": true,
+    "sortOrder": 30
+  },
+  {
+    "id": "issue_bad_smell",
+    "key": "bad_smell",
+    "labelHe": "ריח לא טוב",
+    "icon": "wind",
+    "severity": "medium",
+    "isActive": true,
+    "sortOrder": 40
+  },
+  {
+    "id": "issue_full_bin",
+    "key": "trash_full",
+    "labelHe": "פח מלא",
+    "icon": "trash-2",
+    "severity": "medium",
+    "isActive": true,
+    "sortOrder": 50
+  },
+  {
+    "id": "issue_toilet_fault",
+    "key": "toilet_fault",
+    "labelHe": "תקלה באסלה",
+    "icon": "wrench",
+    "severity": "critical",
+    "isActive": true,
+    "sortOrder": 60
+  },
+  {
+    "id": "issue_sink_fault",
+    "key": "sink_fault",
+    "labelHe": "תקלה בכיור",
+    "icon": "alert-circle",
+    "severity": "high",
+    "isActive": true,
+    "sortOrder": 70
+  }
+]
