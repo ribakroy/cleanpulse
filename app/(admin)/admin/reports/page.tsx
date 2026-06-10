@@ -279,8 +279,8 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               {/* Issue Type */}
               <Select id="issueKey" name="issueKey" label="סוג תקלה" defaultValue={filterIssue}>
                 <option value="">כל התקלות</option>
-                {Object.entries(issueTypeLabels).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                {issueTypes.map((i) => (
+                  <option key={i.key} value={i.key}>{i.labelHe}</option>
                 ))}
               </Select>
 
