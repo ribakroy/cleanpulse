@@ -1,7 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getUserById } from "@/lib/data/repositories/users";
 import type { SafeUserRecord } from "@/lib/data/types";
 import { env } from "@/lib/utils/env";
 import type { UserRole } from "@/types/domain";
@@ -204,14 +203,23 @@ export async function getCurrentSession() {
   return verifySessionCookie();
 }
 
-export async function getCurrentUser() {
+export async function getCurrentUser(): Promise<SafeUserRecord | null> {
   const session = await getCurrentSession();
 
   if (!session) {
     return null;
   }
 
-  return getUserById(session.user.organizationId, session.user.id);
+  return {
+    id: session.user.id,
+    organizationId: session.user.organizationId,
+    email: session.user.email,
+    fullName: session.user.fullName,
+    role: session.user.role,
+    isActive: true,
+    createdAt: session.issuedAt,
+    updatedAt: session.issuedAt,
+  };
 }
 
 export async function requireUser() {
