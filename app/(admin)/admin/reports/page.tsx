@@ -30,10 +30,8 @@ import { ReportsDonutChart } from "@/components/admin/reports-donut-chart";
 import { 
   Download, 
   Filter, 
-  FileSpreadsheet, 
   MapPin, 
   Clock, 
-  Star, 
   Activity, 
   AlertTriangle, 
   ShieldAlert,
@@ -203,8 +201,8 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="דוחות ונתונים"
-        description="ניתוח נתונים, סיכומים תפעוליים והורדת קובצי CSV."
+        title="דוחות"
+        description="סיכום תפעולי ברור לפי תקופה, סניף וסוג תקלה."
         actions={
           <Link
             href={`/api/admin/reports/export?${queryParams}`}
@@ -315,63 +313,35 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
         </Card>
 
       {/* KPI Cards Grid */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
-            label: "סה\"כ דיווחים בטווח",
+            label: "דיווחים בטווח",
             value: metrics.totalCount,
-            description: "סה\"כ אירועים שנרשמו בסינון שנבחר.",
+            description: "לפי הסינון שנבחר.",
             icon: Activity,
             color: "bg-brand-soft text-brand border-brand/20",
           },
           {
-            label: "מתוכם דיווחים פתוחים",
+            label: "פתוחים עכשיו",
             value: metrics.openCount,
-            description: "אירועים שממתינים כעת לסגירה.",
+            description: "ממתינים לטיפול.",
             icon: ShieldAlert,
             color: "bg-danger/8 text-danger border-danger/20",
           },
           {
-            label: "אחוז סגירה",
+            label: "נסגרו",
             value: `${metrics.resolutionRatePercentage}%`,
-            description: "שיעור הטיפולים שהושלמו בהצלחה.",
+            description: "שיעור טיפולים שהושלמו.",
             icon: Clock,
             color: "bg-emerald-50 text-emerald-700 border-emerald-200",
           },
           {
-            label: "זמן תגובה ממוצע",
+            label: "תגובה ממוצעת",
             value: metrics.avgResponseTimeMinutes !== null ? `${metrics.avgResponseTimeMinutes} דק'` : "אין נתונים",
-            description: "זמן ממוצע עד אישור קבלת הדיווח.",
+            description: "עד אישור קבלה.",
             icon: Clock,
             color: "bg-amber-50 text-amber-700 border-amber-200",
-          },
-          {
-            label: "זמן טיפול ממוצע",
-            value: metrics.avgResolutionTimeMinutes !== null ? `${metrics.avgResolutionTimeMinutes} דק'` : "אין נתונים",
-            description: "זמן ממוצע מפתיחה ועד פתרון.",
-            icon: Clock,
-            color: "bg-teal-50 text-teal-700 border-teal-200",
-          },
-          {
-            label: "דירוג ממוצע בטווח",
-            value: metrics.avgRating !== null ? `${metrics.avgRating} מתוך 5` : "אין דירוגים",
-            description: "ממוצע ציוני שביעות רצון לקוחות.",
-            icon: Star,
-            color: "bg-indigo-50 text-indigo-700 border-indigo-200",
-          },
-          {
-            label: "סוג תקלה מוביל",
-            value: metrics.topIssueKey ? (issueTypeLabels.get(metrics.topIssueKey as IssueTypeKey) || metrics.topIssueKey) : "אין דיווחים",
-            description: "הקטגוריה בה נפתחו הכי הרבה אירועים.",
-            icon: AlertTriangle,
-            color: "bg-violet-50 text-violet-700 border-violet-200",
-          },
-          {
-            label: "התראות מייל תקינות",
-            value: `${metrics.notificationSuccessRatePercentage}%`,
-            description: "אחוז שליחת התראות שעברו ללא שגיאה.",
-            icon: FileSpreadsheet,
-            color: "bg-brand-soft text-brand border-brand/20",
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
@@ -493,171 +463,111 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
 
           </section>
 
-          {/* Tables layout */}
           <section className="grid gap-6 lg:grid-cols-2">
-
-            {/* Branches Comparison */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <Building className="size-4 text-brand" />
-                  השוואת ביצועי סניפים
+                  סניפים
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead>
-                      <tr className="border-b border-border text-muted font-bold">
-                        <th className="py-2.5 px-4 text-right">שם הסניף</th>
-                        <th className="py-2.5 px-4 text-right">{"סה\"כ דיווחים"}</th>
-                        <th className="py-2.5 px-4 text-right">פתוחים כעת</th>
-                        <th className="py-2.5 px-4 text-right">זמן סגירה ממוצע</th>
-                        <th className="py-2.5 px-4 text-right">דירוג לקוחות</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
-                      {branchSummary.map((b) => (
-                        <tr key={b.id} className="hover:bg-brand-soft/10">
-                          <td className="py-3 px-4 font-bold text-foreground">{b.name}</td>
-                          <td className="py-3 px-4 font-mono font-semibold">{b.total}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant={b.open > 0 ? "warning" : "success"} className="text-[10px] font-bold">
-                              {b.open > 0 ? `${b.open} פתוחים` : "0"}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4 font-mono font-semibold">
-                            {b.avgResolution !== null ? `${b.avgResolution} דק'` : "—"}
-                          </td>
-                          <td className="py-3 px-4 font-mono font-semibold">
-                            {b.avgRating !== null ? `${b.avgRating} מתוך 5` : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <CardContent className="pt-4 space-y-3">
+                {branchSummary.map((branch) => (
+                  <div key={branch.id} className="rounded-[var(--radius-md)] border border-border bg-white/75 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-foreground">{branch.name}</p>
+                        <p className="mt-1 text-xs text-muted">
+                          {branch.avgResolution !== null ? `סגירה ממוצעת ${branch.avgResolution} דק'` : "אין זמן ממוצע"}
+                        </p>
+                      </div>
+                      <Badge variant={branch.open > 0 ? "warning" : "success"} className="shrink-0">
+                        {branch.open > 0 ? `${branch.open} פתוחים` : "תקין"}
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-brand-deep">{branch.total} דיווחים</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
-            {/* Top Restrooms */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                   <MapPin className="size-4 text-brand" />
-                  אזורי השירותים הכי מדווחים (Top 5)
+                  אזורים מובילים
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead>
-                      <tr className="border-b border-border text-muted font-bold">
-                        <th className="py-2.5 px-4 text-right">אזור שירותים</th>
-                        <th className="py-2.5 px-4 text-right">סניף</th>
-                        <th className="py-2.5 px-4 text-right">{"סה\"כ דיווחים"}</th>
-                        <th className="py-2.5 px-4 text-right">פתוחים כעת</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60">
-                      {restroomSummary.map((r) => (
-                        <tr key={r.id} className="hover:bg-brand-soft/10">
-                          <td className="py-3 px-4 font-bold text-foreground">{r.name}</td>
-                          <td className="py-3 px-4 text-muted-foreground">{r.branchName}</td>
-                          <td className="py-3 px-4 font-mono font-semibold">{r.total}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant={r.open > 0 ? "warning" : "success"} className="text-[10px] font-bold">
-                              {r.open > 0 ? `${r.open} פתוחים` : "0"}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <CardContent className="pt-4 space-y-3">
+                {restroomSummary.map((restroom) => (
+                  <div key={restroom.id} className="rounded-[var(--radius-md)] border border-border bg-white/75 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-bold text-foreground">{restroom.name}</p>
+                        <p className="mt-1 text-xs text-muted">{restroom.branchName}</p>
+                      </div>
+                      <Badge variant={restroom.open > 0 ? "warning" : "success"} className="shrink-0">
+                        {restroom.open > 0 ? `${restroom.open} פתוחים` : "תקין"}
+                      </Badge>
+                    </div>
+                    <p className="mt-2 text-xs font-semibold text-brand-deep">{restroom.total} דיווחים</p>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
-            {/* Open > 30 Mins (Overdue SLA) */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-danger">
                   <AlertTriangle className="size-4" />
-                  דיווחים בחריגת SLA (מעל 30 דקות פתוחים)
+                  דיווחים שמתעכבים
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 space-y-3">
                 {overdueIncidents.length === 0 ? (
-                  <p className="text-xs text-muted text-center py-4">אין כרגע חריגות SLA בסינון שנבחר.</p>
+                  <p className="text-xs text-muted text-center py-4">אין כרגע דיווחים שמתעכבים בסינון שנבחר.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-right text-xs">
-                      <thead>
-                        <tr className="border-b border-border text-muted font-bold">
-                          <th className="py-2.5 px-4 text-right">מזהה דיווח</th>
-                          <th className="py-2.5 px-4 text-right">סניף</th>
-                          <th className="py-2.5 px-4 text-right">מיקום</th>
-                          <th className="py-2.5 px-4 text-right">דיווח</th>
-                          <th className="py-2.5 px-4 text-right">נפתח ב-</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/60">
-                        {overdueIncidents.map((inc) => (
-                          <tr key={inc.id} className="hover:bg-danger/5">
-                            <td className="py-3 px-4 font-mono font-semibold">
-                              <Link href={`/admin/incidents/${inc.id}`} className="text-brand hover:underline font-bold">
-                                {inc.id.substring(9, 15)}...
-                              </Link>
-                            </td>
-                            <td className="py-3 px-4 text-foreground">{branchNames.get(inc.branchId) || "לא ידוע"}</td>
-                            <td className="py-3 px-4 text-foreground">{restroomNames.get(inc.restroomId) || "לא ידוע"}</td>
-                            <td className="py-3 px-4 text-danger font-bold">{formatIncidentTitle(inc, issueTypeLabels)}</td>
-                            <td className="py-3 px-4 font-mono text-muted">{formatDateTime(inc.openedAt)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  overdueIncidents.map((incident) => (
+                    <Link
+                      key={incident.id}
+                      href={`/admin/incidents/${incident.id}`}
+                      className="block rounded-[var(--radius-md)] border border-danger/20 bg-danger/5 p-3 text-xs hover:bg-danger/8"
+                    >
+                      <p className="font-bold text-danger">{formatIncidentTitle(incident, issueTypeLabels)}</p>
+                      <p className="mt-1 text-muted">
+                        {branchNames.get(incident.branchId) || "לא ידוע"} · {restroomNames.get(incident.restroomId) || "לא ידוע"}
+                      </p>
+                      <p className="mt-1 text-muted">{formatDateTime(incident.openedAt)}</p>
+                    </Link>
+                  ))
                 )}
               </CardContent>
             </Card>
 
-            {/* Failed email notifications */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-danger">
                   <ShieldAlert className="size-4" />
-                  כשלי התראות מייל אחרונים
+                  התראות לבדיקה
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 space-y-3">
                 {failedNotifications.length === 0 ? (
-                  <p className="text-xs text-muted text-center py-4">לא נמצאו כשלי שליחה בסינון שנבחר.</p>
+                  <p className="text-xs text-muted text-center py-4">לא נמצאו התראות שדורשות בדיקה.</p>
                 ) : (
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                    {failedNotifications.map((l) => (
-                      <div key={l.id} className="border border-danger/20 bg-danger/5 p-2.5 rounded-lg text-xs leading-relaxed">
-                        <div className="flex justify-between items-center">
-                          <span className="font-bold text-foreground">אירוע: 
-                            <Link href={`/admin/incidents/${l.incidentId}`} className="text-brand hover:underline mr-1 font-mono">
-                              {l.incidentId.substring(9, 15)}...
-                            </Link>
-                          </span>
-                          <span className="text-[10px] text-muted font-mono">{formatDateTime(l.createdAt)}</span>
-                        </div>
-                        <p className="text-muted mt-1">מקבל: <span className="font-semibold text-foreground font-mono">{l.recipientId || "כללי / ללא"}</span></p>
-                        {l.errorMessage && (
-                          <p className="text-danger bg-danger/8 border border-danger/15 p-1.5 rounded mt-1.5 font-mono text-[10px] break-all">
-                            שגיאה: {l.errorMessage}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  failedNotifications.map((notification) => (
+                    <Link
+                      key={notification.id}
+                      href={`/admin/incidents/${notification.incidentId}`}
+                      className="block rounded-[var(--radius-md)] border border-danger/20 bg-danger/5 p-3 text-xs hover:bg-danger/8"
+                    >
+                      <p className="font-bold text-foreground">התראה לא נשלחה</p>
+                      <p className="mt-1 text-muted">{formatDateTime(notification.createdAt)}</p>
+                    </Link>
+                  ))
                 )}
               </CardContent>
             </Card>
-
           </section>
         </>
       )}

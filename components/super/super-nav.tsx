@@ -43,11 +43,11 @@ export function SuperNav() {
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
-                ? "bg-brand/10 text-brand-water border-r-2 border-brand pl-3 pr-2.5 bg-slate-800"
-                : "text-slate-300 hover:bg-slate-800 hover:text-white",
+                ? "bg-brand text-white shadow-soft"
+                : "text-muted hover:bg-brand-soft hover:text-brand-deep",
             )}
           >
-            <Icon className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
             {label}
           </Link>
         );

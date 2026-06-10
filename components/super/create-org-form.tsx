@@ -63,14 +63,14 @@ export function CreateOrgForm() {
             </div>
             <CardTitle className="text-2xl font-bold text-foreground">העסק נוצר בהצלחה!</CardTitle>
             <CardDescription className="text-muted mt-1">
-              ארגון {successData.orgName} נוצר במערכת יחד עם משתמש הניהול.
+              {successData.orgName} נוצר יחד עם משתמש הניהול.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="rounded-[var(--radius-lg)] border border-emerald-500/25 bg-surface-strong p-5 space-y-4 shadow-sm">
               <div className="flex items-center gap-2 pb-3 border-b border-border">
                 <ShieldAlert className="size-5 text-emerald-600" />
-                <span className="font-bold text-foreground text-sm">פרטי גישה ראשוניים למנהל (Owner)</span>
+                <span className="font-bold text-foreground text-sm">פרטי גישה ראשוניים למנהל</span>
               </div>
 
               <div className="space-y-3">
@@ -143,9 +143,9 @@ export function CreateOrgForm() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Building2 className="size-5 text-brand" />
-              פרטי הארגון והעסק
+              פרטי העסק
             </CardTitle>
-            <CardDescription>פרטי המותג, התוכנית וההגדרות הפנימיות.</CardDescription>
+            <CardDescription>שם העסק, תוכנית וגבייה.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
@@ -157,18 +157,18 @@ export function CreateOrgForm() {
             />
             <div className="space-y-1">
               <Input
-                label="כתובת מותג (Slug / סלאג) *"
+                label="כתובת קישור *"
                 name="slug"
                 type="text"
                 placeholder="למשל: central-cafe"
                 required
               />
               <span className="text-[10px] text-muted block pr-1 leading-normal">
-                הכתובת שתופיע בקישורי ה-QR והקיאוסקים (באנגלית קטנה ומקפים בלבד).
+                באנגלית קטנה ומקפים בלבד.
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5 text-right">
                 <label htmlFor="plan" className="text-xs font-semibold text-muted">
                   תוכנית מנוי
@@ -179,11 +179,11 @@ export function CreateOrgForm() {
                   defaultValue="basic"
                   className="w-full h-10 px-3 rounded-[var(--radius-md)] border border-border bg-white text-sm focus:outline-none focus:border-brand transition-colors"
                 >
-                  <option value="free">Free (חינם)</option>
-                  <option value="starter">Starter (מתחיל)</option>
-                  <option value="basic">Basic (בסיסי)</option>
-                  <option value="pro">Pro (מקצועי)</option>
-                  <option value="enterprise">Enterprise (ארגוני)</option>
+                  <option value="free">חינמי</option>
+                  <option value="starter">מתחיל</option>
+                  <option value="basic">בסיסי</option>
+                  <option value="pro">מקצועי</option>
+                  <option value="enterprise">ארגוני</option>
                 </select>
               </div>
 
@@ -197,7 +197,7 @@ export function CreateOrgForm() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <Input
                 label="מחיר חודשי (ש״ח)"
                 name="monthlyPrice"
@@ -215,7 +215,7 @@ export function CreateOrgForm() {
             </div>
 
             <Textarea
-              label="הערות פנימיות של הבעלים"
+              label="הערות פנימיות"
               name="notes"
               placeholder="פרטים פנימיים שאינם חשופים ללקוח..."
               rows={3}
@@ -223,12 +223,12 @@ export function CreateOrgForm() {
           </CardContent>
         </Card>
 
-        {/* Contact and Owner User */}
+        {/* Contact and first user */}
         <div className="space-y-6">
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">פרטי איש קשר לגבייה</CardTitle>
-              <CardDescription>הפרטים לחיוב והתראות פיננסיות.</CardDescription>
+              <CardTitle className="text-lg">איש קשר</CardTitle>
+              <CardDescription>פרטים לשיחות וגבייה.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Input
@@ -254,7 +254,7 @@ export function CreateOrgForm() {
 
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">משתמש מנהל ראשון (Owner)</CardTitle>
+              <CardTitle className="text-lg">משתמש מנהל ראשון</CardTitle>
               <CardDescription>המשתמש הראשי שיקבל גישה לאדמין העסק.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

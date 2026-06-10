@@ -43,7 +43,7 @@ export function QrCard({
       ctx?.drawImage(img, 0, 0);
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = `qr-code-${qrToken.substring(0, 8)}.png`;
+      downloadLink.download = "cleanpulse-qr.png";
       downloadLink.href = pngFile;
       downloadLink.click();
     };
@@ -51,68 +51,47 @@ export function QrCard({
   };
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-border bg-white/80 p-4 space-y-4">
-      {/* QR code row */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* QR image */}
-        <div className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-white p-3 self-start">
-          <QRCode id={`qr-code-svg-${qrToken}`} value={qrUrl} size={100} />
+    <div className="rounded-[var(--radius-lg)] border border-border bg-white/88 p-4 space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-white p-4 self-start">
+          <QRCode id={`qr-code-svg-${qrToken}`} value={qrUrl} size={118} />
         </div>
 
-        {/* Links */}
         <div className="flex flex-col gap-3 flex-1 min-w-0">
-          {/* QR link */}
           <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
               <QrCode className="size-3.5 shrink-0" aria-hidden="true" />
-              קישור לסריקה בנייד (QR)
+              קישור לסריקה בנייד
             </div>
-            <a
-              href={qrUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="block text-xs font-semibold text-brand hover:underline truncate"
-            >
-              {qrUrl}
-            </a>
             <div className="flex flex-wrap gap-1.5">
               <Button variant="outline" size="sm" onClick={() => handleCopy(qrUrl)}>
                 <Copy className="size-3.5" aria-hidden="true" />
-                העתק
+                העתקת קישור
               </Button>
               <Button variant="outline" size="sm" onClick={handleDownload}>
                 <Download className="size-3.5" aria-hidden="true" />
-                הורד QR
+                הורדה
               </Button>
               <Button variant="outline" size="sm" as="a" href={qrUrl} target="_blank">
                 <ExternalLink className="size-3.5" aria-hidden="true" />
-                פתח
+                פתיחה
               </Button>
             </div>
           </div>
 
-          {/* Kiosk link */}
           <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
               <TabletSmartphone className="size-3.5 shrink-0" aria-hidden="true" />
-              קישור לתצוגה בטאבלט (Kiosk)
+              קישור למסך טאבלט
             </div>
-            <a
-              href={kioskUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="block text-xs font-semibold text-brand hover:underline truncate"
-            >
-              {kioskUrl}
-            </a>
             <div className="flex flex-wrap gap-1.5">
               <Button variant="outline" size="sm" onClick={() => handleCopy(kioskUrl)}>
                 <Copy className="size-3.5" aria-hidden="true" />
-                העתק
+                העתקת קישור
               </Button>
               <Button variant="outline" size="sm" as="a" href={kioskUrl} target="_blank">
                 <ExternalLink className="size-3.5" aria-hidden="true" />
-                פתח טאבלט
+                פתיחה
               </Button>
             </div>
           </div>
@@ -132,7 +111,7 @@ export function QrCard({
             }
           }}>
             <Button variant="outline" size="sm" type="submit">
-              איפוס קישורים
+              יצירת קישורים חדשים
             </Button>
           </form>
         </div>

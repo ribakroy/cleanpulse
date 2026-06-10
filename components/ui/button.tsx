@@ -6,13 +6,13 @@ type ButtonSize = "sm" | "md" | "lg" | "xl";
 type ButtonElement = "button" | "a";
 
 const baseStyles =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-55";
+  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/35 disabled:pointer-events-none disabled:opacity-55";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-white shadow-soft hover:-translate-y-0.5 hover:bg-brand/92 hover:shadow-[0_18px_40px_rgba(30,136,229,0.2)]",
+    "bg-brand text-white shadow-soft hover:bg-brand/92 hover:shadow-[0_14px_30px_rgba(30,136,229,0.18)]",
   secondary:
-    "border border-border bg-white/92 text-brand-deep shadow-soft hover:-translate-y-0.5 hover:border-brand/25 hover:bg-brand-soft",
+    "border border-border bg-white/92 text-brand-deep shadow-soft hover:border-brand/25 hover:bg-brand-soft",
   outline: "border border-border bg-transparent text-brand-deep hover:border-brand/30 hover:bg-white/80",
   ghost: "bg-transparent text-muted hover:bg-brand-soft hover:text-brand-deep",
   danger: "bg-danger text-white shadow-soft hover:bg-danger/90",

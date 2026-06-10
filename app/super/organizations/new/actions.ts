@@ -49,7 +49,7 @@ export async function createOrganizationAction(formData: FormData): Promise<Crea
     // 3. Check if organization slug is taken
     const existingOrg = await getOrganizationBySlug(slug);
     if (existingOrg) {
-      return { success: false, error: `קיים כבר עסק עם כתובת מותג (Slug) זו: ${slug}. נא לבחור כתובת אחרת.` };
+      return { success: false, error: `קיים כבר עסק עם כתובת קישור זו: ${slug}. נא לבחור כתובת אחרת.` };
     }
 
     // 4. Check if owner email is taken

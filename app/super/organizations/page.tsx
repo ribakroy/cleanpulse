@@ -21,6 +21,7 @@ const planLabels: Record<string, string> = {
   basic: "בסיסי",
   pro: "מקצועי",
   enterprise: "ארגוני",
+  demo: "בדיקה",
 };
 
 function getNowTime() {
@@ -106,7 +107,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">ניהול לקוחות ועסקים</h1>
           <p className="text-sm text-muted mt-1">
-            צפייה, חיפוש, ועריכת פרטים של כל העסקים הרשומים בפלטפורמה.
+            צפייה, חיפוש וניהול לקוחות.
           </p>
         </div>
         <div>
@@ -133,7 +134,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
                   id="search"
                   name="q"
                   type="text"
-                  placeholder="חפש לפי שם עסק, סלאג, איש קשר או אימייל..."
+                  placeholder="חיפוש לפי שם עסק, איש קשר או אימייל..."
                   defaultValue={q}
                   className="w-full h-10 pr-9 pl-4 rounded-[var(--radius-md)] border border-border bg-white text-sm focus:outline-none focus:border-brand transition-colors"
                 />
@@ -184,7 +185,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
             <table className="w-full text-sm text-right">
               <thead>
                 <tr className="border-b border-border bg-brand-soft/50 text-muted font-semibold text-xs uppercase tracking-wider">
-                  <th className="py-3 px-5">שם עסק / מזהה</th>
+                  <th className="py-3 px-5">שם עסק</th>
                   <th className="py-3">איש קשר וטלפון</th>
                   <th className="py-3">תוכנית</th>
                   <th className="py-3">סטטוס מנוי</th>
@@ -206,7 +207,6 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
                     <tr key={org.id} className="hover:bg-brand-soft/30 transition-colors">
                       <td className="py-4 px-5">
                         <div className="font-bold text-foreground">{org.name}</div>
-                        <div className="text-xs text-muted/70 font-mono mt-0.5">{org.slug}</div>
                       </td>
                       <td className="py-4">
                         <div className="font-medium text-foreground">{org.contactName || "לא הוגדר"}</div>
@@ -242,7 +242,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
                       </td>
                       <td className="py-4 font-medium">
                         {screensCount} מסכים / {branchesCount} סניפים
-                        <div className="text-[10px] text-muted/70">מגבלה: {org.allowedScreensLimit ?? 5} מסכים</div>
+                        <div className="text-[10px] text-muted/70">עד {org.allowedScreensLimit ?? 5} מסכים</div>
                       </td>
                       <td className="py-4 font-semibold text-foreground">
                         {incidents30Days}

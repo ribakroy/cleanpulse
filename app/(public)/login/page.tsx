@@ -63,18 +63,16 @@ export default async function LoginPage() {
           <LoginForm />
 
           {showDemoNotice && (
-            <div className="mt-5 rounded-[var(--radius-md)] border border-brand/20 bg-brand-soft p-4">
+            <div className="mt-5 rounded-[var(--radius-md)] border border-border bg-white/70 p-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-4 shrink-0 text-brand" aria-hidden="true" />
-                <p className="text-sm font-semibold text-brand-deep">גישת הדגמה</p>
+                <p className="text-sm font-semibold text-brand-deep">פרטי בדיקה מקומיים</p>
               </div>
-              <div className="mt-2 space-y-0.5 text-sm text-muted">
+              <div className="mt-2 space-y-0.5 text-xs text-muted">
                 <p>
                   <span className="text-foreground font-medium">אימייל:</span> owner@demo.local
                 </p>
-                <p>
-                  <span className="text-foreground font-medium">סיסמה:</span> Demo123456!
-                </p>
+                <p>הסיסמה נמסרת לצוות בלבד.</p>
               </div>
             </div>
           )}

@@ -1,6 +1,5 @@
 import { ScrollText, Clock, User } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import type { ActivityLogRecord } from "@/lib/data/types";
 
@@ -19,7 +18,7 @@ function formatActionLabel(action: string) {
     case "user_created_by_super":
       return "הוספת משתמש ע״י מנהל על";
     case "incident_seeded":
-      return "אתחול נתוני דמו";
+      return "הוספת נתוני פתיחה";
     default:
       return action;
   }
@@ -48,7 +47,7 @@ export default async function SuperActivityPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">יומן פעילות</h1>
         <p className="text-sm text-muted mt-1">
-          תיעוד מלא וכרונולוגיו של כל פעולות הניהול, שינויי הסטטוס ועדכוני המערכת.
+          פעולות ניהול ושינויי לקוחות לפי זמן.
         </p>
       </div>
 
@@ -65,7 +64,7 @@ export default async function SuperActivityPage() {
             <ScrollText className="size-5 text-muted" />
             <CardTitle>היסטוריית שינויים</CardTitle>
           </div>
-          <CardDescription>לוג אירועים פנימיים מוקלטים של הפלטפורמה.</CardDescription>
+          <CardDescription>פעילות אחרונה במערכת הניהול.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {sortedLogs.length === 0 ? (
@@ -95,29 +94,20 @@ export default async function SuperActivityPage() {
                         <span className="font-bold text-foreground text-sm">
                           {formatActionLabel(log.action)}
                         </span>
-                        <Badge variant="outline" className="text-[10px] uppercase font-mono">
-                          {log.action}
-                        </Badge>
                       </div>
 
                       <div className="text-xs text-muted leading-normal space-y-1">
                         <div className="flex items-center gap-1.5">
                           <User className="size-3 text-muted" />
-                          <span>מבצע הפעולה: {log.actorUserId || "מערכת (פנימי)"}</span>
+                          <span>{log.actorUserId ? "בוצע על ידי משתמש מנהל" : "פעולה אוטומטית"}</span>
                         </div>
-                        {log.organizationId !== "system" && (
-                          <div>מזהה ארגון: <span className="font-mono">{log.organizationId}</span></div>
-                        )}
                       </div>
 
-                      {/* Display metadata if it has relevant info */}
-                      {log.metadata && Object.keys(log.metadata).length > 0 && (
-                        <div className="bg-brand-soft/30 border border-border rounded p-3 text-xs font-mono text-muted overflow-x-auto mt-2 max-w-full">
-                          <pre className="whitespace-pre-wrap leading-relaxed">
-                            {JSON.stringify(log.metadata, null, 2)}
-                          </pre>
-                        </div>
-                      )}
+                      {log.metadata?.reason ? (
+                        <p className="bg-brand-soft/30 border border-border rounded p-2 text-xs text-muted mt-2">
+                          {String(log.metadata.reason)}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="text-xs text-muted whitespace-nowrap mt-1">
                       {formattedTime}

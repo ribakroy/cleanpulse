@@ -81,7 +81,7 @@ export default async function AdminScreensPage() {
     <div className="space-y-6">
       <PageHeader
         title="מסכים וקישורים"
-        description={`${screens.length} מסך${screens.length === 1 ? "" : "ים"} מוגדר${screens.length === 1 ? "" : "ים"} בארגון`}
+        description={`${screens.length} מסך${screens.length === 1 ? "" : "ים"} מוגדר${screens.length === 1 ? "" : "ים"}`}
       />
 
       {canEdit && (
@@ -92,7 +92,7 @@ export default async function AdminScreensPage() {
               הוספת מסך חדש
             </CardTitle>
             <CardDescription>
-              כל מסך מקבל קישור Kiosk וקישור QR ייחודיים.
+              כל מסך מקבל קישור לטאבלט וקישור לסריקה בנייד.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -126,7 +126,7 @@ export default async function AdminScreensPage() {
       {screens.length === 0 ? (
         <EmptyState
           title="אין מסכים מוגדרים"
-          description="צור מסך חדש למעלה כדי לקבל קישורי Kiosk ו-QR עבור אזורי השירותים שלך."
+          description="צור מסך חדש כדי לקבל קישורי דיווח לאזור שירותים."
         />
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">

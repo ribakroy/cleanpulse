@@ -28,6 +28,7 @@ const planLabels: Record<string, string> = {
   basic: "בסיסי",
   pro: "מקצועי",
   enterprise: "ארגוני",
+  demo: "בדיקה",
 };
 
 type OrgDetailsClientProps = {
@@ -157,8 +158,8 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
         <div className="md:col-span-1 space-y-6">
           <Card className="shadow-sm">
             <CardHeader>
-              <CardTitle className="text-md">ניהול מנוי וסטטוס</CardTitle>
-              <CardDescription>שינוי מהיר של מצב הגישה של הלקוח.</CardDescription>
+            <CardTitle className="text-md">מנוי וסטטוס</CardTitle>
+            <CardDescription>ניהול מצב הגישה של הלקוח.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="pb-3 border-b border-border flex items-center justify-between">
@@ -251,7 +252,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                 rel="noreferrer"
                 className="inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-brand hover:bg-brand/90 text-white font-bold text-sm transition-colors"
               >
-                פתח פורטל אדמין עסק ↗
+                פתיחת אדמין עסק
               </a>
             </CardContent>
           </Card>
@@ -263,8 +264,8 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
           <Card className="shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-lg">פרטי העסק והגדרות SaaS</CardTitle>
-                <CardDescription>שם, הגדרות מנוי, גבייה ידנית והערות מנהל.</CardDescription>
+                <CardTitle className="text-lg">פרטי העסק</CardTitle>
+                <CardDescription>שם, מנוי, גבייה והערות פנימיות.</CardDescription>
               </div>
               {!isEditing && (
                 <Button type="button" variant="outline" size="sm" onClick={() => setIsEditing(true)}>
@@ -294,11 +295,11 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                         defaultValue={org.plan || "basic"}
                         className="w-full h-10 px-3 rounded-[var(--radius-md)] border border-border bg-white text-sm focus:outline-none focus:border-brand transition-colors"
                       >
-                        <option value="free">Free (חינם)</option>
-                        <option value="starter">Starter (מתחיל)</option>
-                        <option value="basic">Basic (בסיסי)</option>
-                        <option value="pro">Pro (מקצועי)</option>
-                        <option value="enterprise">Enterprise (ארגוני)</option>
+                        <option value="free">חינמי</option>
+                        <option value="starter">מתחיל</option>
+                        <option value="basic">בסיסי</option>
+                        <option value="pro">מקצועי</option>
+                        <option value="enterprise">ארגוני</option>
                       </select>
                     </div>
                   </div>
@@ -344,7 +345,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                   </div>
 
                   <Textarea
-                    label="הערות פנימיות לבעלים"
+                    label="הערות פנימיות"
                     name="notes"
                     defaultValue={org.notes || ""}
                     placeholder="הערות פנימיות שאינן חשופות ללקוח..."
@@ -369,7 +370,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2 text-sm">
                     <div>
-                      <span className="text-muted block">סוג תוכנית:</span>
+                      <span className="text-muted block">תוכנית:</span>
                       <span className="font-semibold text-foreground">{planLabels[org.plan] || org.plan}</span>
                     </div>
                     <div>
@@ -391,7 +392,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                   </div>
 
                   <div className="pt-3 border-t border-border space-y-2 text-sm">
-                    <h4 className="font-bold text-foreground text-xs">פרטי איש קשר לגבייה:</h4>
+                    <h4 className="font-bold text-foreground text-xs">איש קשר:</h4>
                     <div className="grid gap-4 sm:grid-cols-3">
                       <div>
                         <span className="text-muted text-xs block">שם:</span>
@@ -427,7 +428,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Users className="size-5 text-muted" />
-                  משתמשי המערכת של העסק
+                  משתמשי העסק
                 </CardTitle>
                 <CardDescription>משתמשים הרשאים לגשת לפורטל הניהול של הארגון.</CardDescription>
               </div>
@@ -469,7 +470,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                   <div className="flex gap-4 items-end justify-between">
                     <div className="space-y-1.5 text-right flex-1 max-w-[200px]">
                       <label htmlFor="role" className="text-xs font-semibold text-muted">
-                        הרשאה (Role)
+                        הרשאה
                       </label>
                       <select
                         id="role"
@@ -477,10 +478,10 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                         onChange={(e) => setNewUserRole(e.target.value as "owner" | "admin" | "manager" | "cleaner")}
                         className="w-full h-10 px-3 rounded-[var(--radius-md)] border border-border bg-white text-sm focus:outline-none focus:border-brand transition-colors"
                       >
-                        <option value="owner">Owner (בעלים)</option>
-                        <option value="admin">Admin (מנהל על)</option>
-                        <option value="manager">Manager (מנהל סניף)</option>
-                        <option value="cleaner">Cleaner (צוות ניקיון)</option>
+                        <option value="owner">בעלים</option>
+                        <option value="admin">מנהל</option>
+                        <option value="manager">מנהל סניף</option>
+                        <option value="cleaner">צוות ניקיון</option>
                       </select>
                     </div>
                     <div className="flex gap-2">

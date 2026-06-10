@@ -1,13 +1,5 @@
 import Link from "next/link";
-import { 
-  BellRing, 
-  Clock, 
-  Star, 
-  Activity, 
-  TabletSmartphone,
-  ChevronLeft,
-  Mail,
-} from "lucide-react";
+import { Activity, BellRing, ChevronLeft, Clock, Mail, TabletSmartphone } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +47,7 @@ export default async function AdminDashboardPage() {
   const branchNames = new Map(branches.map((b) => [b.id, b.name] as const));
   const restroomNames = new Map(restrooms.map((r) => [r.id, r.name] as const));
 
-  // SLA/Priority Weights
+  // Priority weights
   const priorityWeight = {
     critical: 4,
     high: 3,
@@ -134,43 +126,35 @@ export default async function AdminDashboardPage() {
         actions={<IncidentsPolling />}
       />
 
-      {/* KPI Cards Grid */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
           {
-            label: "דיווחים פתוחים עכשיו",
+            label: "פתוחים עכשיו",
             value: metrics.openNow,
-            description: "סה\"כ דיווחים שממתינים לטיפול.",
+            description: "ממתינים לטיפול.",
             icon: BellRing,
             color: "bg-brand-soft text-brand border-brand/20",
           },
           {
-            label: "דיווחים חדשים היום",
+            label: "חדשים היום",
             value: metrics.openedToday,
-            description: "נוצרו ב-24 השעות האחרונות.",
+            description: "נפתחו היום.",
             icon: Activity,
             color: "bg-blue-50 text-blue-700 border-blue-200",
           },
           {
-            label: "אחוז סגירת דיווחים",
+            label: "נסגרו היום",
             value: `${metrics.resolutionRateTodayPercentage}%`,
-            description: "מתוך דיווחים שנפתחו היום.",
+            description: "מתוך הדיווחים שנפתחו.",
             icon: Clock,
             color: "bg-brand-soft text-brand-deep border-brand/20",
           },
           {
-            label: "זמן תגובה ממוצע (היום)",
+            label: "תגובה ממוצעת",
             value: metrics.avgResponseTimeTodayMinutes !== null ? `${metrics.avgResponseTimeTodayMinutes} דק'` : "אין נתונים",
-            description: "זמן ממוצע מקבלה לאישור.",
+            description: "מקבלה לאישור.",
             icon: Clock,
             color: "bg-amber-50 text-amber-700 border-amber-200",
-          },
-          {
-            label: "דירוג ממוצע (היום)",
-            value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} מתוך 5` : "—",
-            description: "שביעות רצון לקוחות היום.",
-            icon: Star,
-            color: "bg-blue-50 text-blue-700 border-blue-200",
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
@@ -200,7 +184,7 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-bold">דורש טיפול עכשיו</CardTitle>
-                  <CardDescription>דיווחים פעילים לפי סדר עדיפות — פתוח, התקבל, בטיפול.</CardDescription>
+                  <CardDescription>דיווחים פעילים לפי עדיפות וזמן פתיחה.</CardDescription>
                 </div>
                 <Badge variant="outline" className="font-bold">{actionableIncidents.length}</Badge>
               </div>
@@ -236,8 +220,8 @@ export default async function AdminDashboardPage() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted leading-relaxed">
-                          סניף: <strong className="text-foreground">{branchNames.get(incident.branchId) || "לא ידוע"}</strong> · 
-                          מיקום: <strong className="text-foreground">{restroomNames.get(incident.restroomId) || "לא ידוע"}</strong>
+                          <strong className="text-foreground">{branchNames.get(incident.branchId) || "לא ידוע"}</strong> ·
+                          <strong className="text-foreground">{restroomNames.get(incident.restroomId) || "לא ידוע"}</strong>
                         </p>
                       </div>
 
@@ -260,8 +244,8 @@ export default async function AdminDashboardPage() {
           {/* Hourly trend chart */}
           <Card className="border shadow-soft">
             <CardHeader className="border-b border-border bg-white/40">
-              <CardTitle className="text-lg font-bold">מגמת דיווחים לפי שעה (היום)</CardTitle>
-              <CardDescription>מראה את התפלגות הדיווחים שנוצרו היום לאורך שעות היממה.</CardDescription>
+              <CardTitle className="text-lg font-bold">דיווחים היום לפי שעה</CardTitle>
+              <CardDescription>פיזור הדיווחים לאורך היום.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
               {todayIncidents.length === 0 ? (
@@ -308,7 +292,7 @@ export default async function AdminDashboardPage() {
                 <TabletSmartphone className="size-5 text-brand" />
                 חיבור מסכים פעילים
               </CardTitle>
-              <CardDescription>סטטוס קשר חי עם הטאבלטים והעמדות בארגון.</CardDescription>
+              <CardDescription>מצב החיבור של הטאבלטים בעסק.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="grid grid-cols-3 gap-2 text-center text-xs pb-3 border-b border-border">
@@ -365,7 +349,7 @@ export default async function AdminDashboardPage() {
                 <Mail className="size-5 text-brand" />
                 התראות מנהלים (היום)
               </CardTitle>
-              <CardDescription>פילוח התראות המייל שנשלחו היום בעקבות דיווחים.</CardDescription>
+              <CardDescription>מצב התראות שנוצרו היום.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-3">
               {[
@@ -385,7 +369,7 @@ export default async function AdminDashboardPage() {
           <Card className="border shadow-soft">
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg font-bold">דיווחים אחרונים</CardTitle>
-              <CardDescription>10 האירועים האחרונים שנרשמו בארגון.</CardDescription>
+              <CardDescription>הדיווחים האחרונים שנכנסו.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-3">
               {recentIncidents.length === 0 ? (

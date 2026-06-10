@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
@@ -146,8 +146,8 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="ניהול דיווחים"
-        description="רשימת דיווחי שירותים ואירועים תפעוליים."
+        title="דיווחים"
+        description="רשימה נקייה לטיפול מהיר לפי מיקום, סוג תקלה וסטטוס."
         actions={
           <div className="flex items-center gap-2">
             <IncidentsPolling />
@@ -232,9 +232,6 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle>דיווחים שנמצאו ({filteredIncidents.length})</CardTitle>
-          <CardDescription>
-            רשימה מסוננת של דיווחי שירותים. הקישורים להלן מובילים לדף הטיפול התפעולי.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {filteredIncidents.length === 0 ? (
@@ -267,9 +264,9 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
                     </div>
 
                     <p className="text-sm text-muted">
-                      סניף: <strong className="text-foreground">{branchNames.get(incident.branchId) ?? "לא ידוע"}</strong> · 
-                      אזור: <strong className="text-foreground">{restroomNames.get(incident.restroomId) ?? "לא ידוע"}</strong> · 
-                      מקור: <strong className="text-foreground">{incident.source === "kiosk" ? "טאבלט" : "סריקת QR"}</strong>
+                      <strong className="text-foreground">{branchNames.get(incident.branchId) ?? "לא ידוע"}</strong> ·
+                      <strong className="text-foreground">{restroomNames.get(incident.restroomId) ?? "לא ידוע"}</strong> ·
+                      <strong className="text-foreground">{incident.source === "kiosk" ? "טאבלט" : "סריקת QR"}</strong>
                     </p>
 
                     {incident.customerNote && (

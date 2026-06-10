@@ -36,7 +36,7 @@ export default async function AdminSettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="הגדרות"
-        description="פרטי ארגון, אבטחה ומשתמשים פעילים."
+        description="פרטי חשבון העסק ומשתמשי הניהול."
         actions={
           <Badge variant={canManageSettings(user) ? "secondary" : "outline"}>
             {canManageSettings(user) ? "הרשאת ניהול" : "צפייה בלבד"}
@@ -48,19 +48,13 @@ export default async function AdminSettingsPage() {
         {/* Org details */}
         <Card>
           <CardHeader>
-            <CardTitle>פרטי ארגון</CardTitle>
-            <CardDescription>פרטי החשבון הארגוני במערכת CleanPulse.</CardDescription>
+            <CardTitle>פרטי עסק</CardTitle>
+            <CardDescription>הפרטים שמזהים את החשבון.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-muted">שם הארגון</span>
               <span className="font-semibold text-foreground">{organization?.name ?? "לא זמין"}</span>
-            </div>
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="text-muted">כתובת ייחודית</span>
-              <span className="font-mono text-xs bg-brand-soft border border-border rounded-lg px-2 py-1 text-brand-deep">
-                {organization?.slug ?? "לא זמין"}
-              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted">תוכנית</span>
@@ -74,13 +68,13 @@ export default async function AdminSettingsPage() {
         {/* Security */}
         <Card>
           <CardHeader>
-            <CardTitle>אבטחה ופרטיות</CardTitle>
-            <CardDescription>מידע על הגנת הגישה לחשבון.</CardDescription>
+            <CardTitle>גישה ואבטחה</CardTitle>
+            <CardDescription>מצב הגישה לחשבון הניהול.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between border-b border-border pb-3">
-              <span className="text-muted">אימות משתמשים</span>
-              <span className="font-semibold text-foreground">קוקי מאובטח</span>
+              <span className="text-muted">כניסה למערכת</span>
+              <span className="font-semibold text-foreground">מאובטחת</span>
             </div>
             <div className="flex items-center justify-between border-b border-border pb-3">
               <span className="text-muted">תוקף התחברות</span>

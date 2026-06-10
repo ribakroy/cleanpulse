@@ -78,7 +78,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
   const userMap = new Map(users.map(u => [u.id, u.fullName] as const));
   const recipientMap = new Map(recipients.map(r => [r.id, `${r.name} (${r.email})`] as const));
 
-  // SLA calculations
+  // Treatment time calculations
   const slaBadge = getSlaBadgeStyles(incident);
   const timeToAck = getTimeToAcknowledgement(incident);
   const timeToProgress = getTimeToInProgress(incident);
@@ -172,17 +172,17 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             </CardContent>
           </Card>
 
-          {/* Timestamps & SLA Card */}
+          {/* Timestamps card */}
           <Card>
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="size-5 text-brand" />
-                מדדי ביצוע וזמני טיפול
+                זמני טיפול
               </CardTitle>
             </CardHeader>
             <CardContent className="divide-y divide-border/60 text-sm">
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">זמן פתיחת דיווח</span>
+                  <span className="font-bold text-muted">נפתח</span>
                 <span className="col-span-2 font-semibold">
                   {formatDateTime(incident.openedAt)}
                   <span className="text-xs text-muted mr-2">(זמן שעבר: {getElapsedTimeLabel(incident.openedAt)})</span>
@@ -190,7 +190,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               </div>
               
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">אישור קבלה</span>
+                  <span className="font-bold text-muted">קבלה</span>
                 <span className="col-span-2">
                   {incident.acknowledgedAt ? (
                     <span className="font-semibold text-foreground">
@@ -206,7 +206,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               </div>
 
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">התחלת טיפול</span>
+                  <span className="font-bold text-muted">תחילת טיפול</span>
                 <span className="col-span-2">
                   {incident.inProgressAt ? (
                     <span className="font-semibold text-foreground">
@@ -222,7 +222,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               </div>
 
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">סגירת אירוע</span>
+                  <span className="font-bold text-muted">סגירה</span>
                 <span className="col-span-2">
                   {incident.resolvedAt || incident.dismissedAt ? (
                     <span className="font-semibold text-foreground">
@@ -244,7 +244,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
 
               {incident.resolutionNote && (
                 <div className="grid grid-cols-3 py-3 bg-emerald-50/20 px-2 rounded-lg my-1">
-                  <span className="font-bold text-emerald-800">הערת פתרון / סגירה</span>
+                  <span className="font-bold text-emerald-800">הערת סגירה</span>
                   <span className="col-span-2 text-foreground font-semibold">
                     {incident.resolutionNote}
                   </span>
@@ -258,7 +258,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="size-5 text-brand" />
-                ציר זמן תפעולי
+                ציר זמן
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -280,15 +280,11 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                           <User className="size-3" />
                           מבצע: {log.actorUserId ? (userMap.get(log.actorUserId) ?? log.actorUserId) : "מדווח ציבורי"}
                         </p>
-                        {log.metadata && Object.keys(log.metadata).length > 0 && (
+                        {log.metadata?.resolutionNote ? (
                           <div className="text-xs bg-surface-muted p-2 rounded border text-muted">
-                            {log.metadata.resolutionNote ? (
-                              <p>הערה: <strong className="text-foreground">{String(log.metadata.resolutionNote)}</strong></p>
-                            ) : (
-                              <pre className="text-[10px] overflow-auto">{JSON.stringify(log.metadata)}</pre>
-                            )}
+                            <p>הערה: <strong className="text-foreground">{String(log.metadata.resolutionNote)}</strong></p>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   ))}
@@ -302,7 +298,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Shield className="size-5 text-brand" />
-                היסטוריית התראות
+                התראות
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -317,14 +313,13 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                     >
                       <div className="space-y-1">
                         <p className="font-bold text-foreground">
-                          נמען: {log.recipientId ? (recipientMap.get(log.recipientId) ?? log.recipientId) : "אין (התראת כללית)"}
+                          {log.recipientId ? (recipientMap.get(log.recipientId) ?? "נמען מוגדר") : "התראה כללית"}
                         </p>
                         <p className="text-xs text-muted">
-                          שיטת שליחה: <span className="font-semibold text-foreground">{log.channel === "email" ? "מייל" : log.channel}</span> · 
-                          זמן: <span>{formatDateTime(log.createdAt)}</span>
+                          {log.channel === "email" ? "מייל" : "התראה"} · {formatDateTime(log.createdAt)}
                         </p>
                         {log.errorMessage && (
-                          <p className="text-xs text-red-600 bg-red-50 p-2 border border-red-100 rounded mt-1 font-mono">
+                          <p className="text-xs text-red-600 bg-red-50 p-2 border border-red-100 rounded mt-1">
                             שגיאה: {log.errorMessage}
                           </p>
                         )}
@@ -355,8 +350,8 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         <div className="space-y-6">
           <Card className="bg-brand-soft/30 border-brand-water/30">
             <CardHeader>
-              <CardTitle className="text-lg">ביצוע פעולות טיפול</CardTitle>
-              <CardDescription>עדכן סטטוס על סמך התקדמות הטיפול בשטח.</CardDescription>
+              <CardTitle className="text-lg">פעולות טיפול</CardTitle>
+              <CardDescription>עדכון מצב הדיווח בשטח.</CardDescription>
             </CardHeader>
             <CardContent>
               {isResolver ? (
@@ -364,7 +359,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               ) : (
                 <div className="flex gap-2 text-xs text-muted bg-yellow-50 border border-yellow-200 p-3 rounded-lg leading-6">
                   <Shield className="size-4 text-amber-600 shrink-0 mt-1" />
-                  <span>למשתמש הנוכחי אין הרשאות לשנות את סטטוס הדיווח. אנא התחבר עם משתמש מורשה (owner / admin / manager / cleaner).</span>
+                  <span>אין הרשאה לשינוי סטטוס בדיווח הזה.</span>
                 </div>
               )}
             </CardContent>
@@ -372,7 +367,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">מדריך שלבים תפעוליים</CardTitle>
+            <CardTitle className="text-lg">שלבי טיפול</CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted leading-6 space-y-2">
               <p><strong className="text-foreground">פתוח</strong> — דיווח חדש מהלקוח שממתין להתייחסות.</p>

@@ -62,10 +62,9 @@ export function PublicReportForm({
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   
-  // Client-side rate limit tracking to disable specific buttons for 10s after click
+  // Prevent accidental duplicate taps on public screens.
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
 
-  // Clean up timers if component unmounts
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -97,7 +96,6 @@ export function PublicReportForm({
 
     startTransition(async () => {
       if (isDemo) {
-        // Simulate network latency for demo
         await new Promise((resolve) => setTimeout(resolve, 800));
         setStatus("success");
         setTimeout(() => {
@@ -146,7 +144,6 @@ export function PublicReportForm({
 
     startTransition(async () => {
       if (isDemo) {
-        // Simulate network latency for demo
         await new Promise((resolve) => setTimeout(resolve, 300));
         return;
       }
@@ -176,7 +173,7 @@ export function PublicReportForm({
 
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 space-y-8 animate-success-pop max-w-md mx-auto">
+      <div className="flex flex-col items-center justify-center min-h-[56vh] text-center p-6 space-y-7 animate-success-pop max-w-md mx-auto">
         <div className="relative flex items-center justify-center">
           {/* Animated pulsing rings */}
           <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping duration-1000 scale-150" />
@@ -188,7 +185,7 @@ export function PublicReportForm({
         
         <div className="space-y-3">
           <h2 className="text-3xl font-extrabold tracking-tight text-foreground font-heading">
-            תודה, הדיווח התקבל!
+            תודה, קיבלנו את הדיווח
           </h2>
           <p className="text-lg text-muted leading-relaxed">
             הצוות קיבל עדכון ויטפל בזה בהקדם.
@@ -201,7 +198,7 @@ export function PublicReportForm({
             <div className="h-full bg-emerald-500 rounded-full animate-countdown" />
           </div>
           <p className="text-xs font-medium text-muted/70">
-            המסך יתאפס בעוד 3 שניות...
+            המסך יתאפס מיד.
           </p>
         </div>
       </div>
@@ -210,12 +207,12 @@ export function PublicReportForm({
 
   if (status === "error") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 space-y-8 animate-success-pop max-w-md mx-auto">
+      <div className="flex flex-col items-center justify-center min-h-[56vh] text-center p-6 space-y-7 animate-success-pop max-w-md mx-auto">
         <span className="flex size-24 items-center justify-center rounded-full bg-red-50 text-red-500 shadow-soft border border-red-100">
           <XCircle className="size-16" />
         </span>
         <div className="space-y-3">
-          <h2 className="text-3xl font-extrabold tracking-tight text-foreground font-heading">אופס, משהו השתבש</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-foreground font-heading">לא הצלחנו לשלוח</h2>
           <p className="text-lg text-red-600 font-medium max-w-sm">{errorMessage}</p>
         </div>
         <button
@@ -232,46 +229,45 @@ export function PublicReportForm({
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-300">
+    <div className="space-y-9 animate-in fade-in duration-300">
       {/* Header Info */}
       <div className="flex flex-col items-center text-center space-y-4">
         {/* Glowing visual element at top */}
-        <div className="w-12 h-1.5 bg-brand/30 rounded-full mb-1 animate-pulse" />
+        <div className="h-1.5 w-12 rounded-full bg-brand/25 mb-1" />
         
-        <h1 className="text-4xl font-black tracking-tight text-brand-deep sm:text-5xl font-heading leading-tight transition-all duration-300">
-          {selectedRating === null ? "איך מצב השירותים?" : "תודה רבה על הדירוג!"}
+        <h1 className="text-3xl font-black tracking-tight text-brand-deep sm:text-5xl font-heading leading-tight transition-all duration-300">
+          {selectedRating === null ? "איך מצב השירותים?" : "תודה על הדירוג"}
         </h1>
-        <p className="text-lg text-muted max-w-lg leading-relaxed transition-all duration-300">
+        <p className="text-base text-muted max-w-lg leading-7 transition-all duration-300 sm:text-lg">
           {selectedRating === null 
-            ? "אנא דרגו את החוויה הכללית בכוכבים כדי שנוכל לשפר." 
+            ? "דרגו בכוכבים או דווחו על תקלה."
             : "האם יש בעיה ספציפית שתרצו לדווח עליה?"}
         </p>
         
-        {/* Floating location card (glass-premium) */}
-        <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-md px-6 py-3 rounded-2xl border border-border shadow-soft">
-          <div className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-brand animate-ping" />
-            <span className="text-xs font-bold text-brand tracking-wide uppercase">דיווח ישיר</span>
+        <div className="w-full max-w-xl rounded-[var(--radius-lg)] border border-border bg-white/88 px-4 py-3 shadow-soft sm:inline-flex sm:w-auto sm:items-center sm:gap-3">
+          <div className="mb-2 flex items-center justify-center gap-1.5 sm:mb-0">
+            <span className="size-2 rounded-full bg-brand" />
+            <span className="text-xs font-bold text-brand">דיווח ישיר</span>
           </div>
-          <span className="h-4 w-[1px] bg-border" />
-          <div className="flex flex-wrap justify-center gap-2 text-sm text-muted">
-            <span>סניף: <strong className="text-foreground font-semibold">{branchName}</strong></span>
-            <span className="text-border/80">|</span>
-            <span>שירותים: <strong className="text-foreground font-semibold">{restroomName}</strong></span>
+          <span className="hidden h-4 w-px bg-border sm:block" />
+          <div className="flex flex-col items-center justify-center gap-1 text-sm text-muted sm:flex-row sm:flex-wrap">
+            <span><strong className="text-foreground font-semibold">{branchName}</strong></span>
+            <span className="hidden text-border/80 sm:inline">·</span>
+            <span><strong className="text-foreground font-semibold">{restroomName}</strong></span>
           </div>
         </div>
       </div>
 
       {selectedRating === null ? (
         /* Step 1: Star Rating Section */
-        <div className="glass-card rounded-[2rem] border border-border p-8 shadow-soft space-y-6 animate-in fade-in duration-300 max-w-lg mx-auto">
+        <div className="rounded-[var(--radius-xl)] border border-border bg-white/94 p-5 shadow-soft space-y-6 animate-in fade-in duration-300 max-w-lg mx-auto sm:p-8">
           <div className="text-center space-y-1">
             <h3 className="text-xl font-bold text-brand-deep font-heading">דרגו אותנו בכוכבים</h3>
-            <p className="text-sm text-muted">הכל בסדר? לחצו על הדירוג המתאים.</p>
+            <p className="text-sm text-muted">לחצו על הדירוג המתאים.</p>
           </div>
 
           <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center justify-center gap-2 py-2">
+            <div className="flex w-full items-center justify-center gap-0.5 py-2 sm:gap-2">
               {Array.from({ length: 5 }, (_, index) => index + 1).map((value) => {
                 const cooldownKey = `rating_${value}`;
                 const isOnCooldown = !!cooldowns[cooldownKey];
@@ -293,14 +289,14 @@ export function PublicReportForm({
                       handleRate(value);
                     }}
                     className={cn(
-                      "p-3 rounded-full hover:bg-amber-50/70 active:scale-90 transition-transform disabled:cursor-not-allowed cursor-pointer",
+                      "rounded-full p-1.5 hover:bg-amber-50/70 active:scale-90 transition-transform disabled:cursor-not-allowed cursor-pointer sm:p-3",
                       isOnCooldown ? "text-amber-500" : "text-brand"
                     )}
                     aria-label={`דירוג ${value} מתוך 5 כוכבים`}
                   >
                     <Star
                       className={cn(
-                        "size-14 transition-all duration-200",
+                        "size-11 transition-all duration-200 sm:size-14",
                         isHighlighted 
                           ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] scale-110" 
                           : "text-muted/30 fill-transparent"
@@ -316,11 +312,11 @@ export function PublicReportForm({
             <div className="h-6 flex items-center justify-center">
               {hoveredRating !== null && (
                 <span className="text-sm font-bold text-amber-600 animate-in fade-in duration-200">
-                  {hoveredRating === 1 && "גרוע מאוד 😞"}
-                  {hoveredRating === 2 && "טעון שיפור 😕"}
-                  {hoveredRating === 3 && "סביר בהחלט 🙂"}
-                  {hoveredRating === 4 && "טוב מאוד! 😊"}
-                  {hoveredRating === 5 && "מעולה! הכל נקי ובסדר גמור 🤩"}
+                  {hoveredRating === 1 && "לא טוב"}
+                  {hoveredRating === 2 && "טעון שיפור"}
+                  {hoveredRating === 3 && "סביר"}
+                  {hoveredRating === 4 && "טוב"}
+                  {hoveredRating === 5 && "מעולה"}
                 </span>
               )}
             </div>
@@ -361,18 +357,18 @@ export function PublicReportForm({
               })}
             </div>
             <span className="text-xs font-bold text-amber-700">
-              {selectedRating === 1 && "גרוע מאוד 😞 (לחץ לשינוי)"}
-              {selectedRating === 2 && "טעון שיפור 😕 (לחץ לשינוי)"}
-              {selectedRating === 3 && "סביר בהחלט 🙂 (לחץ לשינוי)"}
-              {selectedRating === 4 && "טוב מאוד! 😊 (לחץ לשינוי)"}
-              {selectedRating === 5 && "מעולה! 🤩 (לחץ לשינוי)"}
+              {selectedRating === 1 && "לא טוב"}
+              {selectedRating === 2 && "טעון שיפור"}
+              {selectedRating === 3 && "סביר"}
+              {selectedRating === 4 && "טוב"}
+              {selectedRating === 5 && "מעולה"}
             </span>
           </div>
 
           {/* Issue grid */}
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-brand-deep pr-1 text-center">
-              סמנו מה לא תקין (לבחירת ריבוע אחד):
+              מה לא תקין?
             </h2>
             <div className={cn(
               "grid gap-4",
@@ -400,7 +396,7 @@ export function PublicReportForm({
                       isTablet ? "min-h-[160px]" : "min-h-[135px]",
                       isOnCooldown 
                         ? "border-emerald-200 bg-emerald-50/50 text-emerald-800 shadow-[0_2px_10px_rgba(16,185,129,0.05)] cursor-not-allowed" 
-                        : "glass-card glass-card-hover border-border cursor-pointer active:scale-95"
+                        : "border-border bg-white/94 shadow-soft hover:border-brand/30 hover:bg-brand-soft/35 cursor-pointer active:scale-95"
                     )}
                   >
                     {/* Icon Container */}
@@ -432,7 +428,7 @@ export function PublicReportForm({
                       </span>
                     ) : (
                       <span className="text-[11px] text-brand/80 font-medium opacity-0 hover:opacity-100 transition-opacity">
-                        דווח
+                        דיווח
                       </span>
                     )}
                   </button>
@@ -454,7 +450,7 @@ export function PublicReportForm({
               )}
             >
               {selectedRating >= 4 ? (
-                <span>הכל מעולה, תודה! ✨</span>
+                <span>הכל תקין, תודה</span>
               ) : (
                 <span>סיום ללא דיווח נוסף</span>
               )}

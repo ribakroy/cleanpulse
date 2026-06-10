@@ -1,8 +1,8 @@
 import { CreateOrgForm } from "@/components/super/create-org-form";
 
 export const metadata = {
-  title: "הקמת עסק חדש | CleanPulse Owner Console",
-  description: "הקמת ארגון חדש ויצירת מנהל ראשי במערכת",
+  title: "הקמת עסק חדש | CleanPulse",
+  description: "הקמת עסק חדש ויצירת מנהל ראשי",
 };
 
 export default function SuperNewOrganizationPage() {
@@ -12,7 +12,7 @@ export default function SuperNewOrganizationPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">הקמת עסק חדש</h1>
         <p className="text-sm text-muted mt-1">
-          הגדרת ארגון חדש במערכת, קביעת תוכנית מנוי ויצירת המשתמש הראשי שינהל אותו.
+          פרטי עסק, איש קשר, תוכנית ומשתמש ראשון.
         </p>
       </div>
 

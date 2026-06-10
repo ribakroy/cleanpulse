@@ -108,7 +108,7 @@ export default async function SuperSystemPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">סטטוס מערכת</h1>
         <p className="text-sm text-muted mt-1">
-          בדיקת תקינות חיבורים, שירותים ונפח נתונים.
+          חיבורים מרכזיים ותיעוד פעילות.
         </p>
       </div>
 
@@ -133,7 +133,7 @@ export default async function SuperSystemPage() {
             <div className="flex justify-between items-center py-2 border-b border-border text-sm">
               <span className="text-muted">סוג חיבור</span>
               <span className="font-semibold text-foreground">
-                {env.dataAdapter === "github" ? "ענן (מצב ייצור)" : "מקומי (פיתוח)"}
+                {env.dataAdapter === "github" ? "חיבור ענן" : "חיבור מקומי"}
               </span>
             </div>
             <div className="flex justify-between items-center py-2 text-sm">
@@ -193,7 +193,7 @@ export default async function SuperSystemPage() {
             )}
             {!isEmailLive && (
               <p className="text-xs text-muted leading-relaxed pt-1">
-                התראות מוקלטות ברשומות פנימיות בלבד. הפעלת שליחה אמיתית דורשת הגדרת ספק מייל.
+                התראות נשמרות לבדיקה בלבד. שליחה אמיתית אינה פעילה כרגע.
               </p>
             )}
           </CardContent>
@@ -205,7 +205,7 @@ export default async function SuperSystemPage() {
         <CardHeader className="border-b border-border bg-brand-soft/40">
           <div className="flex items-center gap-2">
             <Terminal className="size-5 text-muted" />
-            <CardTitle className="text-base font-bold">נפח נתונים</CardTitle>
+            <CardTitle className="text-base font-bold">תיעוד ונתונים</CardTitle>
           </div>
           <CardDescription>סה&quot;כ רשומות לכל קטגוריה במאגר.</CardDescription>
         </CardHeader>
@@ -219,8 +219,8 @@ export default async function SuperSystemPage() {
               { label: "מסכים", value: counts.screens },
               { label: "דיווחים", value: counts.incidents },
               { label: "נמעני התראות", value: counts.notification_recipients },
-              { label: "לוג התראות", value: counts.notification_logs },
-              { label: "לוג פעילות", value: counts.activity_logs },
+              { label: "תיעוד התראות", value: counts.notification_logs },
+              { label: "תיעוד פעילות", value: counts.activity_logs },
             ].map(({ label, value }) => (
               <div key={label} className="p-5 flex flex-col gap-1">
                 <span className="text-xs text-muted">{label}</span>

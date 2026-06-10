@@ -11,6 +11,7 @@ const planLabels: Record<string, string> = {
   basic: "בסיסי",
   pro: "מקצועי",
   enterprise: "ארגוני",
+  demo: "בדיקה",
 };
 
 export const revalidate = 0; // Dynamic
@@ -37,7 +38,7 @@ export default async function SuperBillingPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">גבייה ותוכניות מנוי</h1>
         <p className="text-sm text-muted mt-1">
-          מעקב אחר סטטוס התשלומים, הכנסה חודשית חוזרת וניהול ידני של מנויי הלקוחות.
+          גבייה ידנית, תוכניות ומצב לקוחות.
         </p>
       </div>
 
@@ -77,7 +78,7 @@ export default async function SuperBillingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-foreground">{trialClientsCount}</div>
-            <p className="text-xs text-muted mt-1">גישת הדגמה לזמן מוגבל</p>
+            <p className="text-xs text-muted mt-1">לקוחות בתקופת ניסיון</p>
           </CardContent>
         </Card>
 
@@ -117,8 +118,8 @@ export default async function SuperBillingPage() {
       {/* Billings Table */}
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>יומן לקוחות ומצבי גבייה</CardTitle>
-          <CardDescription>ריכוז פרטי התוכניות והמחירים של כל העסקים במערכת.</CardDescription>
+          <CardTitle>לקוחות וגבייה</CardTitle>
+          <CardDescription>תוכנית, מחיר ומצב גבייה לכל לקוח.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">

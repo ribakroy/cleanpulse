@@ -14,6 +14,9 @@ import {
   createNotificationRecipient,
   deactivateNotificationRecipient,
 } from "@/lib/data/repositories/notification-recipients";
+import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
+import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
+import { listScreensByOrganization } from "@/lib/data/repositories/screens";
 import type { NotificationScopeType } from "@/types/domain";
 import { Mail } from "lucide-react";
 
@@ -29,15 +32,19 @@ const SCOPE_LABELS: Record<string, string> = {
 const recipientSchema = z.object({
   name: z.string().min(1, "שם חובה"),
   email: z.string().email("אימייל לא תקין"),
-  scopeType: z.enum(["organization", "branch", "restroom", "screen"]),
-  scopeId: z.string().optional(),
+  scope: z.string().min(1, "יש לבחור יעד התראה"),
 });
 
 export default async function AdminRecipientsPage() {
   const user = await requireUser();
   if (!canManageRecipients(user))
     return <NoAccessState description="למשתמש הנוכחי אין הרשאה לנהל נמענים." />;
-  const recipients = await listNotificationRecipientsByOrganization(user.organizationId);
+  const [recipients, branches, restrooms, screens] = await Promise.all([
+    listNotificationRecipientsByOrganization(user.organizationId),
+    listBranchesByOrganization(user.organizationId),
+    listRestroomsByOrganization(user.organizationId),
+    listScreensByOrganization(user.organizationId),
+  ]);
 
   async function handleCreate(formData: FormData) {
     "use server";
@@ -47,22 +54,21 @@ export default async function AdminRecipientsPage() {
     const parsed = recipientSchema.safeParse({
       name: formData.get("name"),
       email: formData.get("email"),
-      scopeType: formData.get("scopeType"),
-      scopeId: formData.get("scopeId"),
+      scope: formData.get("scope"),
     });
 
     if (!parsed.success) throw new Error(parsed.error.issues[0]?.message || "שגיאת אימות");
 
-    let finalScopeId = parsed.data.scopeId;
-    if (parsed.data.scopeType === "organization") finalScopeId = u.organizationId;
-    else if (!finalScopeId)
-      throw new Error("חובה להזין מזהה ישות עבור סניף / אזור שירותים / מסך");
+    const [scopeType, scopeId] = parsed.data.scope.split(":") as [NotificationScopeType, string | undefined];
+    if (!scopeId || !["organization", "branch", "restroom", "screen"].includes(scopeType)) {
+      throw new Error("יש לבחור יעד התראה תקין");
+    }
 
     await createNotificationRecipient(u.organizationId, {
       name: parsed.data.name,
       email: parsed.data.email,
-      scopeType: parsed.data.scopeType as NotificationScopeType,
-      scopeId: finalScopeId,
+      scopeType,
+      scopeId,
       enabled: true,
     });
     revalidatePath("/admin/recipients");
@@ -80,7 +86,7 @@ export default async function AdminRecipientsPage() {
     <div className="space-y-6">
       <PageHeader
         title="נמעני התראות"
-        description="הגדרת מקבלי התראות מייל לפי סניף, אזור שירותים או מסך"
+        description="מי מקבל התראה ועל איזה אזור."
       />
 
       {/* Create form */}
@@ -91,7 +97,7 @@ export default async function AdminRecipientsPage() {
             הוספת נמען חדש
           </CardTitle>
           <CardDescription>
-            נמען מקבל התראה בכל פעם שנרשם דיווח בטווח שלו.
+            נמען מקבל התראה כשהדיווח שייך ליעד שבחרת.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -104,18 +110,24 @@ export default async function AdminRecipientsPage() {
               placeholder="israel@example.com"
               required
             />
-            <Select name="scopeType" label="סוג כיסוי" required>
-              <option value="organization">ארגון שלם</option>
-              <option value="branch">סניף ספציפי</option>
-              <option value="restroom">אזור שירותים ספציפי</option>
-              <option value="screen">מסך ספציפי</option>
+            <Select name="scope" label="יעד התראה" required>
+              <option value={`organization:${user.organizationId}`}>כל העסק</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={`branch:${branch.id}`}>
+                  סניף: {branch.name}
+                </option>
+              ))}
+              {restrooms.map((restroom) => (
+                <option key={restroom.id} value={`restroom:${restroom.id}`}>
+                  אזור שירותים: {restroom.name}
+                </option>
+              ))}
+              {screens.map((screen) => (
+                <option key={screen.id} value={`screen:${screen.id}`}>
+                  מסך: {screen.name}
+                </option>
+              ))}
             </Select>
-            <Input
-              name="scopeId"
-              label="מזהה ישות"
-              placeholder="השאר ריק עבור ארגון שלם"
-              hint="מזהה סניף, אזור שירותים, או מסך — לפי הבחירה למעלה"
-            />
             <div className="sm:col-span-2 flex justify-end">
               <Button type="submit" variant="primary" size="md">
                 הוסף נמען
@@ -157,11 +169,9 @@ export default async function AdminRecipientsPage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-0 space-y-2">
-                {r.scopeType !== "organization" && (
-                  <p className="text-[11px] text-muted font-mono truncate">
-                    מזהה שיוך: {r.scopeId?.substring(0, 8)}
-                  </p>
-                )}
+                <p className="text-[11px] text-muted">
+                  {r.enabled ? "מקבל התראות פעילות" : "התראות מושבתות"}
+                </p>
                 {r.enabled && (
                   <form action={handleDeactivate.bind(null, r.id)}>
                     <Button variant="danger" size="sm">

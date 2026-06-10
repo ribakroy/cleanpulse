@@ -87,7 +87,7 @@ export function getSlaBadgeStyles(incident: IncidentRecord): { bg: string; text:
     return {
       bg: "bg-red-50 border-red-200",
       text: "text-red-700",
-      label: "חריג SLA",
+      label: "מתעכב",
     };
   }
 

@@ -46,7 +46,7 @@ export default async function QrPage({ params }: QrPageProps) {
         />
       </div>
       <footer className="py-4 text-center text-xs text-muted/50">
-        CleanPulse &copy; {new Date().getFullYear()} · סרוק לדיווח מהיר
+        CleanPulse &copy; {new Date().getFullYear()}
       </footer>
     </div>
   );

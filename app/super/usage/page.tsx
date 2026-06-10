@@ -75,7 +75,7 @@ export default async function SuperUsagePage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">מדדי שימוש ופעילות</h1>
         <p className="text-sm text-muted mt-1">
-          מעקב אחר רמת הפעילות של הלקוחות, זיהוי חריגות ופיקוח על מסכים לא פעילים.
+          מי משתמש, מי לא, ואיפה כדאי לבדוק.
         </p>
       </div>
 
@@ -90,13 +90,13 @@ export default async function SuperUsagePage() {
                 מסכים לא מקוונים
               </CardTitle>
               <CardDescription>
-                מסכים שלא שידרו אות חיים (Ping) ב-24 השעות האחרונות.
+                מסכים שלא נראו פעילים ב-24 השעות האחרונות.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {inactiveScreens.length === 0 ? (
                 <div className="text-center py-6 text-muted text-sm">
-                  כל המסכים מחוברים ותקינים! 🖥️✨
+                  כל המסכים מחוברים ותקינים.
                 </div>
               ) : (
                 <div className="divide-y divide-border max-h-[400px] overflow-y-auto px-5">
@@ -124,7 +124,7 @@ export default async function SuperUsagePage() {
             <CardHeader>
               <CardTitle className="text-lg">מדדי שימוש ודיווחים לפי עסק</CardTitle>
               <CardDescription>
-                ניתוח כמות דיווחים ופריסת חומרה פעילה לפי לקוח.
+                פעילות לפי לקוח.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">

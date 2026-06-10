@@ -22,6 +22,7 @@ const planLabels: Record<string, string> = {
   basic: "בסיסי",
   pro: "מקצועי",
   enterprise: "ארגוני",
+  demo: "בדיקה",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -30,7 +31,7 @@ const ACTION_LABELS: Record<string, string> = {
   organization_details_updated: "עריכת פרטי עסק",
   user_password_reset_by_super: "איפוס סיסמת משתמש ע״י מנהל על",
   user_created_by_super: "הוספת משתמש ע״י מנהל על",
-  incident_seeded: "אתחול נתוני דמו",
+  incident_seeded: "הוספת נתוני פתיחה",
 };
 
 export default async function SuperDashboardPage() {
@@ -113,7 +114,7 @@ export default async function SuperDashboardPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">מרכז השליטה</h1>
           <p className="text-sm text-muted mt-1">
-            סקירה כללית של פלטפורמת CleanPulse ונתוני לקוחות בזמן אמת.
+            מצב הלקוחות, הגבייה והפעילות במקום אחד.
           </p>
         </div>
         <div className="flex gap-2">
@@ -132,7 +133,7 @@ export default async function SuperDashboardPage() {
         {/* Total Orgs */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted">סה&quot;כ עסקים במערכת</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted">עסקים</CardTitle>
             <Building2 className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
@@ -176,7 +177,7 @@ export default async function SuperDashboardPage() {
         {/* Incidents Volume */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted">דיווחים במערכת</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted">דיווחים היום</CardTitle>
             <Activity className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
@@ -196,13 +197,13 @@ export default async function SuperDashboardPage() {
               <CardTitle>עסקים שדורשים תשומת לב</CardTitle>
             </div>
             <CardDescription>
-              לקוחות מושעים, לקוחות ללא שימוש לאחרונה או כאלה שחצו את מגבלת המנוי.
+              לקוחות שדורשים בדיקה או קשר יזום.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {orgsRequiringAttention.length === 0 ? (
               <div className="text-center py-6 text-muted/70 text-sm">
-                כל הלקוחות במצב תקין ופעיל! ✨
+                כל הלקוחות במצב תקין.
               </div>
             ) : (
               <div className="divide-y divide-border">
@@ -236,9 +237,9 @@ export default async function SuperDashboardPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Clock className="size-5 text-brand" />
-              <CardTitle>פעילות מערכת אחרונה</CardTitle>
+              <CardTitle>פעילות אחרונה</CardTitle>
             </div>
-            <CardDescription>פעולות ניהוליות ושינויי מערכת אחרונים.</CardDescription>
+            <CardDescription>פעולות ניהול ושינויי לקוחות אחרונים.</CardDescription>
           </CardHeader>
           <CardContent>
             {sortedLogs.length === 0 ? (
@@ -254,7 +255,7 @@ export default async function SuperDashboardPage() {
                         {ACTION_LABELS[log.action] || log.action}
                       </p>
                       <div className="flex items-center gap-2 text-xs text-muted/70">
-                        <span>משתמש: {log.actorUserId || "מערכת"}</span>
+                        <span>{log.actorUserId ? "משתמש מנהל" : "פעולה אוטומטית"}</span>
                         <span>•</span>
                         <span>
                           {new Date(log.createdAt).toLocaleString("he-IL", {
@@ -278,7 +279,7 @@ export default async function SuperDashboardPage() {
       {/* Bottom Row: Recent added Organizations */}
       <Card className="shadow-sm">
         <CardHeader>
-          <CardTitle>עסקים חדשים שהצטרפו</CardTitle>
+          <CardTitle>עסקים חדשים</CardTitle>
           <CardDescription>העסקים האחרונים שנוספו לפלטפורמה.</CardDescription>
         </CardHeader>
         <CardContent>

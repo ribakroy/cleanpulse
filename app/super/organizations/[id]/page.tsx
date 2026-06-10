@@ -52,7 +52,7 @@ export default async function SuperOrganizationDetailPage(props: { params: Param
             </span>
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-foreground">{org.name}</h1>
-              <p className="text-xs text-muted font-mono mt-0.5">מזהה לקוח: {org.id}</p>
+              <p className="text-sm text-muted mt-0.5">כרטיס לקוח</p>
             </div>
           </div>
         </div>

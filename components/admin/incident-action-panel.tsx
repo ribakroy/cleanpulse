@@ -81,10 +81,10 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
 
       <div className="border-t border-border pt-4 space-y-3">
         <Textarea
-          label="הערת סגירה / פתרון (אופציונלי)"
+          label="הערת סגירה"
           value={resolutionNote}
           onChange={(e) => setResolutionNote(e.target.value)}
-          placeholder="פרט/י כאן את אופן הטיפול או סיבת הדחייה..."
+          placeholder="מה בוצע בשטח?"
           disabled={isPending}
           className="min-h-[80px]"
         />
