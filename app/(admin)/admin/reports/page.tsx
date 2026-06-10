@@ -123,7 +123,24 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
     label: issueTypeLabels.get(key as IssueTypeKey) || key,
     count,
   })).sort((a, b) => b.count - a.count);
-  const maxIssueCount = Math.max(...incidentsByIssue.map((d) => d.count), 1);
+  const totalIssuesCount = incidentsByIssue.reduce((sum, d) => sum + d.count, 0);
+
+  // Donut chart logic
+  const chartColors = [
+    "#1e88e5", // brand blue
+    "#38bdf8", // brand water
+    "#f59e0b", // amber
+    "#10b981", // emerald
+    "#8b5cf6", // violet
+    "#ec4899", // pink
+    "#d97a7a"  // soft red/danger
+  ];
+  const gradientSlices = incidentsByIssue.map((d, idx) => {
+    const start = incidentsByIssue.slice(0, idx).reduce((sum, item) => sum + (item.count / totalIssuesCount) * 100, 0);
+    const end = start + (d.count / totalIssuesCount) * 100;
+    return `${chartColors[idx % chartColors.length]} ${start}% ${end}%`;
+  });
+  const conicGradient = gradientSlices.length > 0 ? `conic-gradient(${gradientSlices.join(", ")})` : "#e2e8f0";
 
   // Email notifications breakdown
   const incidentIds = new Set(filteredIncidents.map((inc) => inc.id));
@@ -403,19 +420,17 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 ) : (
                   <div className="flex items-end justify-between gap-2 h-36 pt-4 px-2">
                     {incidentsByDay.map((d) => {
-                      const heightPercent = Math.round((d.count / maxDayCount) * 100);
+                      const barHeight = d.count > 0 ? Math.max(4, Math.round((d.count / maxDayCount) * 80)) : 0;
                       return (
-                        <div key={d.label} className="flex-1 flex flex-col items-center gap-1 group">
-                          <span className="text-[9px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
-                            {d.count}
+                        <div key={d.label} className="flex-1 flex flex-col justify-end items-center gap-1 group">
+                          <span className="text-[9px] font-bold text-brand-deep mb-1 shrink-0">
+                            {d.count > 0 ? d.count : ""}
                           </span>
-                          <div className="w-full h-20 flex items-end">
-                            <div
-                              className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
-                              style={{ height: `${Math.max(4, heightPercent)}%` }}
-                            />
-                          </div>
-                          <span className="text-[8px] text-muted rotate-45 mt-2 whitespace-nowrap leading-none origin-right">
+                          <div
+                            className="w-full bg-sky-400/30 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                            style={{ height: `${barHeight}px` }}
+                          />
+                          <span className="text-[8px] text-muted rotate-45 mt-2 whitespace-nowrap leading-none origin-right shrink-0">
                             {d.label.substring(5)}
                           </span>
                         </div>
@@ -432,27 +447,29 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 <CardTitle className="text-sm font-bold">דיווחים לפי שעות</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="flex items-end justify-between gap-1 h-36 pt-4">
-                  {incidentsByHour.map((d) => {
-                    const heightPercent = Math.round((d.count / maxHourCount) * 100);
-                    return (
-                      <div key={d.label} className="flex-1 flex flex-col items-center gap-1 group">
-                        <span className="text-[8px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
-                          {d.count}
-                        </span>
-                        <div className="w-full h-20 flex items-end">
+                {incidentsByHour.length === 0 ? (
+                  <p className="text-xs text-muted text-center py-4">אין נתוני שעות בטווח.</p>
+                ) : (
+                  <div className="flex items-end justify-between gap-1 h-36 pt-4">
+                    {incidentsByHour.map((d) => {
+                      const barHeight = d.count > 0 ? Math.max(4, Math.round((d.count / maxHourCount) * 80)) : 0;
+                      return (
+                        <div key={d.label} className="flex-1 flex flex-col justify-end items-center gap-1 group">
+                          <span className="text-[8px] font-bold text-brand-deep mb-1 shrink-0">
+                            {d.count > 0 ? d.count : ""}
+                          </span>
                           <div
-                            className="w-full bg-brand-water/20 hover:bg-brand rounded-t-sm transition-all duration-200"
-                            style={{ height: `${Math.max(4, heightPercent)}%` }}
+                            className="w-full bg-sky-400/25 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                            style={{ height: `${barHeight}px` }}
                           />
+                          <span className="text-[7px] text-muted mt-1 leading-none whitespace-nowrap shrink-0">
+                            {d.label.split(":")[0]}
+                          </span>
                         </div>
-                        <span className="text-[7px] text-muted mt-1 leading-none whitespace-nowrap">
-                          {d.label.split(":")[0]}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -461,27 +478,43 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold">דיווחים לפי סוג תקלה</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6 space-y-3">
+              <CardContent className="pt-6">
                 {incidentsByIssue.length === 0 ? (
                   <p className="text-xs text-muted text-center py-4">אין דיווחי תקלות (רק דירוגים).</p>
                 ) : (
-                  incidentsByIssue.slice(0, 5).map((d) => {
-                    const widthPercent = Math.round((d.count / maxIssueCount) * 100);
-                    return (
-                      <div key={d.label} className="space-y-1 text-xs">
-                        <div className="flex items-center justify-between font-semibold">
-                          <span>{d.label}</span>
-                          <span className="text-muted font-mono">{d.count}</span>
-                        </div>
-                        <div className="w-full bg-brand-soft h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-brand h-full rounded-full"
-                            style={{ width: `${widthPercent}%` }}
-                          />
-                        </div>
+                  <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
+                    {/* Donut Chart */}
+                    <div 
+                      className="relative w-36 h-36 rounded-full flex items-center justify-center shadow-inner shrink-0"
+                      style={{ background: conicGradient }}
+                    >
+                      {/* Inner circle for donut hole */}
+                      <div className="absolute w-24 h-24 bg-white rounded-full shadow flex flex-col items-center justify-center">
+                        <span className="text-2xl font-black text-brand-deep">{totalIssuesCount}</span>
+                        <span className="text-[10px] text-muted font-medium">דיווחים</span>
                       </div>
-                    );
-                  })
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex-1 space-y-2 w-full">
+                      {incidentsByIssue.slice(0, 7).map((d, idx) => {
+                        const pct = totalIssuesCount > 0 ? Math.round((d.count / totalIssuesCount) * 100) : 0;
+                        const color = chartColors[idx % chartColors.length];
+                        return (
+                          <div key={d.label} className="flex items-center justify-between text-xs">
+                            <div className="flex items-center gap-2">
+                              <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                              <span className="font-medium text-foreground">{d.label}</span>
+                            </div>
+                            <div className="flex items-center gap-2 font-mono text-muted font-semibold">
+                              <span>{d.count}</span>
+                              <span className="text-[10px] text-muted/60">({pct}%)</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>

@@ -272,19 +272,17 @@ export default async function AdminDashboardPage() {
               ) : (
                 <div className="flex items-end justify-between gap-1.5 sm:gap-3 h-48 pt-6 px-2">
                   {hourlyData.map((d) => {
-                    const heightPercent = Math.round((d.count / maxHourCount) * 100);
+                    const barHeight = d.count > 0 ? Math.max(6, Math.round((d.count / maxHourCount) * 110)) : 0;
                     return (
-                      <div key={d.label} className="flex-1 flex flex-col items-center gap-1 group">
-                        <span className="text-[10px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
-                          {d.count}
+                      <div key={d.label} className="flex-1 flex flex-col justify-end items-center gap-1 group">
+                        <span className="text-[10px] font-bold text-brand-deep mb-1 shrink-0">
+                          {d.count > 0 ? d.count : ""}
                         </span>
-                        <div className="w-full h-32 flex items-end">
-                          <div
-                            className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
-                            style={{ height: `${Math.max(4, heightPercent)}%` }}
-                          />
-                        </div>
-                        <span className="text-[9px] text-muted leading-none whitespace-nowrap mt-1">
+                        <div
+                          className="w-full bg-sky-400/50 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                          style={{ height: `${barHeight}px` }}
+                        />
+                        <span className="text-[9px] text-muted leading-none whitespace-nowrap mt-1 shrink-0">
                           {d.label.split(":")[0]}
                         </span>
                       </div>
