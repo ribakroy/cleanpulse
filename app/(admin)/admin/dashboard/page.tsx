@@ -278,10 +278,12 @@ export default async function AdminDashboardPage() {
                         <span className="text-[10px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
                           {d.count}
                         </span>
-                        <div
-                          className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
-                          style={{ height: `${Math.max(4, heightPercent)}%` }}
-                        />
+                        <div className="w-full h-32 flex items-end">
+                          <div
+                            className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
+                            style={{ height: `${Math.max(4, heightPercent)}%` }}
+                          />
+                        </div>
                         <span className="text-[9px] text-muted leading-none whitespace-nowrap mt-1">
                           {d.label.split(":")[0]}
                         </span>

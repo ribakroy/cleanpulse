@@ -409,10 +409,12 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                           <span className="text-[9px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
                             {d.count}
                           </span>
-                          <div
-                            className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
-                            style={{ height: `${Math.max(4, heightPercent)}%` }}
-                          />
+                          <div className="w-full h-20 flex items-end">
+                            <div
+                              className="w-full bg-brand-water/30 hover:bg-brand rounded-t-sm transition-all duration-200"
+                              style={{ height: `${Math.max(4, heightPercent)}%` }}
+                            />
+                          </div>
                           <span className="text-[8px] text-muted rotate-45 mt-2 whitespace-nowrap leading-none origin-right">
                             {d.label.substring(5)}
                           </span>
@@ -438,10 +440,12 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                         <span className="text-[8px] font-bold text-brand-deep opacity-0 group-hover:opacity-100 transition-opacity">
                           {d.count}
                         </span>
-                        <div
-                          className="w-full bg-brand-water/20 hover:bg-brand rounded-t-sm transition-all duration-200"
-                          style={{ height: `${Math.max(4, heightPercent)}%` }}
-                        />
+                        <div className="w-full h-20 flex items-end">
+                          <div
+                            className="w-full bg-brand-water/20 hover:bg-brand rounded-t-sm transition-all duration-200"
+                            style={{ height: `${Math.max(4, heightPercent)}%` }}
+                          />
+                        </div>
                         <span className="text-[7px] text-muted mt-1 leading-none whitespace-nowrap">
                           {d.label.split(":")[0]}
                         </span>
