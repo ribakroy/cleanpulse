@@ -54,14 +54,7 @@ export function SuperShell({ children, user }: SuperShellProps) {
           <div className="border-t border-slate-800 px-5 py-4">
             <a
               href="/logout"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-              style={{
-                width: "100%",
-                justifyContent: "flex-start",
-                color: "#94a3b8", // slate-400
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
+              className={`${buttonVariants({ variant: "ghost", size: "sm" })} w-full !justify-start !text-slate-400 hover:!text-white transition-colors`}
             >
               <LogOut className="size-4 ml-2" aria-hidden="true" />
               יציאה מהמערכת
