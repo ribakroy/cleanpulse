@@ -2,6 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createSessionCookie } from "@/lib/auth/session";
 import { normalizeEmail } from "@/lib/data/repositories/_shared";
 import { getUserByEmailForAuth } from "@/lib/data/repositories/users";
@@ -46,5 +47,6 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
 
   await createSessionCookie(user);
 
+  revalidatePath("/", "layout");
   redirect("/admin/dashboard");
 }
