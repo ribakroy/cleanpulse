@@ -108,7 +108,7 @@ export default async function SuperUsagePage() {
                       </div>
                       <div className="text-[10px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
                         <Clock className="size-3" />
-                        נראה לאחרונה: {screen.lastSeenAt ? new Date(screen.lastSeenAt).toLocaleString("he-IL") : "מעולם לא"}
+                        נראה לאחרונה: {screen.lastSeenAt ? new Date(screen.lastSeenAt).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }) : "מעולם לא"}
                       </div>
                     </div>
                   ))}

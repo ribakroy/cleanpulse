@@ -76,7 +76,7 @@ export default async function SuperDashboardPage() {
       org,
       reason,
       level,
-      lastIncidentDate: lastIncident ? new Date(lastIncident.createdAt).toLocaleDateString("he-IL") : "אין דיווחים",
+      lastIncidentDate: lastIncident ? new Date(lastIncident.createdAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" }) : "אין דיווחים",
     };
   }).filter((x) => x.reason !== "");
 
@@ -241,6 +241,7 @@ export default async function SuperDashboardPage() {
                             minute: "2-digit",
                             day: "2-digit",
                             month: "2-digit",
+                            timeZone: "Asia/Jerusalem",
                           })}
                         </span>
                       </div>
@@ -292,7 +293,7 @@ export default async function SuperDashboardPage() {
                         {org.monthlyPrice ? `${org.monthlyPrice} ₪/חודש` : "חינם / ללא מחיר"}
                       </td>
                       <td className="py-3 pl-4 text-xs text-slate-400">
-                        {new Date(org.createdAt).toLocaleDateString("he-IL")}
+                        {new Date(org.createdAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" })}
                       </td>
                     </tr>
                   ))}

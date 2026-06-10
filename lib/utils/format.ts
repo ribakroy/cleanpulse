@@ -4,6 +4,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat("he-IL", {
   year: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  timeZone: "Asia/Jerusalem",
 });
 
 export function formatDateTime(value: string | Date) {

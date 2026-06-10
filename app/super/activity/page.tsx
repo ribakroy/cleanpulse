@@ -82,6 +82,7 @@ export default async function SuperActivityPage() {
                   day: "2-digit",
                   month: "2-digit",
                   year: "numeric",
+                  timeZone: "Asia/Jerusalem",
                 });
 
                 return (

@@ -50,7 +50,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
     const lastActivity = sortedIncidents[0]?.createdAt 
-      ? new Date(sortedIncidents[0].createdAt).toLocaleDateString("he-IL") 
+      ? new Date(sortedIncidents[0].createdAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" }) 
       : "אין פעילות";
 
     const computedStatus = org.status || (org.isActive ? "active" : "suspended");
