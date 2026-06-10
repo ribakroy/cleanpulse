@@ -358,7 +358,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
           },
           {
             label: "דירוג ממוצע בטווח",
-            value: metrics.avgRating !== null ? `${metrics.avgRating} / 5` : "אין דירוגים",
+            value: metrics.avgRating !== null ? `${metrics.avgRating} מתוך 5` : "אין דירוגים",
             description: "ממוצע ציוני שביעות רצון לקוחות.",
             icon: Star,
             color: "bg-indigo-50 text-indigo-700 border-indigo-200",
@@ -379,7 +379,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
-            <CardHeader className="flex-row items-start justify-between gap-4 space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
               <div className="space-y-1">
                 <CardDescription className="text-xs font-bold text-muted-foreground">{label}</CardDescription>
                 <CardTitle className="text-xl font-extrabold">{value}</CardTitle>
@@ -426,10 +426,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                           <span className="text-[9px] font-bold text-brand-deep mb-1 shrink-0">
                             {d.count > 0 ? d.count : ""}
                           </span>
-                          <div
-                            className="w-full bg-sky-400/30 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
-                            style={{ height: `${barHeight}px` }}
-                          />
+                          {d.count > 0 ? (
+                            <div
+                              className="w-full max-w-[16px] bg-sky-400/30 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                              style={{ height: `${barHeight}px` }}
+                            />
+                          ) : (
+                            <div className="w-full max-w-[16px] h-1.5 bg-slate-100/80 rounded-t-sm shrink-0" />
+                          )}
                           <span className="text-[8px] text-muted rotate-45 mt-2 whitespace-nowrap leading-none origin-right shrink-0">
                             {d.label.substring(5)}
                           </span>
@@ -458,10 +462,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                           <span className="text-[8px] font-bold text-brand-deep mb-1 shrink-0">
                             {d.count > 0 ? d.count : ""}
                           </span>
-                          <div
-                            className="w-full bg-sky-400/25 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
-                            style={{ height: `${barHeight}px` }}
-                          />
+                          {d.count > 0 ? (
+                            <div
+                              className="w-full max-w-[10px] bg-sky-400/25 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                              style={{ height: `${barHeight}px` }}
+                            />
+                          ) : (
+                            <div className="w-full max-w-[10px] h-1.5 bg-slate-100/80 rounded-t-sm shrink-0" />
+                          )}
                           <span className="text-[7px] text-muted mt-1 leading-none whitespace-nowrap shrink-0">
                             {d.label.split(":")[0]}
                           </span>
@@ -482,34 +490,33 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 {incidentsByIssue.length === 0 ? (
                   <p className="text-xs text-muted text-center py-4">אין דיווחי תקלות (רק דירוגים).</p>
                 ) : (
-                  <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
+                  <div className="flex flex-col items-center justify-center gap-6 py-2">
                     {/* Donut Chart */}
                     <div 
-                      className="relative w-36 h-36 rounded-full flex items-center justify-center shadow-inner shrink-0"
+                      className="relative w-32 h-32 rounded-full flex items-center justify-center shadow-inner shrink-0"
                       style={{ background: conicGradient }}
                     >
                       {/* Inner circle for donut hole */}
-                      <div className="absolute w-24 h-24 bg-white rounded-full shadow flex flex-col items-center justify-center">
-                        <span className="text-2xl font-black text-brand-deep">{totalIssuesCount}</span>
-                        <span className="text-[10px] text-muted font-medium">דיווחים</span>
+                      <div className="absolute w-20 h-20 bg-white rounded-full shadow flex flex-col items-center justify-center">
+                        <span className="text-xl font-black text-brand-deep">{totalIssuesCount}</span>
+                        <span className="text-[9px] text-muted font-medium">דיווחים</span>
                       </div>
                     </div>
 
-                    {/* Legend */}
-                    <div className="flex-1 space-y-2 w-full">
-                      {incidentsByIssue.slice(0, 7).map((d, idx) => {
+                    {/* Legend Grid */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 w-full pt-2 border-t border-border/60">
+                      {incidentsByIssue.slice(0, 6).map((d, idx) => {
                         const pct = totalIssuesCount > 0 ? Math.round((d.count / totalIssuesCount) * 100) : 0;
                         const color = chartColors[idx % chartColors.length];
                         return (
-                          <div key={d.label} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span className="size-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                              <span className="font-medium text-foreground">{d.label}</span>
+                          <div key={d.label} className="flex items-center justify-between text-[11px] gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                              <span className="font-medium text-foreground truncate" title={d.label}>{d.label}</span>
                             </div>
-                            <div className="flex items-center gap-2 font-mono text-muted font-semibold">
-                              <span>{d.count}</span>
-                              <span className="text-[10px] text-muted/60">({pct}%)</span>
-                            </div>
+                            <span className="font-mono text-muted shrink-0 text-[10px]">
+                              {d.count} <span className="text-muted/50 text-[9px]">({pct}%)</span>
+                            </span>
                           </div>
                         );
                       })}
@@ -537,28 +544,28 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                   <table className="w-full text-right text-xs">
                     <thead>
                       <tr className="border-b border-border text-muted font-bold">
-                        <th className="py-2">שם הסניף</th>
-                        <th className="py-2">{"סה\"כ דיווחים"}</th>
-                        <th className="py-2">פתוחים כעת</th>
-                        <th className="py-2">זמן סגירה ממוצע</th>
-                        <th className="py-2">דירוג לקוחות</th>
+                        <th className="py-2.5 px-4 text-right">שם הסניף</th>
+                        <th className="py-2.5 px-4 text-right">{"סה\"כ דיווחים"}</th>
+                        <th className="py-2.5 px-4 text-right">פתוחים כעת</th>
+                        <th className="py-2.5 px-4 text-right">זמן סגירה ממוצע</th>
+                        <th className="py-2.5 px-4 text-right">דירוג לקוחות</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
                       {branchSummary.map((b) => (
                         <tr key={b.id} className="hover:bg-brand-soft/10">
-                          <td className="py-2.5 font-bold text-foreground">{b.name}</td>
-                          <td className="py-2.5 font-mono font-semibold">{b.total}</td>
-                          <td className="py-2.5 font-mono">
+                          <td className="py-3 px-4 font-bold text-foreground">{b.name}</td>
+                          <td className="py-3 px-4 font-mono font-semibold">{b.total}</td>
+                          <td className="py-3 px-4">
                             <Badge variant={b.open > 0 ? "warning" : "success"} className="text-[10px] font-bold">
                               {b.open > 0 ? `${b.open} פתוחים` : "0"}
                             </Badge>
                           </td>
-                          <td className="py-2.5 font-mono font-semibold">
+                          <td className="py-3 px-4 font-mono font-semibold">
                             {b.avgResolution !== null ? `${b.avgResolution} דק'` : "—"}
                           </td>
-                          <td className="py-2.5 font-mono font-semibold">
-                            {b.avgRating !== null ? `${b.avgRating} / 5` : "—"}
+                          <td className="py-3 px-4 font-mono font-semibold">
+                            {b.avgRating !== null ? `${b.avgRating} מתוך 5` : "—"}
                           </td>
                         </tr>
                       ))}
@@ -581,19 +588,19 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                   <table className="w-full text-right text-xs">
                     <thead>
                       <tr className="border-b border-border text-muted font-bold">
-                        <th className="py-2">אזור שירותים</th>
-                        <th className="py-2">סניף</th>
-                        <th className="py-2">{"סה\"כ דיווחים"}</th>
-                        <th className="py-2">פתוחים כעת</th>
+                        <th className="py-2.5 px-4 text-right">אזור שירותים</th>
+                        <th className="py-2.5 px-4 text-right">סניף</th>
+                        <th className="py-2.5 px-4 text-right">{"סה\"כ דיווחים"}</th>
+                        <th className="py-2.5 px-4 text-right">פתוחים כעת</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
                       {restroomSummary.map((r) => (
                         <tr key={r.id} className="hover:bg-brand-soft/10">
-                          <td className="py-2.5 font-bold text-foreground">{r.name}</td>
-                          <td className="py-2.5 text-muted-foreground">{r.branchName}</td>
-                          <td className="py-2.5 font-mono font-semibold">{r.total}</td>
-                          <td className="py-2.5 font-mono">
+                          <td className="py-3 px-4 font-bold text-foreground">{r.name}</td>
+                          <td className="py-3 px-4 text-muted-foreground">{r.branchName}</td>
+                          <td className="py-3 px-4 font-mono font-semibold">{r.total}</td>
+                          <td className="py-3 px-4">
                             <Badge variant={r.open > 0 ? "warning" : "success"} className="text-[10px] font-bold">
                               {r.open > 0 ? `${r.open} פתוחים` : "0"}
                             </Badge>
@@ -622,25 +629,25 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                     <table className="w-full text-right text-xs">
                       <thead>
                         <tr className="border-b border-border text-muted font-bold">
-                          <th className="py-2">מזהה דיווח</th>
-                          <th className="py-2">סניף</th>
-                          <th className="py-2">מיקום</th>
-                          <th className="py-2">דיווח</th>
-                          <th className="py-2">נפתח ב-</th>
+                          <th className="py-2.5 px-4 text-right">מזהה דיווח</th>
+                          <th className="py-2.5 px-4 text-right">סניף</th>
+                          <th className="py-2.5 px-4 text-right">מיקום</th>
+                          <th className="py-2.5 px-4 text-right">דיווח</th>
+                          <th className="py-2.5 px-4 text-right">נפתח ב-</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/60">
                         {overdueIncidents.map((inc) => (
                           <tr key={inc.id} className="hover:bg-danger/5">
-                            <td className="py-2.5 font-mono font-semibold">
+                            <td className="py-3 px-4 font-mono font-semibold">
                               <Link href={`/admin/incidents/${inc.id}`} className="text-brand hover:underline font-bold">
                                 {inc.id.substring(9, 15)}...
                               </Link>
                             </td>
-                            <td className="py-2.5 text-foreground">{branchNames.get(inc.branchId) || "לא ידוע"}</td>
-                            <td className="py-2.5 text-foreground">{restroomNames.get(inc.restroomId) || "לא ידוע"}</td>
-                            <td className="py-2.5 text-danger font-bold">{formatIncidentTitle(inc, issueTypeLabels)}</td>
-                            <td className="py-2.5 font-mono text-muted">{formatDateTime(inc.openedAt)}</td>
+                            <td className="py-3 px-4 text-foreground">{branchNames.get(inc.branchId) || "לא ידוע"}</td>
+                            <td className="py-3 px-4 text-foreground">{restroomNames.get(inc.restroomId) || "לא ידוע"}</td>
+                            <td className="py-3 px-4 text-danger font-bold">{formatIncidentTitle(inc, issueTypeLabels)}</td>
+                            <td className="py-3 px-4 font-mono text-muted">{formatDateTime(inc.openedAt)}</td>
                           </tr>
                         ))}
                       </tbody>

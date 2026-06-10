@@ -167,14 +167,14 @@ export default async function AdminDashboardPage() {
           },
           {
             label: "דירוג ממוצע (היום)",
-            value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} / 5` : "—",
+            value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} מתוך 5` : "—",
             description: "שביעות רצון לקוחות היום.",
             icon: Star,
             color: "bg-blue-50 text-blue-700 border-blue-200",
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
-            <CardHeader className="flex-row items-start justify-between gap-4 space-y-0 pb-2">
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-2">
               <div className="space-y-1.5">
                 <CardDescription className="text-xs font-medium text-muted">{label}</CardDescription>
                 <CardTitle className="text-2xl font-extrabold">{value}</CardTitle>
@@ -278,10 +278,14 @@ export default async function AdminDashboardPage() {
                         <span className="text-[10px] font-bold text-brand-deep mb-1 shrink-0">
                           {d.count > 0 ? d.count : ""}
                         </span>
-                        <div
-                          className="w-full bg-sky-400/50 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
-                          style={{ height: `${barHeight}px` }}
-                        />
+                        {d.count > 0 ? (
+                          <div
+                            className="w-full max-w-[10px] bg-sky-400/50 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                            style={{ height: `${barHeight}px` }}
+                          />
+                        ) : (
+                          <div className="w-full max-w-[10px] h-1.5 bg-slate-100/80 rounded-t-sm shrink-0" />
+                        )}
                         <span className="text-[9px] text-muted leading-none whitespace-nowrap mt-1 shrink-0">
                           {d.label.split(":")[0]}
                         </span>
