@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { DataLayerError } from "@/lib/data/errors";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import { ensureOrganizationOwnership } from "@/lib/data/repositories/_shared";
@@ -34,7 +35,7 @@ export async function assertRestroomBelongsToBranch(organizationId: string, rest
 
 export async function createRestroom(organizationId: string, data: { branchId: string; name: string; floor: string; areaDescription: string; isActive: boolean }) {
   return getDataAdapter().create("restrooms", {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     organizationId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

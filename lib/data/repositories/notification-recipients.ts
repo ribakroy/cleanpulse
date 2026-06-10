@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import type { NotificationRecipientRecord } from "@/lib/data/types";
 import type { NotificationScopeType } from "@/types/domain";
@@ -62,7 +63,7 @@ export async function createNotificationRecipient(
   data: { scopeType: NotificationScopeType; scopeId: string; name: string; email: string; enabled: boolean }
 ) {
   return getDataAdapter().create("notification_recipients", {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     organizationId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

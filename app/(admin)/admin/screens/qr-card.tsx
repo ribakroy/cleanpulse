@@ -1,8 +1,13 @@
 "use client";
 
-import QRCode from "react-qr-code";
+import dynamic from "next/dynamic";
 import { Copy, Download, ExternalLink, QrCode, TabletSmartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+// Dynamically import QRCode with SSR disabled to prevent Node.js environment errors during pre-rendering.
+const QRCode = dynamic(() => import("react-qr-code"), {
+  ssr: false,
+});
 
 export function QrCard({
   qrUrl,
@@ -18,7 +23,8 @@ export function QrCard({
   const handleCopy = (url: string) => navigator.clipboard.writeText(url);
 
   const handleDownload = () => {
-    const svg = document.getElementById("qr-code-svg");
+    const svgId = `qr-code-svg-${qrToken}`;
+    const svg = document.getElementById(svgId);
     if (!svg) return;
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement("canvas");
@@ -30,7 +36,7 @@ export function QrCard({
       ctx?.drawImage(img, 0, 0);
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
-      downloadLink.download = "qr-code.png";
+      downloadLink.download = `qr-code-${qrToken.substring(0, 8)}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
@@ -43,7 +49,7 @@ export function QrCard({
       <div className="flex flex-col sm:flex-row gap-4">
         {/* QR image */}
         <div className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-white p-3 self-start">
-          <QRCode id="qr-code-svg" value={qrUrl} size={100} />
+          <QRCode id={`qr-code-svg-${qrToken}`} value={qrUrl} size={100} />
         </div>
 
         {/* Links */}

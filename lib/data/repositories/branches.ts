@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import { ensureOrganizationOwnership } from "@/lib/data/repositories/_shared";
 
@@ -16,7 +17,7 @@ export async function getBranchById(organizationId: string, id: string) {
 
 export async function createBranch(organizationId: string, data: { name: string; address: string; city: string; isActive: boolean }) {
   return getDataAdapter().create("branches", {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     organizationId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

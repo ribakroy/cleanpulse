@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { DataLayerError } from "@/lib/data/errors";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import { ensureOrganizationOwnership } from "@/lib/data/repositories/_shared";
@@ -51,10 +52,10 @@ export async function assertScreenMatchesRestroom(organizationId: string, screen
 
 export async function createScreen(organizationId: string, data: { branchId: string; restroomId: string; name: string; isActive: boolean }) {
   return getDataAdapter().create("screens", {
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     organizationId,
-    publicToken: crypto.randomUUID(),
-    qrToken: crypto.randomUUID(),
+    publicToken: randomUUID(),
+    qrToken: randomUUID(),
     lastSeenAt: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -75,8 +76,8 @@ export async function deactivateScreen(organizationId: string, id: string) {
 export async function regenerateScreenTokens(organizationId: string, id: string) {
   await ensureOrganizationOwnership("screens", organizationId, await getDataAdapter().get("screens", id));
   return getDataAdapter().update("screens", id, {
-    publicToken: crypto.randomUUID(),
-    qrToken: crypto.randomUUID(),
+    publicToken: randomUUID(),
+    qrToken: randomUUID(),
     updatedAt: new Date().toISOString(),
   });
 }
