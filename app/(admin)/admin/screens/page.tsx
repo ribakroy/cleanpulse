@@ -158,33 +158,11 @@ export default async function AdminScreensPage() {
                     kioskUrl={kioskUrl}
                     publicToken={s.publicToken}
                     qrToken={s.qrToken}
+                    canEdit={canEdit}
+                    isActive={s.isActive}
+                    onDeactivate={handleDeactivate.bind(null, s.id)}
+                    onRegenerate={handleRegenerate.bind(null, s.id)}
                   />
-
-                  {canEdit && s.isActive && (
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-                      <form action={handleDeactivate.bind(null, s.id)}>
-                        <Button variant="danger" size="sm">
-                          השבת מסך
-                        </Button>
-                      </form>
-                      <form action={handleRegenerate.bind(null, s.id)}>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            if (
-                              !confirm(
-                                "האם לאפס את הקישורים? הקישורים הישנים יפסיקו לעבוד.",
-                              )
-                            )
-                              e.preventDefault();
-                          }}
-                        >
-                          איפוס קישורים
-                        </Button>
-                      </form>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             );

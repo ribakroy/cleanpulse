@@ -14,11 +14,19 @@ export function QrCard({
   kioskUrl,
   publicToken,
   qrToken,
+  canEdit = false,
+  isActive = false,
+  onDeactivate,
+  onRegenerate,
 }: {
   qrUrl: string;
   kioskUrl: string;
   publicToken: string;
   qrToken: string;
+  canEdit?: boolean;
+  isActive?: boolean;
+  onDeactivate?: string | ((formData: FormData) => void | Promise<void>);
+  onRegenerate?: string | ((formData: FormData) => void | Promise<void>);
 }) {
   const handleCopy = (url: string) => navigator.clipboard.writeText(url);
 
@@ -101,6 +109,25 @@ export function QrCard({
           </div>
         </div>
       </div>
+
+      {canEdit && isActive && onDeactivate && onRegenerate && (
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
+          <form action={onDeactivate}>
+            <Button variant="danger" size="sm" type="submit">
+              השבת מסך
+            </Button>
+          </form>
+          <form action={onRegenerate} onSubmit={(e) => {
+            if (!confirm("האם לאפס את הקישורים? הקישורים הישנים יפסיקו לעבוד.")) {
+              e.preventDefault();
+            }
+          }}>
+            <Button variant="outline" size="sm" type="submit">
+              איפוס קישורים
+            </Button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
