@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, QrCode } from "lucide-react";
-import { KioskPreview } from "@/components/kiosk/kiosk-preview";
+import { PublicReportForm } from "@/components/kiosk/public-report-form";
 import { Badge } from "@/components/ui/badge";
 import { CopyButton } from "@/components/ui/copy-button";
 import { env } from "@/lib/utils/env";
+import seededIssues from "@/data-seed/issue-types.json";
 
 export const metadata = {
   title: "מסך טאבלט לדוגמה",
@@ -36,7 +37,7 @@ export default function KioskDemoPage() {
       </div>
 
       <div className="surface-panel rounded-[var(--radius-xl)] p-4 sm:p-6">
-        <div className="mb-6 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-white/85 px-4 py-3">
+        <div className="mb-8 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-white/85 px-4 py-3">
           <div className="space-y-1">
             <p className="text-sm font-semibold text-foreground">קישור ציבורי לדוגמה</p>
             <p className="text-sm leading-7 text-muted">קישורי מסך אמיתיים מחוברים לטאבלטים בכל מיקום בארגון.</p>
@@ -47,7 +48,16 @@ export default function KioskDemoPage() {
           </span>
         </div>
 
-        <KioskPreview compact />
+        <div className="max-w-4xl mx-auto py-8">
+          <PublicReportForm
+            token="demo-token"
+            source="kiosk"
+            branchName="סניף רמת אביב"
+            restroomName="שירותי גברים קומה 1"
+            issueTypes={seededIssues}
+            isDemo={true}
+          />
+        </div>
       </div>
     </div>
   );

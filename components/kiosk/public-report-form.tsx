@@ -45,6 +45,7 @@ type PublicReportFormProps = {
   branchName: string;
   restroomName: string;
   issueTypes: IssueType[];
+  isDemo?: boolean;
 };
 
 export function PublicReportForm({
@@ -53,6 +54,7 @@ export function PublicReportForm({
   branchName,
   restroomName,
   issueTypes,
+  isDemo = false,
 }: PublicReportFormProps) {
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -94,6 +96,17 @@ export function PublicReportForm({
     setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
 
     startTransition(async () => {
+      if (isDemo) {
+        // Simulate network latency for demo
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setStatus("success");
+        setTimeout(() => {
+          setStatus("idle");
+          setSelectedRating(null);
+        }, 3000);
+        return;
+      }
+
       const result = await createPublicIncidentAction({
         token,
         source,
@@ -132,6 +145,12 @@ export function PublicReportForm({
     setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
 
     startTransition(async () => {
+      if (isDemo) {
+        // Simulate network latency for demo
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        return;
+      }
+
       const result = await createPublicIncidentAction({
         token,
         source,
