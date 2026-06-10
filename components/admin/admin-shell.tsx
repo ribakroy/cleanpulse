@@ -56,14 +56,14 @@ export function AdminShell({ children, user, organizationName }: AdminShellProps
 
           {/* Logout footer */}
           <div className="border-t border-border px-5 py-4">
-            <Link
+            <a
               href="/logout"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
               style={{ width: "100%", justifyContent: "flex-start" }}
             >
               <LogOut className="size-4" aria-hidden="true" />
               יציאה מהמערכת
-            </Link>
+            </a>
           </div>
         </aside>
 

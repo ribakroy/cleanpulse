@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { NoAccessState } from "@/components/admin/no-access-state";
@@ -18,9 +17,9 @@ export default async function AdminAreaLayout({ children }: { children: ReactNod
           description="החשבון או הארגון שלך אינם פעילים כרגע. יש לפנות למנהל המערכת."
         />
         <div className="mt-4 flex justify-center">
-          <Link href="/logout" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <a href="/logout" className={buttonVariants({ variant: "outline", size: "sm" })}>
             יציאה מהמערכת
-          </Link>
+          </a>
         </div>
       </div>
     );
