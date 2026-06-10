@@ -242,6 +242,16 @@ export async function requireAdminUser() {
   return user;
 }
 
+export async function requireSuperAdmin() {
+  const user = await requireUser();
+
+  if (user.role !== "super_admin") {
+    redirect("/admin/dashboard");
+  }
+
+  return user;
+}
+
 export async function clearSession() {
   const cookieStore = await cookies();
   const clearedExpiresAt = new Date(0);

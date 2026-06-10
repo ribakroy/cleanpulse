@@ -15,7 +15,11 @@ export default async function LoginPage() {
   const showDemoNotice = process.env.NODE_ENV !== "production" || env.demoMode;
 
   if (currentUser?.isActive) {
-    redirect("/admin/dashboard");
+    if (currentUser.role === "super_admin") {
+      redirect("/super/dashboard");
+    } else {
+      redirect("/admin/dashboard");
+    }
   }
 
   return (

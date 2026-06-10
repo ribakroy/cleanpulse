@@ -10,6 +10,7 @@
     "typecheck": "rm -rf .next && tsc --noEmit",
     "seed:local": "tsx scripts/seed-local.ts",
     "seed:github": "tsx scripts/seed-github.ts",
+    "create-super-user": "tsx scripts/create-super-user.ts",
     "check": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {

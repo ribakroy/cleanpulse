@@ -48,5 +48,9 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
   await createSessionCookie(user);
 
   revalidatePath("/", "layout");
-  redirect("/admin/dashboard");
+  if (user.role === "super_admin") {
+    redirect("/super/dashboard");
+  } else {
+    redirect("/admin/dashboard");
+  }
 }

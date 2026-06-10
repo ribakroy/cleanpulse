@@ -23,6 +23,7 @@
 
 ### Roles
 
+- `super_admin` (ניהול על פנימי)
 - `owner`
 - `admin`
 - `manager`
@@ -44,7 +45,7 @@
 ### `organizations`
 
 מטרת הישות:
-Tenant עליון.
+Tenant עליון (כולל הגדרות מנוי וגבייה ידנית עבור SaaS).
 
 שדות עיקריים:
 
@@ -54,6 +55,18 @@ Tenant עליון.
 - `isActive`
 - `defaultLocale` = `he-IL`
 - `timezone`
+- `plan` = `demo` | `basic` | `pro` | `enterprise` | `free` | `starter`
+- `status` = `active` | `trial` | `suspended` | `cancelled` (אופציונלי)
+- `billingStatus` = `active` | `trialing` | `past_due" | "cancelled" | "manual` (אופציונלי)
+- `billingEmail` (אופציונלי)
+- `companyName` (אופציונלי)
+- `contactName` (אופציונלי)
+- `contactPhone` (אופציונלי)
+- `trialEndsAt` (אופציונלי, ISO format)
+- `notes` (אופציונלי, הערות מנהל על)
+- `allowedScreensLimit` (אופציונלי, ברירת מחדל 5)
+- `monthlyPrice` (אופציונלי)
+- `currency` (אופציונלי, ברירת מחדל ILS)
 - `createdAt`
 - `updatedAt`
 

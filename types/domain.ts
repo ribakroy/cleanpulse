@@ -1,4 +1,4 @@
-export type UserRole = "owner" | "admin" | "manager" | "cleaner";
+export type UserRole = "super_admin" | "owner" | "admin" | "manager" | "cleaner";
 
 export type IncidentStatus = "open" | "acknowledged" | "in_progress" | "resolved" | "dismissed";
 

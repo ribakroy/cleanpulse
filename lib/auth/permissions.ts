@@ -2,6 +2,7 @@ import type { SafeUserRecord } from "@/lib/data/types";
 import type { UserRole } from "@/types/domain";
 
 export const roleLabels: Record<UserRole, string> = {
+  super_admin: "מנהל על",
   owner: "בעלים",
   admin: "אדמין",
   manager: "מנהל",

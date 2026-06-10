@@ -41,8 +41,19 @@ export type TimestampedRecord = CollectionRecordBase & {
 export type OrganizationRecord = TimestampedRecord & {
   name: string;
   slug: string;
-  plan: "demo" | "basic" | "pro" | "enterprise";
+  plan: "demo" | "basic" | "pro" | "enterprise" | "free" | "starter";
   isActive: boolean;
+  status?: "active" | "trial" | "suspended" | "cancelled";
+  billingStatus?: "active" | "trialing" | "past_due" | "cancelled" | "manual";
+  billingEmail?: string;
+  companyName?: string;
+  contactName?: string;
+  contactPhone?: string;
+  trialEndsAt?: string;
+  notes?: string;
+  allowedScreensLimit?: number;
+  monthlyPrice?: number;
+  currency?: string;
 };
 
 export type UserRecord = TimestampedRecord & {

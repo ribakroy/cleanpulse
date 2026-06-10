@@ -1,7 +1,7 @@
 import { DataLayerError } from "@/lib/data/errors";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
-import type { SafeUserRecord } from "@/lib/data/types";
-import { ensureOrganizationOwnership, normalizeEmail, sanitizeUserRecord } from "@/lib/data/repositories/_shared";
+import type { SafeUserRecord, UserRecord } from "@/lib/data/types";
+import { ensureOrganizationOwnership, normalizeEmail, sanitizeUserRecord, createPrefixedId, nowIso } from "@/lib/data/repositories/_shared";
 
 export async function listUsersByOrganization(organizationId: string): Promise<SafeUserRecord[]> {
   const users = await getDataAdapter().query("users", {
@@ -52,4 +52,27 @@ export async function assertUserInOrganization(organizationId: string, userId: s
   ensureOrganizationOwnership("users", organizationId, user);
 
   return user;
+}
+
+export async function createUser(data: Omit<UserRecord, "id" | "createdAt" | "updatedAt">): Promise<UserRecord> {
+  const id = createPrefixedId("user");
+  const now = nowIso();
+  const user: UserRecord = {
+    ...data,
+    id,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const created = await getDataAdapter().create("users", user);
+  return created;
+}
+
+export async function updateUser(id: string, patch: Partial<Omit<UserRecord, "id" | "createdAt" | "updatedAt">>): Promise<UserRecord> {
+  const now = nowIso();
+  const updatedPatch = {
+    ...patch,
+    updatedAt: now,
+  };
+  const updated = await getDataAdapter().update("users", id, updatedPatch);
+  return updated;
 }
