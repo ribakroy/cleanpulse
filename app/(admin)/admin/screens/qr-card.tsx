@@ -1,10 +1,22 @@
 "use client";
 
 import QRCode from "react-qr-code";
+import { Copy, Download, ExternalLink, QrCode, TabletSmartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function QrCard({ qrUrl, kioskUrl, publicToken, qrToken }: { qrUrl: string, kioskUrl: string, publicToken: string, qrToken: string }) {
+export function QrCard({
+  qrUrl,
+  kioskUrl,
+  publicToken,
+  qrToken,
+}: {
+  qrUrl: string;
+  kioskUrl: string;
+  publicToken: string;
+  qrToken: string;
+}) {
   const handleCopy = (url: string) => navigator.clipboard.writeText(url);
+
   const handleDownload = () => {
     const svg = document.getElementById("qr-code-svg");
     if (!svg) return;
@@ -19,27 +31,68 @@ export function QrCard({ qrUrl, kioskUrl, publicToken, qrToken }: { qrUrl: strin
       const pngFile = canvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
       downloadLink.download = "qr-code.png";
-      downloadLink.href = `${pngFile}`;
+      downloadLink.href = pngFile;
       downloadLink.click();
     };
     img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgData)))}`;
   };
 
   return (
-    <div className="flex flex-col md:flex-row gap-6 mt-4 p-4 border rounded bg-white">
-      <div className="flex-shrink-0 bg-white p-2 border rounded">
-        <QRCode id="qr-code-svg" value={qrUrl} size={128} />
-      </div>
-      <div className="flex flex-col justify-center space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-sm bg-muted text-white px-2 py-1 rounded">/q/{qrToken.substring(0,8)}...</span>
-          <Button variant="outline" size="sm" onClick={() => handleCopy(qrUrl)}>העתק קישור QR</Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>הורד QR</Button>
-          <Button variant="outline" size="sm" as="a" href={qrUrl} target="_blank">פתיחה לתצוגה</Button>
+    <div className="rounded-[var(--radius-lg)] border border-border bg-white/80 p-4 space-y-4">
+      {/* QR code row */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* QR image */}
+        <div className="flex shrink-0 items-center justify-center rounded-[var(--radius-md)] border border-border bg-white p-3 self-start">
+          <QRCode id="qr-code-svg" value={qrUrl} size={100} />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-sm bg-muted text-white px-2 py-1 rounded">/k/{publicToken.substring(0,8)}...</span>
-          <Button variant="outline" size="sm" onClick={() => handleCopy(kioskUrl)}>העתק קישור Kiosk</Button>
+
+        {/* Links */}
+        <div className="flex flex-col gap-3 flex-1 min-w-0">
+          {/* QR link */}
+          <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
+              <QrCode className="size-3.5 shrink-0" aria-hidden="true" />
+              קישור QR (לנייד)
+            </div>
+            <code className="block text-[11px] text-muted font-mono truncate">
+              /q/{qrToken.substring(0, 12)}...
+            </code>
+            <div className="flex flex-wrap gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => handleCopy(qrUrl)}>
+                <Copy className="size-3.5" aria-hidden="true" />
+                העתק
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDownload}>
+                <Download className="size-3.5" aria-hidden="true" />
+                הורד QR
+              </Button>
+              <Button variant="outline" size="sm" as="a" href={qrUrl} target="_blank">
+                <ExternalLink className="size-3.5" aria-hidden="true" />
+                פתח
+              </Button>
+            </div>
+          </div>
+
+          {/* Kiosk link */}
+          <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
+              <TabletSmartphone className="size-3.5 shrink-0" aria-hidden="true" />
+              קישור Kiosk (לטאבלט)
+            </div>
+            <code className="block text-[11px] text-muted font-mono truncate">
+              /k/{publicToken.substring(0, 12)}...
+            </code>
+            <div className="flex flex-wrap gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => handleCopy(kioskUrl)}>
+                <Copy className="size-3.5" aria-hidden="true" />
+                העתק
+              </Button>
+              <Button variant="outline" size="sm" as="a" href={kioskUrl} target="_blank">
+                <ExternalLink className="size-3.5" aria-hidden="true" />
+                פתח טאבלט
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

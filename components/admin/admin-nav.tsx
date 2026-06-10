@@ -6,7 +6,6 @@ import {
   Building2,
   ChartColumn,
   LayoutDashboard,
-  LogOut,
   ListChecks,
   Mail,
   Settings,
@@ -28,7 +27,6 @@ type NavItem = {
   label: string;
   icon: typeof LayoutDashboard;
   visible: (user: SafeUserRecord) => boolean;
-  tone?: "default" | "danger";
 };
 
 const navItems: NavItem[] = [
@@ -39,31 +37,28 @@ const navItems: NavItem[] = [
   { href: "/admin/screens", label: "מסכים וקישורים", icon: TabletSmartphone, visible: canViewScreens },
   { href: "/admin/recipients", label: "נמעני מייל", icon: Mail, visible: canManageRecipients },
   { href: "/admin/settings", label: "הגדרות", icon: Settings, visible: canViewSettings },
-  { href: "/logout", label: "יציאה", icon: LogOut, visible: () => true, tone: "danger" },
 ];
 
 export function AdminNav({ user }: { user: SafeUserRecord }) {
   const pathname = usePathname();
 
   return (
-    <nav className="space-y-2">
-      {navItems.filter((item) => item.visible(user)).map(({ href, label, icon: Icon, tone = "default" }) => {
-        const isActive = href !== "/logout" && (pathname === href || pathname.startsWith(`${href}/`));
+    <nav className="space-y-1">
+      {navItems.filter((item) => item.visible(user)).map(({ href, label, icon: Icon }) => {
+        const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
         return (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-3 rounded-[var(--radius-md)] px-4 py-3 text-sm font-medium",
-              tone === "danger" && "text-danger hover:bg-danger/8 hover:text-danger",
-              tone === "default" &&
-                (isActive
-                  ? "bg-brand-soft text-brand-deep shadow-soft"
-                  : "text-muted hover:bg-white/75 hover:text-brand-deep"),
+              "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-colors",
+              isActive
+                ? "bg-brand text-white shadow-soft"
+                : "text-muted hover:bg-brand-soft hover:text-brand-deep",
             )}
           >
-            <Icon className="size-4" aria-hidden="true" />
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
             {label}
           </Link>
         );

@@ -19,7 +19,7 @@ export default function KioskDemoPage() {
           <Badge variant="secondary">תצוגת הדגמה</Badge>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">מסך טאבלט ציבורי</h1>
           <p className="max-w-2xl text-base leading-7 text-muted">
-            מסך מגע גדול, נקי ומהיר. מתאים ל־kiosk link או לקישור גיבוי דרך QR.
+            מסך מגע גדול ונקי — כפי שייראה ב־kiosk אמיתי. לדיווח מהיר ונוח ישירות מהמיקום.
           </p>
         </div>
 
@@ -38,12 +38,12 @@ export default function KioskDemoPage() {
       <div className="surface-panel rounded-[var(--radius-xl)] p-4 sm:p-6">
         <div className="mb-6 flex items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-white/85 px-4 py-3">
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-foreground">קישור ציבורי פעיל לדוגמה</p>
-            <p className="text-sm leading-7 text-muted">ב־production הקישור יהיה מבוסס `publicToken` לכל מסך.</p>
+            <p className="text-sm font-semibold text-foreground">קישור ציבורי לדוגמה</p>
+            <p className="text-sm leading-7 text-muted">קישורי מסך אמיתיים מחוברים לטאבלטים בכל מיקום בארגון.</p>
           </div>
           <span className="inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-2 text-sm font-medium text-brand-deep">
             <QrCode className="size-4" aria-hidden="true" />
-            QR backup ready
+            קישור QR פעיל
           </span>
         </div>
 

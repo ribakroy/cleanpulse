@@ -164,14 +164,17 @@ function getCookieExpiresAt() {
 }
 
 function getCookieConfig(expires: Date) {
+  const isExpired = expires.getTime() <= Date.now();
   return {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
     expires,
+    maxAge: isExpired ? 0 : SESSION_TTL_SECONDS,
   };
 }
+
 
 export async function createSessionCookie(user: Pick<SafeUserRecord, "id" | "organizationId" | "email" | "fullName" | "role">) {
   const sessionUser = toSessionUser(user);

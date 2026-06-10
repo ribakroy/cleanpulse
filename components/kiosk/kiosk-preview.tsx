@@ -32,7 +32,7 @@ export function KioskPreview({ compact = false }: KioskPreviewProps) {
             </span>
             <span className="inline-flex items-center gap-2 rounded-full bg-surface-muted px-3 py-2">
               <ScanQrCode className="size-4 text-brand-deep" aria-hidden="true" />
-              QR backup link
+              קישור גיבוי QR
             </span>
           </div>
         </div>

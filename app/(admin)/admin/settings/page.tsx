@@ -6,10 +6,16 @@ import { canManageSettings, canViewSettings, formatRoleLabel } from "@/lib/auth/
 import { requireUser } from "@/lib/auth/session";
 import { getOrganizationById } from "@/lib/data/repositories/organizations";
 import { listUsersByOrganization } from "@/lib/data/repositories/users";
-import { env } from "@/lib/utils/env";
 
 export const metadata = {
   title: "הגדרות",
+};
+
+const planLabels: Record<string, string> = {
+  free: "חינמי",
+  starter: "מתחיל",
+  pro: "מקצועי",
+  enterprise: "ארגוני",
 };
 
 export default async function AdminSettingsPage() {
@@ -24,11 +30,13 @@ export default async function AdminSettingsPage() {
     listUsersByOrganization(user.organizationId),
   ]);
 
+  const activeUsersCount = users.filter((u) => u.isActive).length;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="הגדרות"
-        description="מסך קריאה מאובטח להגדרות מערכת ופרטי ארגון. owner/admin מקבלים גם הרשאת ניהול עתידית."
+        description="פרטי ארגון, אבטחה ומשתמשים פעילים."
         actions={
           <Badge variant={canManageSettings(user) ? "secondary" : "outline"}>
             {canManageSettings(user) ? "הרשאת ניהול" : "צפייה בלבד"}
@@ -37,52 +45,77 @@ export default async function AdminSettingsPage() {
       />
 
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+        {/* Org details */}
         <Card>
           <CardHeader>
             <CardTitle>פרטי ארגון</CardTitle>
-            <CardDescription>הנתונים נטענים ישירות מה־repository של organizations.</CardDescription>
+            <CardDescription>פרטי החשבון הארגוני במערכת CleanPulse.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm leading-7 text-muted">
-            <p>שם: {organization?.name ?? "לא זמין"}</p>
-            <p>Slug: {organization?.slug ?? "לא זמין"}</p>
-            <p>Plan: {organization?.plan ?? "לא זמין"}</p>
-            <p>Data adapter: {env.dataAdapter}</p>
-            <p>Email provider: {env.emailProvider}</p>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-muted">שם הארגון</span>
+              <span className="font-semibold text-foreground">{organization?.name ?? "לא זמין"}</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-muted">כתובת ייחודית</span>
+              <span className="font-mono text-xs bg-brand-soft border border-border rounded-lg px-2 py-1 text-brand-deep">
+                {organization?.slug ?? "לא זמין"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">תוכנית</span>
+              <Badge variant="secondary">
+                {planLabels[organization?.plan ?? ""] ?? organization?.plan ?? "לא זמין"}
+              </Badge>
+            </div>
           </CardContent>
         </Card>
 
+        {/* Security */}
         <Card>
           <CardHeader>
-            <CardTitle>אבטחה והרשאות</CardTitle>
-            <CardDescription>אין registration פתוח. משתמשים מתווספים ידנית בשכבת הדאטה.</CardDescription>
+            <CardTitle>אבטחה ופרטיות</CardTitle>
+            <CardDescription>מידע על הגנת הגישה לחשבון.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm leading-7 text-muted">
-            <p>Session: JWT cookie חתום עם AUTH_SECRET.</p>
-            <p>Cookie: httpOnly, sameSite=lax, secure בפרודקשן.</p>
-            <p>משתמשים פעילים: {users.filter((candidate) => candidate.isActive).length}</p>
+          <CardContent className="space-y-3 text-sm">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-muted">אימות משתמשים</span>
+              <span className="font-semibold text-foreground">קוקי מאובטח</span>
+            </div>
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <span className="text-muted">תוקף התחברות</span>
+              <span className="font-semibold text-foreground">7 ימים</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted">משתמשים פעילים</span>
+              <Badge variant="secondary">{activeUsersCount}</Badge>
+            </div>
           </CardContent>
         </Card>
       </section>
 
+      {/* Users table */}
       <Card>
         <CardHeader>
           <CardTitle>משתמשים בארגון</CardTitle>
-          <CardDescription>passwordHash לא נחשף בשום response ללקוח.</CardDescription>
+          <CardDescription>
+            כל המשתמשים המורשים לגשת למערכת הניהול.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {users.map((candidate) => (
+          {users.map((u) => (
             <div
-              key={candidate.id}
+              key={u.id}
               className="flex flex-col gap-3 rounded-[var(--radius-md)] border border-border bg-white/80 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-semibold text-foreground">{candidate.fullName}</p>
-                <p className="text-sm text-muted">{candidate.email}</p>
+                <p className="font-semibold text-foreground">{u.fullName}</p>
+                <p className="text-sm text-muted">{u.email}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">{formatRoleLabel(candidate.role)}</Badge>
-                <Badge variant={candidate.isActive ? "success" : "neutral"}>
-                  {candidate.isActive ? "פעיל" : "לא פעיל"}
+                <Badge variant="secondary">{formatRoleLabel(u.role)}</Badge>
+                <Badge variant={u.isActive ? "success" : "neutral"}>
+                  {u.isActive ? "פעיל" : "לא פעיל"}
                 </Badge>
               </div>
             </div>

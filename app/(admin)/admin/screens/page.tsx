@@ -1,16 +1,25 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NoAccessState } from "@/components/admin/no-access-state";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { canViewScreens, canManageSettings } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
-import { listScreensByOrganization, createScreen, deactivateScreen, regenerateScreenTokens } from "@/lib/data/repositories/screens";
+import {
+  listScreensByOrganization,
+  createScreen,
+  deactivateScreen,
+  regenerateScreenTokens,
+} from "@/lib/data/repositories/screens";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { QrCard } from "./qr-card";
+import { TabletSmartphone } from "lucide-react";
 
-export const metadata = { title: "מסכים" };
+export const metadata = { title: "מסכים וקישורים | CleanPulse" };
 
 const screenSchema = z.object({
   restroomId: z.string().min(1, "יש לבחור אזור שירותים"),
@@ -19,29 +28,29 @@ const screenSchema = z.object({
 
 export default async function AdminScreensPage() {
   const user = await requireUser();
-  if (!canViewScreens(user)) return <NoAccessState description="למשתמש הנוכחי אין הרשאה." />;
+  if (!canViewScreens(user))
+    return <NoAccessState description="למשתמש הנוכחי אין הרשאה." />;
   const canEdit = canManageSettings(user);
   const screens = await listScreensByOrganization(user.organizationId);
   const restrooms = await listRestroomsByOrganization(user.organizationId);
 
-  // App URL for QR generation
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   async function handleCreate(formData: FormData) {
     "use server";
     const u = await requireUser();
     if (!canManageSettings(u)) throw new Error("Unauthorized");
-    
+
     const parsed = screenSchema.safeParse({
       restroomId: formData.get("restroomId"),
       name: formData.get("name"),
     });
-    if (!parsed.success) throw new Error(parsed.error.issues[0]?.message || "Validation Error");
+    if (!parsed.success) throw new Error(parsed.error.issues[0]?.message || "שגיאת אימות");
 
     const validRestrooms = await listRestroomsByOrganization(u.organizationId);
-    const restroom = validRestrooms.find(r => r.id === parsed.data.restroomId);
+    const restroom = validRestrooms.find((r) => r.id === parsed.data.restroomId);
     if (!restroom) throw new Error("אזור שירותים אינו קיים בארגון זה");
-    
+
     await createScreen(u.organizationId, {
       name: parsed.data.name,
       restroomId: restroom.id,
@@ -69,49 +78,119 @@ export default async function AdminScreensPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="מסכים וקישורים" description="ניהול מסכי Kiosk וקישורי QR" />
+      <PageHeader
+        title="מסכים וקישורים"
+        description={`${screens.length} מסך${screens.length === 1 ? "" : "ים"} מוגדר${screens.length === 1 ? "" : "ים"} בארגון`}
+      />
+
       {canEdit && (
-        <Card className="bg-brand-soft border-border">
-          <CardHeader><CardTitle>צור מסך חדש</CardTitle></CardHeader>
+        <Card className="border-brand-water/20 bg-brand-soft/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TabletSmartphone className="size-4 text-brand" aria-hidden="true" />
+              הוספת מסך חדש
+            </CardTitle>
+            <CardDescription>
+              כל מסך מקבל קישור Kiosk וקישור QR ייחודיים.
+            </CardDescription>
+          </CardHeader>
           <CardContent>
-            <form action={handleCreate} className="flex flex-col gap-3 max-w-sm">
-              <select name="restroomId" required className="border p-2 rounded">
-                <option value="">בחר אזור שירותים</option>
-                {restrooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
-              <input name="name" placeholder="שם המסך" required className="border p-2 rounded" />
-              <Button type="submit" className="bg-brand text-white">צור מסך</Button>
+            <form action={handleCreate} className="grid gap-4 sm:grid-cols-2 items-end max-w-xl">
+              <div className="sm:col-span-2">
+                <Select name="restroomId" label="אזור שירותים" required>
+                  <option value="">בחר אזור שירותים...</option>
+                  {restrooms.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <Input
+                name="name"
+                label="שם המסך"
+                placeholder='לדוגמה: כניסה ראשית'
+                required
+              />
+              <div className="flex items-end">
+                <Button type="submit" variant="primary" size="md" fullWidth>
+                  צור מסך
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
       )}
-      <div className="grid gap-4 xl:grid-cols-2">
-        {screens.map(s => {
-          const qrUrl = `${baseUrl}/q/${s.qrToken}`;
-          const kioskUrl = `${baseUrl}/k/${s.publicToken}`;
-          return (
-            <Card key={s.id}>
-              <CardHeader>
-                <CardTitle>{s.name} {!s.isActive && "(לא פעיל)"}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <QrCard qrUrl={qrUrl} kioskUrl={kioskUrl} publicToken={s.publicToken} qrToken={s.qrToken} />
-                
-                {canEdit && s.isActive && (
-                  <div className="flex gap-2 mt-4">
-                    <form action={handleDeactivate.bind(null, s.id)}><Button variant="danger" size="sm">השבת מסך</Button></form>
-                    <form action={handleRegenerate.bind(null, s.id)}>
-                      <Button variant="secondary" size="sm" onClick={(e) => { if(!confirm("האם אתה בטוח שברצונך לאפס את הקישורים? הקישורים הישנים יפסיקו לעבוד.")) e.preventDefault(); }}>
-                        Regenerate Tokens
-                      </Button>
-                    </form>
+
+      {screens.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center text-muted text-sm">
+            <TabletSmartphone className="mx-auto mb-3 size-10 text-border" aria-hidden="true" />
+            <p className="font-medium text-foreground">אין מסכים מוגדרים</p>
+            <p className="mt-1">הוסף מסך חדש כדי לקבל קישורי Kiosk ו-QR.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 xl:grid-cols-2">
+          {screens.map((s) => {
+            const qrUrl = `${baseUrl}/q/${s.qrToken}`;
+            const kioskUrl = `${baseUrl}/k/${s.publicToken}`;
+            return (
+              <Card key={s.id} className={!s.isActive ? "opacity-60" : undefined}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                        <TabletSmartphone className="size-4" aria-hidden="true" />
+                      </span>
+                      <CardTitle className="text-base truncate">
+                        {s.name}
+                      </CardTitle>
+                    </div>
+                    <Badge variant={s.isActive ? "secondary" : "outline"} className="shrink-0">
+                      {s.isActive ? "פעיל" : "לא פעיל"}
+                    </Badge>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <QrCard
+                    qrUrl={qrUrl}
+                    kioskUrl={kioskUrl}
+                    publicToken={s.publicToken}
+                    qrToken={s.qrToken}
+                  />
+
+                  {canEdit && s.isActive && (
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+                      <form action={handleDeactivate.bind(null, s.id)}>
+                        <Button variant="danger" size="sm">
+                          השבת מסך
+                        </Button>
+                      </form>
+                      <form action={handleRegenerate.bind(null, s.id)}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            if (
+                              !confirm(
+                                "האם לאפס את הקישורים? הקישורים הישנים יפסיקו לעבוד.",
+                              )
+                            )
+                              e.preventDefault();
+                          }}
+                        >
+                          איפוס קישורים
+                        </Button>
+                      </form>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

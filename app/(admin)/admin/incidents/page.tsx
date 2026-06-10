@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
 import { canResolveIncident, canViewIncidents } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
@@ -67,7 +69,7 @@ function NotificationStatusBadge({ logs }: { logs: NotificationLog[] }) {
   if (hasMockSent) {
     return (
       <Badge className="bg-sky-50 text-sky-700 border border-sky-200 shadow-sm font-semibold text-xs">
-        נשלח (Mock)
+        נשלח (סימולציה)
       </Badge>
     );
   }
@@ -162,92 +164,54 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
         action="/admin/incidents"
         className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 items-end bg-white/70 border border-border p-4 rounded-xl shadow-soft"
       >
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">חיפוש</label>
-          <input
-            name="search"
-            placeholder="חיפוש חופשי..."
-            defaultValue={params.search || ""}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          />
-        </div>
+        <Input
+          name="search"
+          label="חיפוש"
+          placeholder="חיפוש חופשי..."
+          defaultValue={params.search || ""}
+        />
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">סטטוס</label>
-          <select
-            name="status"
-            defaultValue={filterStatus}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          >
-            <option value="">הכל</option>
-            <option value="open">פתוח</option>
-            <option value="acknowledged">התקבל</option>
-            <option value="in_progress">בטיפול</option>
-            <option value="resolved">טופל</option>
-            <option value="dismissed">נדחה</option>
-          </select>
-        </div>
+        <Select name="status" label="סטטוס" defaultValue={filterStatus}>
+          <option value="">הכל</option>
+          <option value="open">פתוח</option>
+          <option value="acknowledged">התקבל</option>
+          <option value="in_progress">בטיפול</option>
+          <option value="resolved">טופל</option>
+          <option value="dismissed">נדחה</option>
+        </Select>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">סניף</label>
-          <select
-            name="branchId"
-            defaultValue={filterBranch}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          >
-            <option value="">הכל</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select name="branchId" label="סניף" defaultValue={filterBranch}>
+          <option value="">הכל</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </Select>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">אזור שירותים</label>
-          <select
-            name="restroomId"
-            defaultValue={filterRestroom}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          >
-            <option value="">הכל</option>
-            {restrooms.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name} ({branchNames.get(r.branchId)})
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select name="restroomId" label="אזור שירותים" defaultValue={filterRestroom}>
+          <option value="">הכל</option>
+          {restrooms.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name} ({branchNames.get(r.branchId)})
+            </option>
+          ))}
+        </Select>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">סוג תקלה</label>
-          <select
-            name="issueKey"
-            defaultValue={filterIssue}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          >
-            <option value="">הכל</option>
-            {issueTypes.map((i) => (
-              <option key={i.key} value={i.key}>
-                {i.labelHe}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select name="issueKey" label="סוג תקלה" defaultValue={filterIssue}>
+          <option value="">הכל</option>
+          {issueTypes.map((i) => (
+            <option key={i.key} value={i.key}>
+              {i.labelHe}
+            </option>
+          ))}
+        </Select>
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-brand-deep pr-1">מקור</label>
-          <select
-            name="source"
-            defaultValue={filterSource}
-            className="w-full border border-border p-2 rounded-lg text-sm bg-white focus:outline-none focus:border-brand"
-          >
-            <option value="">הכל</option>
-            <option value="kiosk">טאבלט (Kiosk)</option>
-            <option value="qr">סריקת QR</option>
-          </select>
-        </div>
+        <Select name="source" label="מקור" defaultValue={filterSource}>
+          <option value="">הכל</option>
+          <option value="kiosk">טאבלט (Kiosk)</option>
+          <option value="qr">סריקת QR</option>
+        </Select>
 
         <div className="sm:col-span-2 md:col-span-3 xl:col-span-6 flex justify-end gap-2 mt-2">
           <Link
@@ -318,7 +282,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
                   <div className="flex items-center justify-between md:justify-end gap-4 shrink-0">
                     <div className="text-left text-xs text-muted font-mono hidden sm:block">
                       <p>{formatDateTime(incident.createdAt)}</p>
-                      <p className="text-[10px]">ID: {incident.id}</p>
+                      <p className="text-[10px]">מזהה: {incident.id}</p>
                     </div>
                     <Link
                       href={`/admin/incidents/${incident.id}`}

@@ -127,9 +127,9 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                 {slaBadge.label}
               </Badge>
             </div>
-            <p className="text-sm text-muted">
-              מזהה דיווח: <span className="font-mono">{incident.id}</span>
-            </p>
+              <p className="text-xs text-muted">
+                מזהה: <span className="font-mono text-[11px]">{incident.id}</span>
+              </p>
           </div>
         </div>
       </div>
@@ -161,7 +161,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               <div className="grid grid-cols-3 py-3">
                 <span className="font-bold text-muted">מקור הדיווח</span>
                 <span className="col-span-2 text-foreground font-semibold">
-                  {incident.source === "kiosk" ? "טאבלט ציבורי (Kiosk)" : "סריקת QR בנייד לקוח"}
+                  {incident.source === "kiosk" ? "טאבלט ציבורי" : "סריקת QR בנייד"}
                 </span>
               </div>
               {incident.customerNote && (
@@ -180,12 +180,12 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Clock className="size-5 text-brand" />
-                מדדי SLA וזמני טיפול
+                מדדי ביצוע וזמני טיפול
               </CardTitle>
             </CardHeader>
             <CardContent className="divide-y divide-border/60 text-sm">
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">זמן דיווח (Opened)</span>
+                <span className="font-bold text-muted">זמן פתיחת דיווח</span>
                 <span className="col-span-2 font-semibold">
                   {formatDateTime(incident.openedAt)}
                   <span className="text-xs text-muted mr-2">(זמן שעבר: {getElapsedTimeLabel(incident.openedAt)})</span>
@@ -193,7 +193,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               </div>
               
               <div className="grid grid-cols-3 py-3">
-                <span className="font-bold text-muted">אישור קבלה (Ack)</span>
+                <span className="font-bold text-muted">אישור קבלה</span>
                 <span className="col-span-2">
                   {incident.acknowledgedAt ? (
                     <span className="font-semibold text-foreground">
@@ -261,7 +261,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Calendar className="size-5 text-brand" />
-                ציר זמן תפעולי (Timeline)
+                ציר זמן תפעולי
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -281,7 +281,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                         </div>
                         <p className="text-xs text-muted flex items-center gap-1">
                           <User className="size-3" />
-                          מבצע: {log.actorUserId ? (userMap.get(log.actorUserId) ?? log.actorUserId) : "מדווח קצה (ציבורי)"}
+                          מבצע: {log.actorUserId ? (userMap.get(log.actorUserId) ?? log.actorUserId) : "מדווח ציבורי"}
                         </p>
                         {log.metadata && Object.keys(log.metadata).length > 0 && (
                           <div className="text-xs bg-surface-muted p-2 rounded border text-muted">
@@ -305,7 +305,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
             <CardHeader className="border-b border-border bg-white/40">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Shield className="size-5 text-brand" />
-                לוג התראות מייל
+                היסטוריית התראות
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -323,8 +323,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                           נמען: {log.recipientId ? (recipientMap.get(log.recipientId) ?? log.recipientId) : "אין (התראת כללית)"}
                         </p>
                         <p className="text-xs text-muted">
-                          ספק: <span className="font-mono">{log.provider}</span> · 
-                          ערוץ: <span className="font-mono">{log.channel}</span> · 
+                          שיטת שליחה: <span className="font-semibold text-foreground">{log.channel === "email" ? "מייל" : log.channel}</span> · 
                           זמן: <span>{formatDateTime(log.createdAt)}</span>
                         </p>
                         {log.errorMessage && (
@@ -341,10 +340,10 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                         log.status === "no_recipients" ? "bg-slate-100 text-slate-700 border" :
                         "bg-amber-50 text-amber-700 border"
                       }>
-                        {log.status === "mock_sent" ? "נשלח מדומה (Mock)" :
-                         log.status === "sent" ? "נשלח" :
-                         log.status === "failed" ? "נכשל" :
-                         log.status === "no_recipients" ? "אין נמענים" :
+                        {log.status === "mock_sent" ? "סימולציה" :
+                         log.status === "sent" ? "נשלחה" :
+                         log.status === "failed" ? "נכשלה" :
+                         log.status === "no_recipients" ? "ללא נמענים" :
                          log.status}
                       </Badge>
                     </div>
@@ -379,11 +378,11 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               <CardTitle className="text-lg">מדריך שלבים תפעוליים</CardTitle>
             </CardHeader>
             <CardContent className="text-xs text-muted leading-6 space-y-2">
-              <p><strong className="text-foreground">פתוח (Open)</strong>: דיווח חדש מהלקוח הממתין להתייחסות.</p>
-              <p><strong className="text-foreground">התקבל (Acknowledged)</strong>: חבר צוות אישר שהוא ראה את התקלה ומתכוון לטפל.</p>
-              <p><strong className="text-foreground">בטיפול (In Progress)</strong>: העבודה בעיצומה.</p>
-              <p><strong className="text-foreground">טופל (Resolved)</strong>: התקלה תוקנה או הדירוג נסגר בהצלחה.</p>
-              <p><strong className="text-foreground">נדחה (Dismissed)</strong>: דיווח כפול, ספאם או דיווח שלא דורש התערבות.</p>
+              <p><strong className="text-foreground">פתוח</strong> — דיווח חדש מהלקוח שממתין להתייחסות.</p>
+              <p><strong className="text-foreground">התקבל</strong> — חבר צוות אישר שראה את התקלה ומתכוון לטפל.</p>
+              <p><strong className="text-foreground">בטיפול</strong> — העבודה בעיצומה.</p>
+              <p><strong className="text-foreground">טופל</strong> — התקלה תוקנה והדיווח נסגר בהצלחה.</p>
+              <p><strong className="text-foreground">נדחה</strong> — דיווח כפול, שגוי, או שאינו דורש התערבות.</p>
             </CardContent>
           </Card>
         </div>

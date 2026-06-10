@@ -142,16 +142,16 @@ export default async function AdminDashboardPage() {
           {
             label: "דיווחים פתוחים עכשיו",
             value: metrics.openNow,
-            description: "סה\"כ דיווחים שממתינים לפתרון.",
+            description: "סה\"כ דיווחים שממתינים לטיפול.",
             icon: BellRing,
-            color: "bg-blue-50 text-blue-700 border-blue-200",
+            color: "bg-brand-soft text-brand border-brand/20",
           },
           {
             label: "דיווחים חדשים היום",
             value: metrics.openedToday,
             description: "נוצרו ב-24 השעות האחרונות.",
             icon: Activity,
-            color: "bg-brand-soft text-brand-deep border-brand-water/20",
+            color: "bg-blue-50 text-blue-700 border-blue-200",
           },
           {
             label: "דיווחים ב-7 ימים אחרונים",
@@ -161,11 +161,11 @@ export default async function AdminDashboardPage() {
             color: "bg-slate-50 text-slate-700 border-slate-200",
           },
           {
-            label: "אחוז סגירת דיווחים (היום)",
+            label: "אחוז סגירת דיווחים",
             value: `${metrics.resolutionRateTodayPercentage}%`,
             description: "מתוך דיווחים שנפתחו היום.",
             icon: Clock,
-            color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+            color: "bg-brand-soft text-brand-deep border-brand/20",
           },
           {
             label: "זמן תגובה ממוצע (היום)",
@@ -179,19 +179,19 @@ export default async function AdminDashboardPage() {
             value: metrics.avgResolutionTimeTodayMinutes !== null ? `${metrics.avgResolutionTimeTodayMinutes} דק'` : "אין נתונים",
             description: "זמן ממוצע מקבלה לפתרון.",
             icon: Clock,
-            color: "bg-teal-50 text-teal-700 border-teal-200",
+            color: "bg-slate-50 text-slate-700 border-slate-200",
           },
           {
-            label: "דירוג שירותים ממוצע (היום)",
+            label: "דירוג שירותים ממוצע",
             value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} / 5` : "אין דירוגים",
-            description: "ממוצע דירוגי שביעות רצון.",
+            description: "ממוצע שביעות רצון לקוחות.",
             icon: Star,
-            color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+            color: "bg-blue-50 text-blue-700 border-blue-200",
           },
           {
-            label: "סוג תקלה נפוץ (היום)",
+            label: "סוג תקלה נפוץ היום",
             value: metrics.topIssueKeyToday ? (issueTypeLabels.get(metrics.topIssueKeyToday as IssueTypeKey) || metrics.topIssueKeyToday) : "אין דיווחים",
-            description: "תקלה שדווחה הכי הרבה.",
+            description: "תקלה שדווחה הכי הרבה היום.",
             icon: ShieldAlert,
             color: "bg-red-50 text-red-700 border-red-200",
           },
@@ -223,7 +223,7 @@ export default async function AdminDashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-bold">דורש טיפול עכשיו</CardTitle>
-                  <CardDescription>דיווחים פעילים (Open, Acknowledged, In Progress) ממוינים לפי עדיפות.</CardDescription>
+                  <CardDescription>דיווחים פעילים לפי סדר עדיפות — פתוח, התקבל, בטיפול.</CardDescription>
                 </div>
                 <Badge variant="outline" className="font-bold">{actionableIncidents.length}</Badge>
               </div>
@@ -388,10 +388,10 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent className="pt-6 space-y-3">
               {[
-                { label: "נשלח מדומה (Mock)", value: notifStats.mock_sent, color: "bg-sky-100 text-sky-700" },
-                { label: "נשלח בפועל", value: notifStats.sent, color: "bg-emerald-100 text-emerald-700" },
-                { label: "נכשל", value: notifStats.failed, color: "bg-red-100 text-red-700" },
-                { label: "אין נמענים", value: notifStats.no_recipients, color: "bg-slate-200 text-slate-700" },
+                { label: "נשלחה (סימולציה)", value: notifStats.mock_sent, color: "bg-blue-100 text-blue-700" },
+                { label: "נשלחה בפועל", value: notifStats.sent, color: "bg-brand-soft text-brand" },
+                { label: "נכשלה", value: notifStats.failed, color: "bg-red-100 text-red-700" },
+                { label: "ללא נמענים", value: notifStats.no_recipients, color: "bg-slate-200 text-slate-700" },
               ].map(({ label, value, color }) => (
                 <div key={label} className="flex items-center justify-between text-sm">
                   <span className="text-muted">{label}</span>

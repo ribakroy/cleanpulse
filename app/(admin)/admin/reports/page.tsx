@@ -5,6 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { canViewReports } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
@@ -224,43 +226,24 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               />
             </div>
 
-            {/* End Date */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="endDate" className="text-xs font-bold text-muted pr-1">עד תאריך פתיחה</label>
-              <input
-                id="endDate"
-                name="endDate"
-                type="date"
-                defaultValue={filterEndDate}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              />
-            </div>
+            <Input
+              id="endDate"
+              name="endDate"
+              type="date"
+              label="עד תאריך פתיחה"
+              defaultValue={filterEndDate}
+            />
 
-            {/* Branch */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="branchId" className="text-xs font-bold text-muted pr-1">סניף</label>
-              <select
-                id="branchId"
-                name="branchId"
-                defaultValue={filterBranch}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              >
+              {/* Branch */}
+              <Select id="branchId" name="branchId" label="סניף" defaultValue={filterBranch}>
                 <option value="">כל הסניפים</option>
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>{b.name}</option>
                 ))}
-              </select>
-            </div>
+              </Select>
 
-            {/* Restroom */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="restroomId" className="text-xs font-bold text-muted pr-1">אזור שירותים</label>
-              <select
-                id="restroomId"
-                name="restroomId"
-                defaultValue={filterRestroom}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              >
+              {/* Restroom */}
+              <Select id="restroomId" name="restroomId" label="אזור שירותים" defaultValue={filterRestroom}>
                 <option value="">כל האזורים</option>
                 {restrooms.map((r) => {
                   const branchName = branchNames.get(r.branchId) || "";
@@ -270,78 +253,53 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                     </option>
                   );
                 })}
-              </select>
-            </div>
+              </Select>
 
-            {/* Screen */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="screenId" className="text-xs font-bold text-muted pr-1">מסך</label>
-              <select
-                id="screenId"
-                name="screenId"
-                defaultValue={filterScreen}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              >
+              {/* Screen */}
+              <Select id="screenId" name="screenId" label="מסך" defaultValue={filterScreen}>
                 <option value="">כל המסכים</option>
                 {screens.map((s) => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
-              </select>
-            </div>
+              </Select>
 
-            {/* Issue Type */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="issueKey" className="text-xs font-bold text-muted pr-1">סוג תקלה</label>
-              <select
-                id="issueKey"
-                name="issueKey"
-                defaultValue={filterIssue}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              >
+              {/* Issue Type */}
+              <Select id="issueKey" name="issueKey" label="סוג תקלה" defaultValue={filterIssue}>
                 <option value="">כל התקלות</option>
                 {Object.entries(issueTypeLabels).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
-              </select>
-            </div>
+              </Select>
 
-            {/* Status */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="status" className="text-xs font-bold text-muted pr-1">סטטוס</label>
-              <select
-                id="status"
-                name="status"
-                defaultValue={filterStatus}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              >
+              {/* Status */}
+              <Select id="status" name="status" label="סטטוס" defaultValue={filterStatus}>
                 <option value="">כל הסטטוסים</option>
                 <option value="open">פתוח</option>
                 <option value="acknowledged">התקבל</option>
                 <option value="in_progress">בטיפול</option>
                 <option value="resolved">טופל</option>
                 <option value="dismissed">נדחה</option>
-              </select>
-            </div>
+              </Select>
 
-            {/* Actions */}
-            <div className="flex gap-2 items-end">
-              <button
-                type="submit"
-                className="flex-1 bg-brand text-white hover:bg-brand-deep p-2 rounded-lg text-xs font-bold shadow-soft transition-colors cursor-pointer"
-              >
-                סנן תוצאות
-              </button>
-              <Link
-                href="/admin/reports"
-                className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 p-2 rounded-lg text-xs text-center font-bold transition-colors"
-              >
-                איפוס
-              </Link>
-            </div>
+              {/* Actions */}
+              <div className="flex gap-2 items-end">
+                <button
+                  type="submit"
+                  className={buttonVariants({ variant: "primary", size: "sm" }) + " flex-1"}
+                >
+                  סנן תוצאות
+                </button>
+                <Link
+                  href="/admin/reports"
+                  className={buttonVariants({ variant: "ghost", size: "sm" })}
+                >
+                  איפוס
+                </Link>
+              </div>
 
-          </form>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
 
       {/* KPI Cards Grid */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
