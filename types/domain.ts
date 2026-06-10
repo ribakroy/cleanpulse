@@ -23,7 +23,8 @@ export type IssueTypeKey =
   | "bad_smell"
   | "trash_full"
   | "toilet_fault"
-  | "sink_fault";
+  | "sink_fault"
+  | "dirty_floor";
 
 export type IssueTypeSeed = {
   id: string;

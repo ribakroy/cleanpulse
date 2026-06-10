@@ -13,7 +13,8 @@ import {
   Wrench,
   Loader2,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Footprints
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { createPublicIncidentAction } from "@/app/actions/kiosk";
@@ -27,6 +28,7 @@ const iconMap: Record<string, LucideIcon> = {
   trash_full: Trash2,
   toilet_fault: Wrench,
   sink_fault: AlertCircle,
+  dirty_floor: Footprints,
 };
 
 type IssueType = {
@@ -56,6 +58,7 @@ export function PublicReportForm({
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
   
   // Client-side rate limit tracking to disable specific buttons for 10s after click
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
@@ -99,16 +102,18 @@ export function PublicReportForm({
 
       if (result.success) {
         setStatus("success");
-        // Automatically reset to idle after 3 seconds
+        // Automatically reset to idle and reset rating after 3 seconds
         setTimeout(() => {
           setStatus("idle");
+          setSelectedRating(null);
         }, 3000);
       } else {
         setStatus("error");
         setErrorMessage(result.error || "שגיאה לא ידועה בשליחת הדיווח");
-        // Reset to idle after 5 seconds on error
+        // Reset to idle and reset rating after 5 seconds on error
         setTimeout(() => {
           setStatus("idle");
+          setSelectedRating(null);
         }, 5000);
       }
     });
@@ -121,6 +126,9 @@ export function PublicReportForm({
     setStatus("idle");
     setErrorMessage(null);
 
+    // Transition state immediately to show issues step
+    setSelectedRating(ratingValue);
+
     setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
 
     startTransition(async () => {
@@ -130,19 +138,19 @@ export function PublicReportForm({
         rating: ratingValue as 1 | 2 | 3 | 4 | 5,
       });
 
-      if (result.success) {
-        setStatus("success");
-        setTimeout(() => {
-          setStatus("idle");
-        }, 3000);
-      } else {
-        setStatus("error");
-        setErrorMessage(result.error || "שגיאה לא ידועה בשליחת הדירוג");
-        setTimeout(() => {
-          setStatus("idle");
-        }, 5000);
+      if (!result.success) {
+        console.error("Failed to submit rating:", result.error);
       }
     });
+  };
+
+  const handleCompleteWithoutIssue = () => {
+    setStatus("success");
+    // Reset back to stars view after 3 seconds
+    setTimeout(() => {
+      setStatus("idle");
+      setSelectedRating(null);
+    }, 3000);
   };
 
   const isTablet = source === "kiosk";
@@ -192,7 +200,10 @@ export function PublicReportForm({
           <p className="text-lg text-red-600 font-medium max-w-sm">{errorMessage}</p>
         </div>
         <button
-          onClick={() => setStatus("idle")}
+          onClick={() => {
+            setStatus("idle");
+            setSelectedRating(null);
+          }}
           className="w-full py-4 bg-brand text-white font-bold rounded-2xl hover:bg-brand-deep shadow-[0_8px_20px_rgba(30,136,229,0.25)] hover:shadow-[0_12px_24px_rgba(30,136,229,0.35)] active:scale-[0.98] transition-all cursor-pointer"
         >
           חזרה למסך הדיווח
@@ -208,11 +219,13 @@ export function PublicReportForm({
         {/* Glowing visual element at top */}
         <div className="w-12 h-1.5 bg-brand/30 rounded-full mb-1 animate-pulse" />
         
-        <h1 className="text-4xl font-black tracking-tight text-brand-deep sm:text-5xl font-heading leading-tight">
-          איך מצב השירותים?
+        <h1 className="text-4xl font-black tracking-tight text-brand-deep sm:text-5xl font-heading leading-tight transition-all duration-300">
+          {selectedRating === null ? "איך מצב השירותים?" : "תודה רבה על הדירוג!"}
         </h1>
-        <p className="text-lg text-muted max-w-lg leading-relaxed">
-          אנא סמנו מה לא תקין או דרגו את החוויה הכללית כדי שנוכל לשפר.
+        <p className="text-lg text-muted max-w-lg leading-relaxed transition-all duration-300">
+          {selectedRating === null 
+            ? "אנא דרגו את החוויה הכללית בכוכבים כדי שנוכל לשפר." 
+            : "האם יש בעיה ספציפית שתרצו לדווח עליה?"}
         </p>
         
         {/* Floating location card (glass-premium) */}
@@ -230,155 +243,206 @@ export function PublicReportForm({
         </div>
       </div>
 
-      {/* Main reporting grid */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-brand-deep pr-1 flex items-center gap-2">
-          <span>בחר/י מה לא תקין:</span>
-        </h2>
-        <div className={cn(
-          "grid gap-4",
-          isTablet ? "grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-2"
-        )}>
-          {issueTypes.map((issue) => {
-            const Icon = iconMap[issue.key] || AlertCircle;
-            const cooldownKey = `issue_${issue.key}`;
-            const isOnCooldown = !!cooldowns[cooldownKey];
+      {selectedRating === null ? (
+        /* Step 1: Star Rating Section */
+        <div className="glass-card rounded-[2rem] border border-border p-8 shadow-soft space-y-6 animate-in fade-in duration-300 max-w-lg mx-auto">
+          <div className="text-center space-y-1">
+            <h3 className="text-xl font-bold text-brand-deep font-heading">דרגו אותנו בכוכבים</h3>
+            <p className="text-sm text-muted">הכל בסדר? לחצו על הדירוג המתאים.</p>
+          </div>
 
-            return (
-              <button
-                key={issue.key}
-                type="button"
-                disabled={isPending || isOnCooldown}
-                onClick={() => {
-                  // Haptic vibration feedback
-                  if (typeof window !== "undefined" && window.navigator.vibrate) {
-                    window.navigator.vibrate(40);
-                  }
-                  handleReportIssue(issue.key);
-                }}
-                className={cn(
-                  "relative flex flex-col items-center justify-between p-5 text-center rounded-2xl select-none transition-all duration-300",
-                  isTablet ? "min-h-[160px]" : "min-h-[135px]",
-                  isOnCooldown 
-                    ? "border-emerald-200 bg-emerald-50/50 text-emerald-800 shadow-[0_2px_10px_rgba(16,185,129,0.05)] cursor-not-allowed" 
-                    : "glass-card glass-card-hover border-border cursor-pointer active:scale-95"
-                )}
-              >
-                {/* Icon Container */}
-                <div className={cn(
-                  "flex size-14 items-center justify-center rounded-2xl transition-all duration-300 mb-2",
-                  isOnCooldown 
-                    ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]" 
-                    : "bg-brand-soft text-brand group-hover:scale-110"
-                )}>
-                  {isPending && !isOnCooldown ? (
-                    <Loader2 className="size-6 animate-spin" />
-                  ) : isOnCooldown ? (
-                    <CheckCircle2 className="size-7 stroke-[2.5]" />
-                  ) : (
-                    <Icon className="size-7 stroke-[2]" aria-hidden="true" />
-                  )}
-                </div>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center justify-center gap-2 py-2">
+              {Array.from({ length: 5 }, (_, index) => index + 1).map((value) => {
+                const cooldownKey = `rating_${value}`;
+                const isOnCooldown = !!cooldowns[cooldownKey];
                 
-                <span className={cn(
-                  "text-[16px] font-bold tracking-tight mb-1",
-                  isOnCooldown ? "text-emerald-900" : "text-foreground"
-                )}>
-                  {issue.labelHe}
-                </span>
+                const isSelected = selectedRating === value;
+                const isHighlighted = (hoveredRating !== null ? value <= hoveredRating : isSelected);
 
-                {isOnCooldown ? (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full mt-1">
-                    הדיווח נשלח!
-                  </span>
-                ) : (
-                  <span className="text-[11px] text-brand/80 font-medium opacity-0 hover:opacity-100 transition-opacity">
-                    דווח
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Star rating section */}
-      <div className="glass-card rounded-[2rem] border border-border p-6 shadow-soft space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="space-y-1">
-            <h3 className="text-xl font-bold text-brand-deep font-heading">דירוג כללי של השירותים</h3>
-            <p className="text-sm text-muted">הכל בסדר? דרגו אותנו בכוכבים.</p>
-          </div>
-          <span className="w-fit rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 border border-emerald-500/20">
-            מהיר ללא טופס
-          </span>
-        </div>
-
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center justify-center gap-1 py-1">
-            {Array.from({ length: 5 }, (_, index) => index + 1).map((value) => {
-              const cooldownKey = `rating_${value}`;
-              const isOnCooldown = !!cooldowns[cooldownKey];
-              
-              // Highlight based on hover or selection/active cooldown state
-              const isSelected = isOnCooldown;
-              const isHighlighted = (hoveredRating !== null ? value <= hoveredRating : isSelected);
-
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  disabled={isPending || isOnCooldown}
-                  onMouseEnter={() => !isOnCooldown && setHoveredRating(value)}
-                  onMouseLeave={() => setHoveredRating(null)}
-                  onClick={() => {
-                    if (typeof window !== "undefined" && window.navigator.vibrate) {
-                      window.navigator.vibrate(30);
-                    }
-                    handleRate(value);
-                  }}
-                  className={cn(
-                    "p-2.5 rounded-full hover:bg-amber-50/50 active:scale-90 transition-transform disabled:cursor-not-allowed cursor-pointer",
-                    isOnCooldown ? "text-amber-500" : "text-brand"
-                  )}
-                  aria-label={`דירוג ${value} מתוך 5 כוכבים`}
-                >
-                  <Star
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={isPending || isOnCooldown}
+                    onMouseEnter={() => !isOnCooldown && setHoveredRating(value)}
+                    onMouseLeave={() => setHoveredRating(null)}
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.navigator.vibrate) {
+                        window.navigator.vibrate(30);
+                      }
+                      handleRate(value);
+                    }}
                     className={cn(
-                      "size-11 transition-all duration-200",
-                      isHighlighted 
-                        ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)] scale-110" 
-                        : "text-muted/30 fill-transparent"
+                      "p-3 rounded-full hover:bg-amber-50/70 active:scale-90 transition-transform disabled:cursor-not-allowed cursor-pointer",
+                      isOnCooldown ? "text-amber-500" : "text-brand"
                     )}
-                    aria-hidden="true"
-                  />
-                </button>
-              );
-            })}
-          </div>
-          
-          {/* Dynamic feedback rating text */}
-          <div className="h-6 flex items-center justify-center">
-            {hoveredRating !== null ? (
-              <span className="text-sm font-bold text-amber-600 animate-in fade-in duration-200">
-                {hoveredRating === 1 && "גרוע מאוד 😞"}
-                {hoveredRating === 2 && "טעון שיפור 😕"}
-                {hoveredRating === 3 && "סביר בהחלט 🙂"}
-                {hoveredRating === 4 && "טוב מאוד! 😊"}
-                {hoveredRating === 5 && "מעולה! הכל נקי ובסדר הדבר 🤩"}
-              </span>
-            ) : Object.keys(cooldowns).some(k => k.startsWith("rating_")) ? (
-              <span className="text-sm font-bold text-emerald-600 animate-pulse">
-                תודה רבה על הדירוג!
-              </span>
-            ) : (
-              <span className="text-xs text-muted/60">
-                לחצו על הכוכב המתאים לדירוג
-              </span>
-            )}
+                    aria-label={`דירוג ${value} מתוך 5 כוכבים`}
+                  >
+                    <Star
+                      className={cn(
+                        "size-14 transition-all duration-200",
+                        isHighlighted 
+                          ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.5)] scale-110" 
+                          : "text-muted/30 fill-transparent"
+                      )}
+                      aria-hidden="true"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Dynamic feedback rating text */}
+            <div className="h-6 flex items-center justify-center">
+              {hoveredRating !== null && (
+                <span className="text-sm font-bold text-amber-600 animate-in fade-in duration-200">
+                  {hoveredRating === 1 && "גרוע מאוד 😞"}
+                  {hoveredRating === 2 && "טעון שיפור 😕"}
+                  {hoveredRating === 3 && "סביר בהחלט 🙂"}
+                  {hoveredRating === 4 && "טוב מאוד! 😊"}
+                  {hoveredRating === 5 && "מעולה! הכל נקי ובסדר גמור 🤩"}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Step 2: Selected Rating Header (Interactive) & Issue Grid */
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom duration-300">
+          
+          {/* Interactive Rating Indicator */}
+          <div className="flex flex-col items-center justify-center gap-2 bg-white/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-border shadow-soft max-w-xs mx-auto">
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: 5 }, (_, index) => index + 1).map((value) => {
+                const isHighlighted = value <= selectedRating;
+
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== "undefined" && window.navigator.vibrate) {
+                        window.navigator.vibrate(30);
+                      }
+                      handleRate(value);
+                    }}
+                    className="p-1 hover:scale-110 active:scale-90 transition-transform cursor-pointer"
+                  >
+                    <Star
+                      className={cn(
+                        "size-7 transition-all duration-200",
+                        isHighlighted 
+                          ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_6px_rgba(245,158,11,0.4)]" 
+                          : "text-muted/20 fill-transparent"
+                      )}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+            <span className="text-xs font-bold text-amber-700">
+              {selectedRating === 1 && "גרוע מאוד 😞 (לחץ לשינוי)"}
+              {selectedRating === 2 && "טעון שיפור 😕 (לחץ לשינוי)"}
+              {selectedRating === 3 && "סביר בהחלט 🙂 (לחץ לשינוי)"}
+              {selectedRating === 4 && "טוב מאוד! 😊 (לחץ לשינוי)"}
+              {selectedRating === 5 && "מעולה! 🤩 (לחץ לשינוי)"}
+            </span>
+          </div>
+
+          {/* Issue grid */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-brand-deep pr-1 text-center">
+              סמנו מה לא תקין (לבחירת ריבוע אחד):
+            </h2>
+            <div className={cn(
+              "grid gap-4",
+              isTablet ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"
+            )}>
+              {issueTypes.map((issue) => {
+                const Icon = iconMap[issue.key] || AlertCircle;
+                const cooldownKey = `issue_${issue.key}`;
+                const isOnCooldown = !!cooldowns[cooldownKey];
+
+                return (
+                  <button
+                    key={issue.key}
+                    type="button"
+                    disabled={isPending || isOnCooldown}
+                    onClick={() => {
+                      // Haptic vibration feedback
+                      if (typeof window !== "undefined" && window.navigator.vibrate) {
+                        window.navigator.vibrate(40);
+                      }
+                      handleReportIssue(issue.key);
+                    }}
+                    className={cn(
+                      "relative flex flex-col items-center justify-between p-5 text-center rounded-2xl select-none transition-all duration-300",
+                      isTablet ? "min-h-[160px]" : "min-h-[135px]",
+                      isOnCooldown 
+                        ? "border-emerald-200 bg-emerald-50/50 text-emerald-800 shadow-[0_2px_10px_rgba(16,185,129,0.05)] cursor-not-allowed" 
+                        : "glass-card glass-card-hover border-border cursor-pointer active:scale-95"
+                    )}
+                  >
+                    {/* Icon Container */}
+                    <div className={cn(
+                      "flex size-14 items-center justify-center rounded-2xl transition-all duration-300 mb-2",
+                      isOnCooldown 
+                        ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]" 
+                        : "bg-brand-soft text-brand group-hover:scale-110"
+                    )}>
+                      {isPending && !isOnCooldown ? (
+                        <Loader2 className="size-6 animate-spin" />
+                      ) : isOnCooldown ? (
+                        <CheckCircle2 className="size-7 stroke-[2.5]" />
+                      ) : (
+                        <Icon className="size-7 stroke-[2]" aria-hidden="true" />
+                      )}
+                    </div>
+                    
+                    <span className={cn(
+                      "text-[16px] font-bold tracking-tight mb-1",
+                      isOnCooldown ? "text-emerald-900" : "text-foreground"
+                    )}>
+                      {issue.labelHe}
+                    </span>
+
+                    {isOnCooldown ? (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full mt-1">
+                        הדיווח נשלח!
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-brand/80 font-medium opacity-0 hover:opacity-100 transition-opacity">
+                        דווח
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Complete Without Issue (Skip/Finish Button) */}
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={handleCompleteWithoutIssue}
+              className={cn(
+                "w-full sm:w-auto px-8 py-4 font-bold rounded-2xl shadow-soft hover:shadow-md active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 text-md",
+                selectedRating >= 4
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-[0_8px_20px_rgba(16,185,129,0.25)]"
+                  : "bg-white hover:bg-neutral-50 text-foreground border border-border"
+              )}
+            >
+              {selectedRating >= 4 ? (
+                <span>הכל מעולה, תודה! ✨</span>
+              ) : (
+                <span>סיום ללא דיווח נוסף</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

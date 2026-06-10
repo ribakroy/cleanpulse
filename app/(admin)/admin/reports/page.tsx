@@ -26,6 +26,7 @@ import {
 import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
 import type { NotificationLogRecord } from "@/lib/data/types";
 import type { IssueTypeKey } from "@/types/domain";
+import { ReportsDonutChart } from "@/components/admin/reports-donut-chart";
 import { 
   Download, 
   Filter, 
@@ -135,12 +136,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
     "#ec4899", // pink
     "#d97a7a"  // soft red/danger
   ];
-  const gradientSlices = incidentsByIssue.map((d, idx) => {
-    const start = incidentsByIssue.slice(0, idx).reduce((sum, item) => sum + (item.count / totalIssuesCount) * 100, 0);
-    const end = start + (d.count / totalIssuesCount) * 100;
-    return `${chartColors[idx % chartColors.length]} ${start}% ${end}%`;
-  });
-  const conicGradient = gradientSlices.length > 0 ? `conic-gradient(${gradientSlices.join(", ")})` : "#e2e8f0";
+
 
   // Email notifications breakdown
   const incidentIds = new Set(filteredIncidents.map((inc) => inc.id));
@@ -487,42 +483,11 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 <CardTitle className="text-sm font-bold">דיווחים לפי סוג תקלה</CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                {incidentsByIssue.length === 0 ? (
-                  <p className="text-xs text-muted text-center py-4">אין דיווחי תקלות (רק דירוגים).</p>
-                ) : (
-                  <div className="flex flex-col items-center justify-center gap-6 py-2">
-                    {/* Donut Chart */}
-                    <div 
-                      className="relative w-32 h-32 rounded-full flex items-center justify-center shadow-inner shrink-0"
-                      style={{ background: conicGradient }}
-                    >
-                      {/* Inner circle for donut hole */}
-                      <div className="absolute w-20 h-20 bg-white rounded-full shadow flex flex-col items-center justify-center">
-                        <span className="text-xl font-black text-brand-deep">{totalIssuesCount}</span>
-                        <span className="text-[9px] text-muted font-medium">דיווחים</span>
-                      </div>
-                    </div>
-
-                    {/* Legend Grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 w-full pt-2 border-t border-border/60">
-                      {incidentsByIssue.slice(0, 6).map((d, idx) => {
-                        const pct = totalIssuesCount > 0 ? Math.round((d.count / totalIssuesCount) * 100) : 0;
-                        const color = chartColors[idx % chartColors.length];
-                        return (
-                          <div key={d.label} className="flex items-center justify-between text-[11px] gap-2">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                              <span className="size-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                              <span className="font-medium text-foreground truncate" title={d.label}>{d.label}</span>
-                            </div>
-                            <span className="font-mono text-muted shrink-0 text-[10px]">
-                              {d.count} <span className="text-muted/50 text-[9px]">({pct}%)</span>
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                <ReportsDonutChart
+                  incidentsByIssue={incidentsByIssue}
+                  chartColors={chartColors}
+                  totalIssuesCount={totalIssuesCount}
+                />
               </CardContent>
             </Card>
 

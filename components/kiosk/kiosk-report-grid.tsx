@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { AlertCircle, Droplets, FileText, Sparkles, Star, Trash2, Wind, Wrench } from "lucide-react";
+import { AlertCircle, Droplets, FileText, Sparkles, Star, Trash2, Wind, Wrench, Footprints } from "lucide-react";
 import issueTypes from "@/data-seed/issue-types.json";
 import { cn } from "@/lib/utils/cn";
 import type { IssueTypeKey, IssueTypeSeed } from "@/types/domain";
@@ -12,6 +12,7 @@ const iconMap: Record<IssueTypeKey, LucideIcon> = {
   trash_full: Trash2,
   toilet_fault: Wrench,
   sink_fault: AlertCircle,
+  dirty_floor: Footprints,
 };
 
 const seededIssues = issueTypes as IssueTypeSeed[];
@@ -23,7 +24,7 @@ type KioskReportGridProps = {
 export function KioskReportGrid({ compact = false }: KioskReportGridProps) {
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {seededIssues.map((item) => {
           const Icon = iconMap[item.key];
 

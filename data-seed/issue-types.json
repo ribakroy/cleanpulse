@@ -61,5 +61,14 @@
     "severity": "high",
     "isActive": true,
     "sortOrder": 70
+  },
+  {
+    "id": "issue_dirty_floor",
+    "key": "dirty_floor",
+    "labelHe": "רצפה מלוכלכת",
+    "icon": "footprints",
+    "severity": "medium",
+    "isActive": true,
+    "sortOrder": 35
   }
 ]

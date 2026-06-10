@@ -7,6 +7,7 @@ import {
   Droplets,
   Lock,
   MailCheck,
+  MapPin,
   QrCode,
   ShieldCheck,
   TabletSmartphone,
@@ -72,8 +73,19 @@ export default function HomePage() {
 
           {/* Nav links */}
           <nav className="hidden items-center gap-6 text-sm font-medium text-muted md:flex">
-            {["פתרון", "משאבים", "מחירים", "צור קשר"].map((item) => (
-              <span key={item} className="cursor-default hover:text-foreground transition-colors">{item}</span>
+            {[
+              { label: "פתרון", href: "#solution" },
+              { label: "משאבים", href: "#resources" },
+              { label: "מחירים", href: "#pricing" },
+              { label: "צור קשר", href: "#contact" },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </Link>
             ))}
           </nav>
 
@@ -191,7 +203,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Feature cards ── */}
-      <section className="py-16">
+      <section id="solution" className="py-16 scroll-mt-20">
         <div className="container-shell grid gap-5 md:grid-cols-3">
           {features.map(({ icon: Icon, title, body }) => (
             <div
@@ -209,7 +221,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Dashboard preview ── */}
-      <section className="py-16 bg-white/50">
+      <section id="resources" className="py-16 bg-white/50 scroll-mt-20">
         <div className="container-shell space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div className="space-y-2">
@@ -311,6 +323,250 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing section ── */}
+      <section id="pricing" className="py-20 border-t border-border scroll-mt-20 bg-gradient-to-b from-white to-[#f4faff]">
+        <div className="container-shell space-y-12">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <p className="text-sm font-bold text-brand uppercase tracking-wider">תוכניות ומחירים</p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+              מחירים פשוטים ושקופים לכל עסק
+            </h2>
+            <p className="text-muted text-base sm:text-lg">
+              בחר את התוכנית המתאימה ביותר לצרכים של הארגון שלך. ללא התחייבות ארוכת טווח.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3 items-stretch">
+            {/* Basic plan */}
+            <div className="flex flex-col rounded-[var(--radius-xl)] border border-border bg-white p-8 shadow-soft hover:shadow-panel transition-all duration-300 relative overflow-hidden">
+              <div className="space-y-4 flex-1">
+                <h3 className="text-xl font-bold text-foreground">בסיסי</h3>
+                <p className="text-sm text-muted">לסניפים בודדים שרוצים לשפר את הבקרות והשירות.</p>
+                <div className="pt-4 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold text-foreground">₪149</span>
+                  <span className="text-sm font-semibold text-muted">/חודש</span>
+                </div>
+                <ul className="pt-6 space-y-3.5 text-sm">
+                  {[
+                    "סניף 1 פעיל",
+                    "עד 3 אזורי שירותים (תאים)",
+                    "התראות מייל מיידיות לנמענים",
+                    "לוח בקרה בסיסי עם נתונים חיים",
+                    "תמיכה במייל",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5">
+                      <CheckCircle className="size-4 text-brand shrink-0 mt-0.5" />
+                      <span className="text-foreground/80">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/login" className="w-full text-center py-3 rounded-xl border border-brand text-brand font-bold text-sm block hover:bg-brand hover:text-white transition-all">
+                  התחל עכשיו
+                </Link>
+              </div>
+            </div>
+
+            {/* Pro plan */}
+            <div className="flex flex-col rounded-[var(--radius-xl)] border-2 border-brand bg-white p-8 shadow-panel hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-brand text-white text-[11px] font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-wider">
+                מומלץ
+              </div>
+              <div className="space-y-4 flex-1">
+                <h3 className="text-xl font-bold text-foreground">מתקדם</h3>
+                <p className="text-sm text-muted">לרשתות בינוניות ועסקים עם תנועה גבוהה.</p>
+                <div className="pt-4 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold text-foreground">₪299</span>
+                  <span className="text-sm font-semibold text-muted">/חודש</span>
+                </div>
+                <ul className="pt-6 space-y-3.5 text-sm">
+                  {[
+                    "עד 5 סניפים פעילים",
+                    "אזורי שירותים ללא הגבלה",
+                    "התראות מייל ו-SMS ללא הגבלה",
+                    "דוחות ביצועים מתקדמים וניתוח SLA",
+                    "ייצוא נתונים מלא ל-CSV",
+                    "תמיכה טלפונית ועזרה בהקמה",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5">
+                      <CheckCircle className="size-4 text-brand shrink-0 mt-0.5" />
+                      <span className="text-foreground/90 font-medium">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/login" className="w-full text-center py-3 rounded-xl bg-brand text-white font-bold text-sm block shadow-[0_4px_14px_rgba(30,136,229,0.35)] hover:bg-brand-deep transition-all">
+                  התחל עכשיו
+                </Link>
+              </div>
+            </div>
+
+            {/* Enterprise plan */}
+            <div className="flex flex-col rounded-[var(--radius-xl)] border border-border bg-white p-8 shadow-soft hover:shadow-panel transition-all duration-300 relative overflow-hidden">
+              <div className="space-y-4 flex-1">
+                <h3 className="text-xl font-bold text-foreground">ארגוני</h3>
+                <p className="text-sm text-muted">לקניונים, רשתות קמעונאיות ומרכזי קניות גדולים.</p>
+                <div className="pt-4 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold text-foreground">התאמה</span>
+                  <span className="text-sm font-semibold text-muted">אישית</span>
+                </div>
+                <ul className="pt-6 space-y-3.5 text-sm">
+                  {[
+                    "סניפים ואזורים ללא הגבלה",
+                    "אינטגרציות API ומערכות פנים-ארגוניות",
+                    "מנהל לקוח ייעודי (CSM)",
+                    "SLA מובטח לזמינות המערכת",
+                    "פיתוח דוחות והתאמות מיוחדות",
+                    "חוזה שנתי מותאם אישית",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2.5">
+                      <CheckCircle className="size-4 text-brand shrink-0 mt-0.5" />
+                      <span className="text-foreground/80">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="pt-8">
+                <Link href="/login" className="w-full text-center py-3 rounded-xl border border-brand text-brand font-bold text-sm block hover:bg-brand hover:text-white transition-all">
+                  צור קשר איתנו
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Contact section ── */}
+      <section id="contact" className="py-20 border-t border-border scroll-mt-20 bg-white">
+        <div className="container-shell grid gap-12 lg:grid-cols-2">
+          {/* Form column */}
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-brand uppercase tracking-wider">צור קשר</p>
+              <h2 className="text-3xl font-extrabold text-foreground">נשמח לשמוע מכם</h2>
+              <p className="text-muted text-sm leading-relaxed">
+                רוצים לראות הדגמה חיה של המערכת, לשאול שאלות או להתחיל פיילוט ללא עלות? מלאו את הפרטים ונחזור אליכם בהקדם.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="form-name" className="text-xs font-bold text-muted pr-1">שם מלא</label>
+                  <input
+                    id="form-name"
+                    type="text"
+                    required
+                    className="w-full border border-border p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                    placeholder="ישראל ישראלי"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="form-company" className="text-xs font-bold text-muted pr-1">שם העסק / ארגון</label>
+                  <input
+                    id="form-company"
+                    type="text"
+                    required
+                    className="w-full border border-border p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                    placeholder="חברה בע&quot;מ"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label htmlFor="form-email" className="text-xs font-bold text-muted pr-1">כתובת אימייל</label>
+                  <input
+                    id="form-email"
+                    type="email"
+                    required
+                    className="w-full border border-border p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                    placeholder="email@example.com"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="form-phone" className="text-xs font-bold text-muted pr-1">טלפון</label>
+                  <input
+                    id="form-phone"
+                    type="tel"
+                    required
+                    className="w-full border border-border p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                    placeholder="050-1234567"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label htmlFor="form-message" className="text-xs font-bold text-muted pr-1">כיצד נוכל לעזור?</label>
+                <textarea
+                  id="form-message"
+                  rows={4}
+                  required
+                  className="w-full border border-border p-3 rounded-xl text-sm bg-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand resize-none"
+                  placeholder="כתבו לנו כאן..."
+                />
+              </div>
+              <button
+                type="button"
+                className="w-full rounded-xl bg-brand py-3 text-sm font-bold text-white shadow-soft hover:bg-brand-deep hover:shadow-panel transition-all text-center cursor-pointer"
+              >
+                שליחת פנייה
+              </button>
+            </div>
+          </div>
+
+          {/* Info column */}
+          <div className="flex flex-col justify-between space-y-8 bg-[#f4faff] border border-border p-8 rounded-2xl">
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-foreground">CleanPulse ישראל</h3>
+              <p className="text-muted text-sm leading-relaxed">
+                המערכת פותחה ומנוהלת בישראל על ידי צוות מומחי שירות וטכנולוגיה, במטרה להביא את בשורת הניקיון החכם לכל מרכז מסחרי, משרד ומוסד ציבורי.
+              </p>
+
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand border border-brand/10">
+                    <MailCheck className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-muted">כתבו לנו</p>
+                    <p className="text-sm font-bold text-foreground">sales@cleanpulse.co.il</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand border border-brand/10">
+                    <Bell className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-muted">התקשרו אלינו</p>
+                    <p className="text-sm font-bold text-foreground">077-9876543</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand border border-brand/10">
+                    <MapPin className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-muted">המשרדים שלנו</p>
+                    <p className="text-sm font-bold text-foreground">שדרות רוטשילד 22, תל אביב</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mini Trust block */}
+            <div className="pt-6 border-t border-border/60">
+              <p className="text-xs font-bold text-brand mb-2">זמינות ורמת שירות SLA</p>
+              <p className="text-xs text-muted leading-relaxed">
+                אנו מתחייבים ל-99.9% זמינות מערכת ולתמיכה טכנית מהירה במיוחד ללקוחות במסלול Pro ו-Enterprise.
+              </p>
             </div>
           </div>
         </div>
