@@ -54,38 +54,38 @@ export function CreateOrgForm() {
   if (successData) {
     return (
       <div className="max-w-xl mx-auto space-y-6">
-        <Card className="border-2 border-emerald-500 shadow-lg text-right bg-emerald-50/10">
+        <Card className="border border-emerald-500/30 shadow-lg text-right bg-emerald-500/5">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-3">
               <span className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500 shadow-md">
                 <CheckCircle2 className="size-8 text-white" />
               </span>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-900">העסק נוצר בהצלחה!</CardTitle>
-            <CardDescription className="text-slate-600 mt-1">
+            <CardTitle className="text-2xl font-bold text-foreground">העסק נוצר בהצלחה!</CardTitle>
+            <CardDescription className="text-muted mt-1">
               ארגון {successData.orgName} נוצר במערכת יחד עם משתמש הניהול.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="rounded-[var(--radius-lg)] border border-emerald-200/60 bg-white p-5 space-y-4 shadow-sm">
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <div className="rounded-[var(--radius-lg)] border border-emerald-500/25 bg-surface-strong p-5 space-y-4 shadow-sm">
+              <div className="flex items-center gap-2 pb-3 border-b border-border">
                 <ShieldAlert className="size-5 text-emerald-600" />
-                <span className="font-bold text-slate-950 text-sm">פרטי גישה ראשוניים למנהל (Owner)</span>
+                <span className="font-bold text-foreground text-sm">פרטי גישה ראשוניים למנהל (Owner)</span>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500">כתובת אימייל:</span>
+                  <span className="text-muted">כתובת אימייל:</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900 font-mono select-all">{successData.ownerEmail}</span>
+                    <span className="font-semibold text-foreground font-mono select-all">{successData.ownerEmail}</span>
                     <CopyButton value={successData.ownerEmail} label="העתק אימייל" />
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-500">סיסמה זמנית:</span>
+                  <span className="text-muted">סיסמה זמנית:</span>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900 font-mono select-all bg-slate-50 px-2 py-1 rounded border border-slate-100">
+                    <span className="font-semibold text-foreground font-mono select-all bg-brand-soft/40 px-2 py-1 rounded border border-border">
                       {successData.ownerPasswordPlain}
                     </span>
                     <CopyButton value={successData.ownerPasswordPlain} label="העתק סיסמה" />
@@ -94,7 +94,7 @@ export function CreateOrgForm() {
               </div>
             </div>
 
-            <div className="rounded-[var(--radius-md)] border border-amber-200 bg-amber-50/50 p-4 text-xs text-amber-800 leading-relaxed">
+            <div className="rounded-[var(--radius-md)] border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-800 leading-relaxed">
               <strong>שימו לב:</strong> הסיסמה הזמנית שמוצגת כאן מוצפנת בבסיס הנתונים ולא יהיה ניתן לראות אותה שוב. נא להעתיק אותה ולשלוח אותה בצורה מאובטחת ללקוח. עליו לשנות אותה בכניסתו הראשונה למערכת.
             </div>
 
@@ -142,7 +142,7 @@ export function CreateOrgForm() {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Building2 className="size-5 text-sky-500" />
+              <Building2 className="size-5 text-brand" />
               פרטי הארגון והעסק
             </CardTitle>
             <CardDescription>פרטי המותג, התוכנית וההגדרות הפנימיות.</CardDescription>
@@ -163,14 +163,14 @@ export function CreateOrgForm() {
                 placeholder="למשל: central-cafe"
                 required
               />
-              <span className="text-[10px] text-slate-400 block pr-1 leading-normal">
+              <span className="text-[10px] text-muted block pr-1 leading-normal">
                 הכתובת שתופיע בקישורי ה-QR והקיאוסקים (באנגלית קטנה ומקפים בלבד).
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5 text-right">
-                <label htmlFor="plan" className="text-xs font-semibold text-slate-600">
+                <label htmlFor="plan" className="text-xs font-semibold text-muted">
                   תוכנית מנוי
                 </label>
                 <select
@@ -207,8 +207,8 @@ export function CreateOrgForm() {
                 required
               />
               <div className="space-y-1.5 text-right">
-                <label className="text-xs font-semibold text-slate-600 block">מטבע</label>
-                <div className="h-10 px-3 flex items-center bg-slate-50 border border-border rounded-[var(--radius-md)] text-sm font-bold text-slate-500">
+                <label className="text-xs font-semibold text-muted block">מטבע</label>
+                <div className="h-10 px-3 flex items-center bg-brand-soft/30 border border-border rounded-[var(--radius-md)] text-sm font-bold text-muted">
                   שקל חדש (₪)
                 </div>
               </div>
@@ -273,7 +273,7 @@ export function CreateOrgForm() {
                 required
               />
               <div className="space-y-1.5 text-right">
-                <label className="text-xs font-semibold text-slate-600">סיסמה זמנית למשתמש</label>
+                <label className="text-xs font-semibold text-muted">סיסמה זמנית למשתמש</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
@@ -286,7 +286,7 @@ export function CreateOrgForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-3 top-3 text-slate-400 hover:text-slate-600"
+                      className="absolute left-3 top-3 text-muted hover:text-foreground"
                     >
                       {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                     </button>

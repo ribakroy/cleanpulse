@@ -43,7 +43,7 @@ export function SuperNav() {
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
-                ? "bg-sky-500/10 text-sky-400 border-r-2 border-sky-400 pl-3 pr-2.5 bg-slate-800"
+                ? "bg-brand/10 text-brand-water border-r-2 border-brand pl-3 pr-2.5 bg-slate-800"
                 : "text-slate-300 hover:bg-slate-800 hover:text-white",
             )}
           >

@@ -47,12 +47,12 @@ export default async function SuperOrganizationDetailPage(props: { params: Param
         </div>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex size-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+            <span className="flex size-12 items-center justify-center rounded-xl bg-brand-soft text-brand">
               <Building2 className="size-6" />
             </span>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-slate-900">{org.name}</h1>
-              <p className="text-sm text-slate-500 font-mono mt-0.5">{org.id}</p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{org.name}</h1>
+              <p className="text-xs text-muted font-mono mt-0.5">מזהה לקוח: {org.id}</p>
             </div>
           </div>
         </div>

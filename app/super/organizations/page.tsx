@@ -15,6 +15,14 @@ type SearchParams = Promise<{
   plan?: string;
 }>;
 
+const planLabels: Record<string, string> = {
+  free: "חינמי",
+  starter: "מתחיל",
+  basic: "בסיסי",
+  pro: "מקצועי",
+  enterprise: "ארגוני",
+};
+
 function getNowTime() {
   return new Date().getTime();
 }
@@ -96,8 +104,8 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">ניהול לקוחות ועסקים</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">ניהול לקוחות ועסקים</h1>
+          <p className="text-sm text-muted mt-1">
             צפייה, חיפוש, ועריכת פרטים של כל העסקים הרשומים בפלטפורמה.
           </p>
         </div>
@@ -118,9 +126,9 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
           <form method="GET" action="/super/organizations" className="grid gap-4 sm:grid-cols-4 items-end">
             {/* Search Input */}
             <div className="space-y-1 sm:col-span-2">
-              <label htmlFor="search" className="text-xs font-semibold text-slate-600 block">חיפוש חופשי</label>
+              <label htmlFor="search" className="text-xs font-semibold text-muted block">חיפוש חופשי</label>
               <div className="relative">
-                <Search className="absolute right-3 top-3 size-4 text-slate-400" />
+                <Search className="absolute right-3 top-3 size-4 text-brand" />
                 <input
                   id="search"
                   name="q"
@@ -134,7 +142,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
 
             {/* Status Filter */}
             <div className="space-y-1">
-              <label htmlFor="status" className="text-xs font-semibold text-slate-600 block">סטטוס מנוי</label>
+              <label htmlFor="status" className="text-xs font-semibold text-muted block">סטטוס מנוי</label>
               <select
                 id="status"
                 name="status"
@@ -175,7 +183,7 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-right">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                <tr className="border-b border-border bg-brand-soft/50 text-muted font-semibold text-xs uppercase tracking-wider">
                   <th className="py-3 px-5">שם עסק / מזהה</th>
                   <th className="py-3">איש קשר וטלפון</th>
                   <th className="py-3">תוכנית</th>
@@ -186,27 +194,27 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
                   <th className="py-3 pl-5 text-center">פעולות</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-border text-muted">
                 {filteredOrgs.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-slate-400">
+                    <td colSpan={8} className="py-10 text-center text-muted/70">
                       לא נמצאו עסקים העונים לתנאי הסינון.
                     </td>
                   </tr>
                 ) : (
                   filteredOrgs.map(({ org, screensCount, branchesCount, incidents30Days, lastActivity, computedStatus }) => (
-                    <tr key={org.id} className="hover:bg-slate-50/30 transition-colors">
+                    <tr key={org.id} className="hover:bg-brand-soft/30 transition-colors">
                       <td className="py-4 px-5">
-                        <div className="font-bold text-slate-900">{org.name}</div>
-                        <div className="text-xs text-slate-400 font-mono mt-0.5">{org.slug}</div>
+                        <div className="font-bold text-foreground">{org.name}</div>
+                        <div className="text-xs text-muted/70 font-mono mt-0.5">{org.slug}</div>
                       </td>
                       <td className="py-4">
-                        <div className="font-medium text-slate-800">{org.contactName || "לא הוגדר"}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">{org.contactPhone || org.billingEmail || ""}</div>
+                        <div className="font-medium text-foreground">{org.contactName || "לא הוגדר"}</div>
+                        <div className="text-xs text-muted mt-0.5">{org.contactPhone || org.billingEmail || ""}</div>
                       </td>
                       <td className="py-4">
-                        <span className="capitalize font-semibold text-slate-700 text-xs bg-slate-100 px-2 py-1 rounded">
-                          {org.plan}
+                        <span className="capitalize font-semibold text-brand text-xs bg-brand-soft px-2.5 py-1 rounded-full border border-brand/10">
+                          {planLabels[org.plan] || org.plan}
                         </span>
                       </td>
                       <td className="py-4">
@@ -234,12 +242,12 @@ export default async function SuperOrganizationsPage(props: { searchParams: Sear
                       </td>
                       <td className="py-4 font-medium">
                         {screensCount} מסכים / {branchesCount} סניפים
-                        <div className="text-[10px] text-slate-400">מגבלה: {org.allowedScreensLimit ?? 5} מסכים</div>
+                        <div className="text-[10px] text-muted/70">מגבלה: {org.allowedScreensLimit ?? 5} מסכים</div>
                       </td>
-                      <td className="py-4 font-semibold text-slate-800">
+                      <td className="py-4 font-semibold text-foreground">
                         {incidents30Days}
                       </td>
-                      <td className="py-4 text-xs text-slate-500">
+                      <td className="py-4 text-xs text-muted">
                         {lastActivity}
                       </td>
                       <td className="py-4 pl-5 text-center">

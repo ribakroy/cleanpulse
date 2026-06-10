@@ -5,6 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { listOrganizations } from "@/lib/data/repositories/organizations";
 
+const planLabels: Record<string, string> = {
+  free: "חינמי",
+  starter: "מתחיל",
+  basic: "בסיסי",
+  pro: "מקצועי",
+  enterprise: "ארגוני",
+};
+
 export const revalidate = 0; // Dynamic
 
 export default async function SuperBillingPage() {
@@ -27,9 +35,9 @@ export default async function SuperBillingPage() {
     <div className="space-y-6 text-right" dir="rtl">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">גבייה ותוכניות מנוי</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          מעקב אחר סטטוס התשלומים, הכנסה חודשית חוזרת (MRR) וניהול ידני של מנויי הלקוחות.
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">גבייה ותוכניות מנוי</h1>
+        <p className="text-sm text-muted mt-1">
+          מעקב אחר סטטוס התשלומים, הכנסה חודשית חוזרת וניהול ידני של מנויי הלקוחות.
         </p>
       </div>
 
@@ -38,65 +46,65 @@ export default async function SuperBillingPage() {
         {/* Total MRR */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">הכנסה חודשית חוזרת (MRR)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted">הכנסה חודשית חוזרת</CardTitle>
             <Coins className="size-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-950">
+            <div className="text-3xl font-bold text-foreground">
               {new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(totalMRR)}
             </div>
-            <p className="text-xs text-slate-500 mt-1">מלקוחות פעילים בלבד</p>
+            <p className="text-xs text-muted mt-1">מלקוחות פעילים בלבד</p>
           </CardContent>
         </Card>
 
         {/* Paying Customers */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">לקוחות משלמים</CardTitle>
-            <TrendingUp className="size-4 text-sky-500" />
+            <CardTitle className="text-sm font-medium text-muted">לקוחות משלמים</CardTitle>
+            <TrendingUp className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-950">{payingClientsCount}</div>
-            <p className="text-xs text-slate-500 mt-1">מנויים פעילים בעלות חודשית</p>
+            <div className="text-3xl font-bold text-foreground">{payingClientsCount}</div>
+            <p className="text-xs text-muted mt-1">מנויים פעילים בעלות חודשית</p>
           </CardContent>
         </Card>
 
         {/* Trial Customers */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">לקוחות בניסיון (Trial)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted">לקוחות בתקופת ניסיון</CardTitle>
             <Users className="size-4 text-amber-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-slate-950">{trialClientsCount}</div>
-            <p className="text-xs text-slate-500 mt-1">גישת הדגמה לזמן מוגבל</p>
+            <div className="text-3xl font-bold text-foreground">{trialClientsCount}</div>
+            <p className="text-xs text-muted mt-1">גישת הדגמה לזמן מוגבל</p>
           </CardContent>
         </Card>
 
         {/* Overdue */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">פיגור בתשלום (Overdue)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted">פיגור בתשלום</CardTitle>
             <AlertTriangle className="size-4 text-rose-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-rose-600">{overdueClients.length}</div>
-            <p className="text-xs text-rose-500 mt-1">דורשים טיפול וגבייה ידנית</p>
+            <div className="text-3xl font-bold text-danger">{overdueClients.length}</div>
+            <p className="text-xs text-danger mt-1">דורשים טיפול וגבייה ידנית</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Overdue Alert */}
       {overdueClients.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-rose-200 bg-rose-50 p-4 space-y-2 text-sm text-rose-900">
+        <div className="rounded-[var(--radius-lg)] border border-danger/25 bg-danger/5 p-4 space-y-2 text-sm text-danger">
           <div className="flex items-center gap-2 font-bold">
-            <ShieldAlert className="size-5 text-rose-600" />
+            <ShieldAlert className="size-5 text-danger" />
             <span>לקוחות בפיגור תשלום הדורשים טיפול מיידי:</span>
           </div>
           <ul className="list-disc pr-5 space-y-1">
             {overdueClients.map((c) => (
               <li key={c.id}>
-                <Link href={`/super/organizations/${c.id}`} className="underline hover:text-rose-700 font-semibold">
+                <Link href={`/super/organizations/${c.id}`} className="underline hover:text-danger/90 font-semibold">
                   {c.name}
                 </Link>{" "}
                 - עלות מנוי: {c.monthlyPrice} ₪ (איש קשר: {c.contactName || c.billingEmail || "לא הוגדר"})
@@ -116,7 +124,7 @@ export default async function SuperBillingPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-right">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                <tr className="border-b border-border bg-brand-soft/30 text-muted font-semibold text-xs uppercase tracking-wider">
                   <th className="py-3 px-5">שם עסק</th>
                   <th className="py-3">תוכנית מנוי</th>
                   <th className="py-3">מחיר חודשי</th>
@@ -126,18 +134,18 @@ export default async function SuperBillingPage() {
                   <th className="py-3 pl-5 text-center">כרטיס לקוח</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-border text-foreground">
                 {organizations.map((org) => {
                   const billStatus = org.billingStatus || (org.status === "trial" ? "trialing" : "active");
                   return (
-                    <tr key={org.id} className="hover:bg-slate-50/30 transition-colors">
-                      <td className="py-4 px-5 font-bold text-slate-900">
-                        <Link href={`/super/organizations/${org.id}`} className="hover:text-sky-600 transition-colors">
+                    <tr key={org.id} className="hover:bg-brand-soft/30 transition-colors">
+                      <td className="py-4 px-5 font-bold text-foreground">
+                        <Link href={`/super/organizations/${org.id}`} className="hover:text-brand transition-colors">
                           {org.name}
                         </Link>
                       </td>
-                      <td className="py-4 capitalize font-semibold">{org.plan}</td>
-                      <td className="py-4 font-medium text-slate-900">
+                      <td className="py-4 capitalize font-semibold">{planLabels[org.plan] || org.plan}</td>
+                      <td className="py-4 font-medium text-foreground">
                         {org.monthlyPrice ? `${org.monthlyPrice} ₪/חודש` : "חינם / ללא עלות"}
                       </td>
                       <td className="py-4">
@@ -165,10 +173,10 @@ export default async function SuperBillingPage() {
                             : "משולם"}
                         </Badge>
                       </td>
-                      <td className="py-4 text-xs text-slate-500 font-mono">
+                      <td className="py-4 text-xs text-muted font-mono">
                         {org.billingEmail || "אין אימייל חיוב"}
                       </td>
-                      <td className="py-4 text-xs max-w-[200px] truncate text-slate-500">
+                      <td className="py-4 text-xs max-w-[200px] truncate text-muted">
                         {org.notes || "אין הערות מיוחדות"}
                       </td>
                       <td className="py-4 pl-5 text-center">

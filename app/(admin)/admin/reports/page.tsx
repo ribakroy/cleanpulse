@@ -309,14 +309,14 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
             value: metrics.totalCount,
             description: "סה\"כ אירועים שנרשמו בסינון שנבחר.",
             icon: Activity,
-            color: "bg-blue-50 text-blue-700 border-blue-200",
+            color: "bg-brand-soft text-brand border-brand/20",
           },
           {
             label: "מתוכם דיווחים פתוחים",
             value: metrics.openCount,
             description: "אירועים שממתינים כעת לסגירה.",
             icon: ShieldAlert,
-            color: "bg-red-50 text-red-700 border-red-200",
+            color: "bg-danger/8 text-danger border-danger/20",
           },
           {
             label: "אחוז סגירה",
@@ -358,7 +358,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
             value: `${metrics.notificationSuccessRatePercentage}%`,
             description: "אחוז שליחת התראות שעברו ללא שגיאה.",
             icon: FileSpreadsheet,
-            color: "bg-sky-50 text-sky-700 border-sky-200",
+            color: "bg-brand-soft text-brand border-brand/20",
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
@@ -469,7 +469,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                           <span>{d.label}</span>
                           <span className="text-muted font-mono">{d.count}</span>
                         </div>
-                        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-brand-soft h-2 rounded-full overflow-hidden">
                           <div
                             className="bg-brand h-full rounded-full"
                             style={{ width: `${widthPercent}%` }}
@@ -572,7 +572,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
             {/* Open > 30 Mins (Overdue SLA) */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-red-700">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-danger">
                   <AlertTriangle className="size-4" />
                   דיווחים בחריגת SLA (מעל 30 דקות פתוחים)
                 </CardTitle>
@@ -594,7 +594,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                       </thead>
                       <tbody className="divide-y divide-border/60">
                         {overdueIncidents.map((inc) => (
-                          <tr key={inc.id} className="hover:bg-red-50/10">
+                          <tr key={inc.id} className="hover:bg-danger/5">
                             <td className="py-2.5 font-mono font-semibold">
                               <Link href={`/admin/incidents/${inc.id}`} className="text-brand hover:underline font-bold">
                                 {inc.id.substring(9, 15)}...
@@ -602,7 +602,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                             </td>
                             <td className="py-2.5 text-foreground">{branchNames.get(inc.branchId) || "לא ידוע"}</td>
                             <td className="py-2.5 text-foreground">{restroomNames.get(inc.restroomId) || "לא ידוע"}</td>
-                            <td className="py-2.5 text-red-600 font-bold">{formatIncidentTitle(inc, issueTypeLabels)}</td>
+                            <td className="py-2.5 text-danger font-bold">{formatIncidentTitle(inc, issueTypeLabels)}</td>
                             <td className="py-2.5 font-mono text-muted">{formatDateTime(inc.openedAt)}</td>
                           </tr>
                         ))}
@@ -616,7 +616,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
             {/* Failed email notifications */}
             <Card className="border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 text-red-700">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 text-danger">
                   <ShieldAlert className="size-4" />
                   כשלי התראות מייל אחרונים
                 </CardTitle>
@@ -627,7 +627,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                 ) : (
                   <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                     {failedNotifications.map((l) => (
-                      <div key={l.id} className="border border-red-100 bg-red-50/20 p-2.5 rounded-lg text-xs leading-relaxed">
+                      <div key={l.id} className="border border-danger/20 bg-danger/5 p-2.5 rounded-lg text-xs leading-relaxed">
                         <div className="flex justify-between items-center">
                           <span className="font-bold text-foreground">אירוע: 
                             <Link href={`/admin/incidents/${l.incidentId}`} className="text-brand hover:underline mr-1 font-mono">
@@ -638,7 +638,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                         </div>
                         <p className="text-muted mt-1">מקבל: <span className="font-semibold text-foreground font-mono">{l.recipientId || "כללי / ללא"}</span></p>
                         {l.errorMessage && (
-                          <p className="text-red-700 bg-red-50 border border-red-100 p-1.5 rounded mt-1.5 font-mono text-[10px] break-all">
+                          <p className="text-danger bg-danger/8 border border-danger/15 p-1.5 rounded mt-1.5 font-mono text-[10px] break-all">
                             שגיאה: {l.errorMessage}
                           </p>
                         )}

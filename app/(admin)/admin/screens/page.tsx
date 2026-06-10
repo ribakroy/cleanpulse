@@ -18,6 +18,7 @@ import {
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { QrCard } from "./qr-card";
 import { TabletSmartphone } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata = { title: "מסכים וקישורים | CleanPulse" };
 
@@ -123,13 +124,10 @@ export default async function AdminScreensPage() {
       )}
 
       {screens.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted text-sm">
-            <TabletSmartphone className="mx-auto mb-3 size-10 text-border" aria-hidden="true" />
-            <p className="font-medium text-foreground">אין מסכים מוגדרים</p>
-            <p className="mt-1">הוסף מסך חדש כדי לקבל קישורי Kiosk ו-QR.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title="אין מסכים מוגדרים"
+          description="צור מסך חדש למעלה כדי לקבל קישורי Kiosk ו-QR עבור אזורי השירותים שלך."
+        />
       ) : (
         <div className="grid gap-6 xl:grid-cols-2">
           {screens.map((s) => {

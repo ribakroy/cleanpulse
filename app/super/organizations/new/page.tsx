@@ -10,8 +10,8 @@ export default function SuperNewOrganizationPage() {
     <div className="space-y-6 text-right" dir="rtl">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">הקמת עסק חדש</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">הקמת עסק חדש</h1>
+        <p className="text-sm text-muted mt-1">
           הגדרת ארגון חדש במערכת, קביעת תוכנית מנוי ויצירת המשתמש הראשי שינהל אותו.
         </p>
       </div>

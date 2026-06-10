@@ -158,8 +158,8 @@ export default async function AdminRecipientsPage() {
               </CardHeader>
               <CardContent className="pt-0 space-y-2">
                 {r.scopeType !== "organization" && (
-                  <p className="text-xs text-muted font-mono truncate">
-                    מזהה: {r.scopeId?.substring(0, 20)}...
+                  <p className="text-[11px] text-muted font-mono truncate">
+                    מזהה שיוך: {r.scopeId?.substring(0, 8)}
                   </p>
                 )}
                 {r.enabled && (

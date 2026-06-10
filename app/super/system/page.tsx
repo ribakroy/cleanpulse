@@ -1,4 +1,4 @@
-import { Database, Mail, Terminal } from "lucide-react";
+import { Database, Mail, Terminal, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { env } from "@/lib/utils/env";
@@ -63,9 +63,9 @@ export default async function SuperSystemPage() {
     loadError = err instanceof Error ? err.message : "שגיאה בטעינת נתוני המערכת.";
   }
 
-  // Check GitHub repo availability if adapter is github
-  let githubRepoReachable: boolean | null = null;
-  let githubError: string | null = null;
+  // Check data connection health
+  let dataConnectionOk: boolean | null = null;
+  let dataConnectionNote: string | null = null;
 
   if (env.dataAdapter === "github") {
     try {
@@ -86,24 +86,29 @@ export default async function SuperSystemPage() {
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        githubRepoReachable = true;
+        dataConnectionOk = true;
       } else {
-        githubRepoReachable = false;
-        githubError = `GitHub API returned ${response.status}`;
+        dataConnectionOk = false;
+        dataConnectionNote = `שגיאת תקשורת (${response.status})`;
       }
     } catch (error: unknown) {
-      githubRepoReachable = false;
-      githubError = error instanceof Error ? error.message : "Connection timed out";
+      dataConnectionOk = false;
+      dataConnectionNote = error instanceof Error ? error.message : "פסק זמן בחיבור";
     }
+  } else {
+    // Local file adapter — always considered reachable
+    dataConnectionOk = true;
   }
+
+  const isEmailLive = env.emailProvider === "resend";
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">סטטוס מערכת</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          פיקוח על מצב השרת, תקשורת בסיס הנתונים וריכוז מדדי נפח רשומות.
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">סטטוס מערכת</h1>
+        <p className="text-sm text-muted mt-1">
+          בדיקת תקינות חיבורים, שירותים ונפח נתונים.
         </p>
       </div>
 
@@ -113,139 +118,115 @@ export default async function SuperSystemPage() {
         </div>
       )}
 
-      {/* Grid status cards */}
+      {/* Status Cards */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Connection status */}
-        <Card className="shadow-sm">
-          <CardHeader>
+        {/* Data Connection */}
+        <Card className="border shadow-soft">
+          <CardHeader className="border-b border-border bg-brand-soft/40">
             <div className="flex items-center gap-2">
-              <Database className="size-5 text-sky-500" />
-              <CardTitle>חיבור נתונים ובסיס המידע</CardTitle>
+              <Database className="size-5 text-brand" />
+              <CardTitle className="text-base font-bold">חיבור נתונים</CardTitle>
             </div>
-            <CardDescription>מצב הסנכרון והחיבור מול מקור המידע המרכזי.</CardDescription>
+            <CardDescription>מצב הסנכרון מול מקור המידע.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-              <span className="text-slate-500">אדפטר נתונים:</span>
-              <span className="font-semibold text-slate-900 font-mono capitalize">
-                {env.dataAdapter === "github" ? "GitHub Repository (פרודקשן)" : "Local File Database (מקומי)"}
+          <CardContent className="pt-5 space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-border text-sm">
+              <span className="text-muted">סוג חיבור</span>
+              <span className="font-semibold text-foreground">
+                {env.dataAdapter === "github" ? "ענן (מצב ייצור)" : "מקומי (פיתוח)"}
               </span>
             </div>
-
-            {env.dataAdapter === "github" ? (
-              <>
-                <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                  <span className="text-slate-500">רפוזיטורי יעד:</span>
-                  <span className="font-semibold text-slate-900 font-mono">
-                    {env.githubDataOwner}/{env.githubDataRepo} ({env.githubDataBranch})
-                  </span>
+            <div className="flex justify-between items-center py-2 text-sm">
+              <span className="text-muted">תקינות חיבור</span>
+              {dataConnectionOk === true ? (
+                <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <CheckCircle className="size-4 text-emerald-600" />
+                  תקין
                 </div>
-                <div className="flex justify-between items-center py-2 text-sm">
-                  <span className="text-slate-500">תקשורת גישה לגיטהאב:</span>
-                  {githubRepoReachable ? (
-                    <Badge variant="success">תקין ומקושר</Badge>
-                  ) : (
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge variant="danger">שגיאת חיבור</Badge>
-                      {githubError && <span className="text-[10px] text-rose-600 font-mono">{githubError}</span>}
-                    </div>
+              ) : dataConnectionOk === false ? (
+                <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-1.5 text-danger font-semibold">
+                    <XCircle className="size-4" />
+                    שגיאת חיבור
+                  </div>
+                  {dataConnectionNote && (
+                    <span className="text-[11px] text-danger/70">{dataConnectionNote}</span>
                   )}
                 </div>
-              </>
-            ) : (
-              <div className="flex justify-between items-center py-2 text-sm">
-                <span className="text-slate-500">נתיב שמירה מקומי:</span>
-                <span className="font-semibold text-slate-900 font-mono">/data-local/data/</span>
-              </div>
-            )}
+              ) : (
+                <Badge variant="outline">לא נבדק</Badge>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Email Alerts status */}
-        <Card className="shadow-sm">
-          <CardHeader>
+        {/* Email Alerts */}
+        <Card className="border shadow-soft">
+          <CardHeader className="border-b border-border bg-brand-soft/40">
             <div className="flex items-center gap-2">
-              <Mail className="size-5 text-sky-500" />
-              <CardTitle>ספק התראות מייל</CardTitle>
+              <Mail className="size-5 text-brand" />
+              <CardTitle className="text-base font-bold">שירות התראות מייל</CardTitle>
             </div>
-            <CardDescription>מצב השליחה ואינטגרציות של התראות המערכת.</CardDescription>
+            <CardDescription>מצב שליחת התראות לנמענים.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-              <span className="text-slate-500">ספק נוכחי:</span>
-              <span className="font-semibold text-slate-900 font-mono capitalize">
-                {env.emailProvider === "resend" ? "Resend API" : "Mock Provider (מצב בדיקה)"}
-              </span>
+          <CardContent className="pt-5 space-y-3">
+            <div className="flex justify-between items-center py-2 border-b border-border text-sm">
+              <span className="text-muted">מצב שירות</span>
+              {isEmailLive ? (
+                <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                  <CheckCircle className="size-4 text-emerald-600" />
+                  פעיל — מיילים נשלחים
+                </div>
+              ) : (
+                <Badge variant="warning">
+                  מצב בדיקה — לא נשלח
+                </Badge>
+              )}
             </div>
-            {env.emailProvider === "resend" ? (
-              <>
-                <div className="flex justify-between items-center py-2 border-b border-slate-100 text-sm">
-                  <span className="text-slate-500">מפתח API:</span>
-                  <span className="font-mono text-slate-950 font-semibold">
-                    {env.resendApiKey ? "••••••••••••••••" : "לא מוגדר"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 text-sm">
-                  <span className="text-slate-500">כתובת שליחה רשומה (From):</span>
-                  <span className="font-semibold text-slate-900 font-mono">{env.emailFrom || "לא הוגדר"}</span>
-                </div>
-              </>
-            ) : (
-              <div className="bg-slate-50 border border-slate-100 rounded-[var(--radius-md)] p-3.5 text-xs text-slate-500 leading-relaxed">
-                התראות המערכת נמצאות כרגע במצב <strong>Mock</strong> (בדיקה). המיילים לא נשלחים לנמענים אלא נרשמים בלוגים פנימיים בלבד.
+            {isEmailLive && (
+              <div className="flex justify-between items-center py-2 text-sm">
+                <span className="text-muted">כתובת שליחה</span>
+                <span className="font-semibold text-foreground font-mono text-xs">
+                  {env.emailFrom || "לא הוגדר"}
+                </span>
               </div>
+            )}
+            {!isEmailLive && (
+              <p className="text-xs text-muted leading-relaxed pt-1">
+                התראות מוקלטות ברשומות פנימיות בלבד. הפעלת שליחה אמיתית דורשת הגדרת ספק מייל.
+              </p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Database Record Counts */}
-      <Card className="shadow-sm">
-        <CardHeader>
+      {/* Record Counts */}
+      <Card className="border shadow-soft">
+        <CardHeader className="border-b border-border bg-brand-soft/40">
           <div className="flex items-center gap-2">
-            <Terminal className="size-5 text-slate-500" />
-            <CardTitle>נפח נתונים ורשומות במאגר</CardTitle>
+            <Terminal className="size-5 text-muted" />
+            <CardTitle className="text-base font-bold">נפח נתונים</CardTitle>
           </div>
-          <CardDescription>סה&quot;כ רשומות רשומות לכל collection במאגר המידע.</CardDescription>
+          <CardDescription>סה&quot;כ רשומות לכל קטגוריה במאגר.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-y divide-slate-100 text-right">
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">עסקים וארגונים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.organizations}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">משתמשים רשומים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.users}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">סניפים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.branches}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">אזורי שירותים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.restrooms}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">מסכים וקיאוסקים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.screens}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">דיווחים ותקלות</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.incidents}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">נמעני התראות</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.notification_recipients}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">לוג שליחת התראות</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.notification_logs}</span>
-            </div>
-            <div className="p-5 flex flex-col gap-1">
-              <span className="text-xs text-slate-400">לוגי פעילות כלליים</span>
-              <span className="text-2xl font-bold text-slate-900">{counts.activity_logs}</span>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 divide-y divide-border text-right">
+            {[
+              { label: "עסקים", value: counts.organizations },
+              { label: "משתמשים", value: counts.users },
+              { label: "סניפים", value: counts.branches },
+              { label: "אזורי שירותים", value: counts.restrooms },
+              { label: "מסכים", value: counts.screens },
+              { label: "דיווחים", value: counts.incidents },
+              { label: "נמעני התראות", value: counts.notification_recipients },
+              { label: "לוג התראות", value: counts.notification_logs },
+              { label: "לוג פעילות", value: counts.activity_logs },
+            ].map(({ label, value }) => (
+              <div key={label} className="p-5 flex flex-col gap-1">
+                <span className="text-xs text-muted">{label}</span>
+                <span className="text-2xl font-bold text-foreground">{value}</span>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>

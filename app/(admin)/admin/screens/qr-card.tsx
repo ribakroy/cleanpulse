@@ -12,7 +12,6 @@ const QRCode = dynamic(() => import("react-qr-code"), {
 export function QrCard({
   qrUrl,
   kioskUrl,
-  publicToken,
   qrToken,
   canEdit = false,
   isActive = false,
@@ -66,11 +65,16 @@ export function QrCard({
           <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
               <QrCode className="size-3.5 shrink-0" aria-hidden="true" />
-              קישור QR (לנייד)
+              קישור לסריקה בנייד (QR)
             </div>
-            <code className="block text-[11px] text-muted font-mono truncate">
-              /q/{qrToken.substring(0, 12)}...
-            </code>
+            <a
+              href={qrUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-xs font-semibold text-brand hover:underline truncate"
+            >
+              {qrUrl}
+            </a>
             <div className="flex flex-wrap gap-1.5">
               <Button variant="outline" size="sm" onClick={() => handleCopy(qrUrl)}>
                 <Copy className="size-3.5" aria-hidden="true" />
@@ -91,11 +95,16 @@ export function QrCard({
           <div className="rounded-[var(--radius-md)] border border-border bg-surface-muted p-3 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-brand-deep">
               <TabletSmartphone className="size-3.5 shrink-0" aria-hidden="true" />
-              קישור Kiosk (לטאבלט)
+              קישור לתצוגה בטאבלט (Kiosk)
             </div>
-            <code className="block text-[11px] text-muted font-mono truncate">
-              /k/{publicToken.substring(0, 12)}...
-            </code>
+            <a
+              href={kioskUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block text-xs font-semibold text-brand hover:underline truncate"
+            >
+              {kioskUrl}
+            </a>
             <div className="flex flex-wrap gap-1.5">
               <Button variant="outline" size="sm" onClick={() => handleCopy(kioskUrl)}>
                 <Copy className="size-3.5" aria-hidden="true" />

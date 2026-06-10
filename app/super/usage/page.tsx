@@ -73,8 +73,8 @@ export default async function SuperUsagePage() {
     <div className="space-y-6 text-right" dir="rtl">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">מדדי שימוש ופעילות</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">מדדי שימוש ופעילות</h1>
+        <p className="text-sm text-muted mt-1">
           מעקב אחר רמת הפעילות של הלקוחות, זיהוי חריגות ופיקוח על מסכים לא פעילים.
         </p>
       </div>
@@ -86,7 +86,7 @@ export default async function SuperUsagePage() {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-md flex items-center gap-2">
-                <AlertTriangle className="size-5 text-rose-500" />
+                <AlertTriangle className="size-5 text-danger" />
                 מסכים לא מקוונים
               </CardTitle>
               <CardDescription>
@@ -95,18 +95,18 @@ export default async function SuperUsagePage() {
             </CardHeader>
             <CardContent className="p-0">
               {inactiveScreens.length === 0 ? (
-                <div className="text-center py-6 text-slate-400 text-sm">
+                <div className="text-center py-6 text-muted text-sm">
                   כל המסכים מחוברים ותקינים! 🖥️✨
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100 max-h-[400px] overflow-y-auto px-5">
+                <div className="divide-y divide-border max-h-[400px] overflow-y-auto px-5">
                   {inactiveScreens.map(({ screen, orgName, branchName }) => (
                     <div key={screen.id} className="py-3 flex flex-col gap-1">
-                      <div className="font-semibold text-slate-900 text-sm">{screen.name}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="font-semibold text-foreground text-sm">{screen.name}</div>
+                      <div className="text-xs text-muted">
                         {orgName} | {branchName}
                       </div>
-                      <div className="text-[10px] text-rose-600 flex items-center gap-1 mt-1 font-semibold">
+                      <div className="text-[10px] text-danger flex items-center gap-1 mt-1 font-semibold">
                         <Clock className="size-3" />
                         נראה לאחרונה: {screen.lastSeenAt ? new Date(screen.lastSeenAt).toLocaleString("he-IL", { timeZone: "Asia/Jerusalem" }) : "מעולם לא"}
                       </div>
@@ -131,7 +131,7 @@ export default async function SuperUsagePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-right">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/50 text-slate-400 font-semibold text-xs uppercase tracking-wider">
+                    <tr className="border-b border-border bg-brand-soft/30 text-muted font-semibold text-xs uppercase tracking-wider">
                       <th className="py-3 px-5">שם עסק</th>
                       <th className="py-3">מסכים / סניפים</th>
                       <th className="py-3">דיווחים היום</th>
@@ -140,31 +140,31 @@ export default async function SuperUsagePage() {
                       <th className="py-3 pl-5 text-center">הערת פעילות</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                  <tbody className="divide-y divide-border text-foreground">
                     {usageStats.map(({ org, screensCount, branchesCount, incidentsToday, incidents7Days, incidents30Days, alertType }) => (
-                      <tr key={org.id} className="hover:bg-slate-50/30 transition-colors">
-                        <td className="py-4 px-5 font-bold text-slate-900">
-                          <Link href={`/super/organizations/${org.id}`} className="hover:text-sky-600 transition-colors">
+                      <tr key={org.id} className="hover:bg-brand-soft/30 transition-colors">
+                        <td className="py-4 px-5 font-bold text-foreground">
+                          <Link href={`/super/organizations/${org.id}`} className="hover:text-brand transition-colors">
                             {org.name}
                           </Link>
                         </td>
                         <td className="py-4">
                           {screensCount} מסכים | {branchesCount} סניפים
                         </td>
-                        <td className="py-4 font-semibold text-slate-900">{incidentsToday}</td>
-                        <td className="py-4 font-semibold text-slate-900">{incidents7Days}</td>
-                        <td className="py-4 font-semibold text-slate-900">{incidents30Days}</td>
+                        <td className="py-4 font-semibold text-foreground">{incidentsToday}</td>
+                        <td className="py-4 font-semibold text-foreground">{incidents7Days}</td>
+                        <td className="py-4 font-semibold text-foreground">{incidents30Days}</td>
                         <td className="py-4 pl-5 text-center">
                           {alertType === "high" ? (
-                            <Badge className="bg-rose-50 text-rose-700 border border-rose-200">
+                            <Badge variant="danger">
                               פעילות גבוהה מאוד
                             </Badge>
                           ) : alertType === "low" ? (
-                            <Badge className="bg-amber-50 text-amber-700 border border-amber-200">
+                            <Badge variant="warning">
                               ללא שימוש (30 יום)
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-slate-400">
+                            <Badge variant="neutral">
                               תקין
                             </Badge>
                           )}

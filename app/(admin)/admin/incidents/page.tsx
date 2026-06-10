@@ -16,7 +16,7 @@ import { listIssueTypes } from "@/lib/data/repositories/issue-types";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { formatDateTime } from "@/lib/utils/format";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
-import { getElapsedTimeLabel, getSlaBadgeStyles } from "@/lib/utils/sla";
+import { getSlaBadgeStyles } from "@/lib/utils/sla";
 import { IncidentsPolling } from "@/components/admin/incidents-polling";
 
 export const metadata = {
@@ -69,7 +69,7 @@ function NotificationStatusBadge({ logs }: { logs: NotificationLog[] }) {
   if (hasMockSent) {
     return (
       <Badge className="bg-sky-50 text-sky-700 border border-sky-200 shadow-sm font-semibold text-xs">
-        נשלח (סימולציה)
+        התראה נשלחה
       </Badge>
     );
   }
@@ -147,7 +147,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <PageHeader
         title="ניהול דיווחים"
-        description="רשימת אירועי שירותים ודיווחים תפעוליים בארגון שלך."
+        description="רשימת דיווחי שירותים ואירועים תפעוליים."
         actions={
           <div className="flex items-center gap-2">
             <IncidentsPolling />
@@ -209,7 +209,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
 
         <Select name="source" label="מקור" defaultValue={filterSource}>
           <option value="">הכל</option>
-          <option value="kiosk">טאבלט (Kiosk)</option>
+          <option value="kiosk">טאבלט</option>
           <option value="qr">סריקת QR</option>
         </Select>
 
@@ -261,7 +261,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
                         {incident.priority === "critical" ? "קריטי" : incident.priority === "high" ? "גבוה" : incident.priority === "medium" ? "בינוני" : "נמוך"}
                       </Badge>
                       <Badge className={`${slaBadge.bg} ${slaBadge.text} font-bold border`}>
-                        {slaBadge.label} (זמן שעבר: {getElapsedTimeLabel(incident.openedAt)})
+                        {slaBadge.label}
                       </Badge>
                       <NotificationStatusBadge logs={logs} />
                     </div>
@@ -282,7 +282,6 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
                   <div className="flex items-center justify-between md:justify-end gap-4 shrink-0">
                     <div className="text-left text-xs text-muted font-mono hidden sm:block">
                       <p>{formatDateTime(incident.createdAt)}</p>
-                      <p className="text-[10px]">מזהה: {incident.id}</p>
                     </div>
                     <Link
                       href={`/admin/incidents/${incident.id}`}

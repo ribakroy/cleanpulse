@@ -127,9 +127,6 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                 {slaBadge.label}
               </Badge>
             </div>
-              <p className="text-xs text-muted">
-                מזהה: <span className="font-mono text-[11px]">{incident.id}</span>
-              </p>
           </div>
         </div>
       </div>
@@ -340,7 +337,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                         log.status === "no_recipients" ? "bg-slate-100 text-slate-700 border" :
                         "bg-amber-50 text-amber-700 border"
                       }>
-                        {log.status === "mock_sent" ? "סימולציה" :
+                        {log.status === "mock_sent" ? "נשלחה" :
                          log.status === "sent" ? "נשלחה" :
                          log.status === "failed" ? "נכשלה" :
                          log.status === "no_recipients" ? "ללא נמענים" :

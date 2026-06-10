@@ -16,6 +16,23 @@ import type { IncidentRecord, ScreenRecord, BranchRecord, ActivityLogRecord } fr
 
 export const revalidate = 0; // Dynamic rendering
 
+const planLabels: Record<string, string> = {
+  free: "חינמי",
+  starter: "מתחיל",
+  basic: "בסיסי",
+  pro: "מקצועי",
+  enterprise: "ארגוני",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  organization_created: "הקמת עסק חדש",
+  organization_status_changed: "עדכון סטטוס עסק",
+  organization_details_updated: "עריכת פרטי עסק",
+  user_password_reset_by_super: "איפוס סיסמת משתמש ע״י מנהל על",
+  user_created_by_super: "הוספת משתמש ע״י מנהל על",
+  incident_seeded: "אתחול נתוני דמו",
+};
+
 export default async function SuperDashboardPage() {
   const adapter = getDataAdapter();
 
@@ -43,32 +60,36 @@ export default async function SuperDashboardPage() {
   const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
   const thirtyDaysAgo = now.getTime() - 30 * 24 * 60 * 60 * 1000;
 
-  const incidentsToday = incidents.filter((i) => new Date(i.createdAt).getTime() >= todayStart).length;
-  const incidents7Days = incidents.filter((i) => new Date(i.createdAt).getTime() >= sevenDaysAgo).length;
+  const incidentsToday = incidents.filter((i) => new Date(i.openedAt).getTime() >= todayStart).length;
+  const incidents7Days = incidents.filter((i) => new Date(i.openedAt).getTime() >= sevenDaysAgo).length;
 
-  // Expected Monthly Revenue (MRR)
+  // MRR Expected
   const expectedMRR = organizations.reduce((acc, org) => {
     if (org.status === "suspended" || org.status === "cancelled") return acc;
     return acc + (org.monthlyPrice || 0);
   }, 0);
 
-  // Identify organizations requiring attention
+  // Find organizations that require attention (suspended, or no activity in 30 days, or screens limit reached)
   const orgsRequiringAttention = organizations.map((org) => {
-    const orgIncidents = incidents.filter((i) => i.organizationId === org.id);
     const orgScreens = screens.filter((s) => s.organizationId === org.id && s.isActive);
-    const lastIncident = orgIncidents.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-    
+    const orgIncidents = incidents.filter((i) => i.organizationId === org.id);
+    const lastIncident = orgIncidents.sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime())[0];
+    const lastIncidentDate = lastIncident
+      ? new Date(lastIncident.openedAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" })
+      : "אין דיווחים";
+
     let reason = "";
     let level: "warning" | "danger" = "warning";
 
-    if (org.status === "suspended") {
-      reason = "העסק מושעה";
+    const computedStatus = org.status || (org.isActive ? "active" : "suspended");
+    if (computedStatus === "suspended") {
+      reason = "חשבון מושעה";
       level = "danger";
-    } else if (orgScreens.length > (org.allowedScreensLimit ?? 5)) {
-      reason = "חריגה ממגבלת המסכים";
-      level = "danger";
-    } else if (lastIncident && new Date(lastIncident.createdAt).getTime() < thirtyDaysAgo) {
-      reason = "ללא פעילות מעל 30 יום";
+    } else if (orgScreens.length >= (org.allowedScreensLimit ?? 5)) {
+      reason = "מגבלת מסכים";
+      level = "warning";
+    } else if (orgIncidents.length > 0 && lastIncident && new Date(lastIncident.openedAt).getTime() < thirtyDaysAgo) {
+      reason = "ללא שימוש (30 יום)";
       level = "warning";
     }
 
@@ -76,7 +97,7 @@ export default async function SuperDashboardPage() {
       org,
       reason,
       level,
-      lastIncidentDate: lastIncident ? new Date(lastIncident.createdAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" }) : "אין דיווחים",
+      lastIncidentDate,
     };
   }).filter((x) => x.reason !== "");
 
@@ -90,8 +111,8 @@ export default async function SuperDashboardPage() {
       {/* Page Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">מרכז השליטה</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">מרכז השליטה</h1>
+          <p className="text-sm text-muted mt-1">
             סקירה כללית של פלטפורמת CleanPulse ונתוני לקוחות בזמן אמת.
           </p>
         </div>
@@ -111,16 +132,16 @@ export default async function SuperDashboardPage() {
         {/* Total Orgs */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">סה&quot;כ עסקים במערכת</CardTitle>
-            <Building2 className="size-4 text-sky-500" />
+            <CardTitle className="text-sm font-medium text-muted">סה&quot;כ עסקים במערכת</CardTitle>
+            <Building2 className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-950">{totalOrgs}</div>
+            <div className="text-2xl font-bold text-foreground">{totalOrgs}</div>
             <div className="mt-1 flex items-center gap-1.5 text-xs">
               <span className="text-emerald-600 font-semibold">{activeOrgs} פעילים</span>
-              <span className="text-slate-300">|</span>
+              <span className="text-border">|</span>
               <span className="text-amber-600 font-semibold">{trialOrgs} בניסיון</span>
-              <span className="text-slate-300">|</span>
+              <span className="text-border">|</span>
               <span className="text-rose-600 font-semibold">{suspendedOrgs} מושעים</span>
             </div>
           </CardContent>
@@ -129,38 +150,38 @@ export default async function SuperDashboardPage() {
         {/* Total Active Screens */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">מסכים פעילים</CardTitle>
-            <Smartphone className="size-4 text-sky-500" />
+            <CardTitle className="text-sm font-medium text-muted">מסכים פעילים</CardTitle>
+            <Smartphone className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-950">{totalScreens}</div>
-            <p className="text-xs text-slate-500 mt-1">בפריסה של {totalBranches} סניפים פעילים</p>
+            <div className="text-2xl font-bold text-foreground">{totalScreens}</div>
+            <p className="text-xs text-muted mt-1">בפריסה של {totalBranches} סניפים פעילים</p>
           </CardContent>
         </Card>
 
         {/* Expected MRR */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">צפי הכנסות חודשי (MRR)</CardTitle>
-            <Coins className="size-4 text-sky-500" />
+            <CardTitle className="text-sm font-medium text-muted">צפי הכנסות חודשי</CardTitle>
+            <Coins className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-950">
+            <div className="text-2xl font-bold text-foreground">
               {new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", maximumFractionDigits: 0 }).format(expectedMRR)}
             </div>
-            <p className="text-xs text-slate-500 mt-1">גבייה ידנית מלקוחות פעילים</p>
+            <p className="text-xs text-muted mt-1">גבייה ידנית מלקוחות פעילים</p>
           </CardContent>
         </Card>
 
         {/* Incidents Volume */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">דיווחים במערכת</CardTitle>
-            <Activity className="size-4 text-sky-500" />
+            <CardTitle className="text-sm font-medium text-muted">דיווחים במערכת</CardTitle>
+            <Activity className="size-4 text-brand" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-950">{incidentsToday}</div>
-            <p className="text-xs text-slate-500 mt-1">היום | {incidents7Days} דיווחים ב-7 ימים אחרונים</p>
+            <div className="text-2xl font-bold text-foreground">{incidentsToday}</div>
+            <p className="text-xs text-muted mt-1">היום | {incidents7Days} דיווחים ב-7 ימים אחרונים</p>
           </CardContent>
         </Card>
       </div>
@@ -171,7 +192,7 @@ export default async function SuperDashboardPage() {
         <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertTriangle className="size-5 text-amber-500" />
+              <AlertTriangle className="size-5 text-brand" />
               <CardTitle>עסקים שדורשים תשומת לב</CardTitle>
             </div>
             <CardDescription>
@@ -180,27 +201,27 @@ export default async function SuperDashboardPage() {
           </CardHeader>
           <CardContent>
             {orgsRequiringAttention.length === 0 ? (
-              <div className="text-center py-6 text-slate-400 text-sm">
+              <div className="text-center py-6 text-muted/70 text-sm">
                 כל הלקוחות במצב תקין ופעיל! ✨
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border">
                 {orgsRequiringAttention.map(({ org, reason, level, lastIncidentDate }) => (
                   <div key={org.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                     <div>
                       <Link
                         href={`/super/organizations/${org.id}`}
-                        className="font-semibold text-slate-950 hover:text-sky-600 transition-colors text-sm"
+                        className="font-semibold text-foreground hover:text-brand transition-colors text-sm"
                       >
                         {org.name}
                       </Link>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted">
                         <span>דיווח אחרון: {lastIncidentDate}</span>
                         <span>•</span>
-                        <span>תוכנית: {org.plan}</span>
+                        <span>תוכנית: {planLabels[org.plan] || org.plan}</span>
                       </div>
                     </div>
-                    <Badge variant={level === "danger" ? "danger" : "warning"}>
+                    <Badge variant={level === "danger" ? "danger" : "outline"}>
                       {reason}
                     </Badge>
                   </div>
@@ -214,25 +235,25 @@ export default async function SuperDashboardPage() {
         <Card className="shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Clock className="size-5 text-slate-500" />
+              <Clock className="size-5 text-brand" />
               <CardTitle>פעילות מערכת אחרונה</CardTitle>
             </div>
             <CardDescription>פעולות ניהוליות ושינויי מערכת אחרונים.</CardDescription>
           </CardHeader>
           <CardContent>
             {sortedLogs.length === 0 ? (
-              <div className="text-center py-6 text-slate-400 text-sm">
+              <div className="text-center py-6 text-muted/70 text-sm">
                 אין יומן פעילות מוקלט כרגע.
               </div>
             ) : (
               <div className="space-y-4">
                 {sortedLogs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-3 text-sm border-r-2 border-slate-100 pr-3">
+                  <div key={log.id} className="flex items-start gap-3 text-sm border-r-2 border-border pr-3">
                     <div className="space-y-1">
-                      <p className="text-slate-900 font-medium leading-relaxed">
-                        {log.action === "incident_seeded" ? "אותחלו נתוני דמו" : log.action}
+                      <p className="text-foreground font-medium leading-relaxed">
+                        {ACTION_LABELS[log.action] || log.action}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <div className="flex items-center gap-2 text-xs text-muted/70">
                         <span>משתמש: {log.actorUserId || "מערכת"}</span>
                         <span>•</span>
                         <span>
@@ -264,7 +285,7 @@ export default async function SuperDashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-right">
               <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-medium pb-2">
+                <tr className="border-b border-border text-muted font-medium pb-2">
                   <th className="py-2 pr-4">שם עסק</th>
                   <th className="py-2">תוכנית</th>
                   <th className="py-2">סטטוס מנוי</th>
@@ -272,18 +293,18 @@ export default async function SuperDashboardPage() {
                   <th className="py-2 pl-4">תאריך הקמה</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-border text-muted">
                 {organizations
                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .slice(0, 5)
                   .map((org) => (
-                    <tr key={org.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="py-3 pr-4 font-semibold text-slate-900">
-                        <Link href={`/super/organizations/${org.id}`} className="hover:text-sky-600 transition-colors">
+                    <tr key={org.id} className="hover:bg-accent/50 transition-colors">
+                      <td className="py-3 pr-4 font-semibold text-foreground">
+                        <Link href={`/super/organizations/${org.id}`} className="hover:text-brand transition-colors">
                           {org.name}
                         </Link>
                       </td>
-                      <td className="py-3 capitalize">{org.plan}</td>
+                      <td className="py-3 capitalize">{planLabels[org.plan] || org.plan}</td>
                       <td className="py-3">
                         <Badge variant={(org.status === "active" || (!org.status && org.isActive)) ? "success" : org.status === "trial" ? "secondary" : "outline"}>
                           {org.status === "active" ? "פעיל" : org.status === "trial" ? "תקופת ניסיון" : org.status === "suspended" ? "מושעה" : org.status === "cancelled" ? "מבוטל" : "פעיל"}
@@ -292,7 +313,7 @@ export default async function SuperDashboardPage() {
                       <td className="py-3">
                         {org.monthlyPrice ? `${org.monthlyPrice} ₪/חודש` : "חינם / ללא מחיר"}
                       </td>
-                      <td className="py-3 pl-4 text-xs text-slate-400">
+                      <td className="py-3 pl-4 text-xs text-muted/70">
                         {new Date(org.createdAt).toLocaleDateString("he-IL", { timeZone: "Asia/Jerusalem" })}
                       </td>
                     </tr>

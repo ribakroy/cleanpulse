@@ -46,9 +46,9 @@ export default async function SuperActivityPage() {
     <div className="space-y-6 text-right" dir="rtl">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">יומן פעילות</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          תיעוד מלא וכרונולוגי של כל פעולות הניהול, שינויי הסטטוס ועדכוני המערכת.
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">יומן פעילות</h1>
+        <p className="text-sm text-muted mt-1">
+          תיעוד מלא וכרונולוגיו של כל פעולות הניהול, שינויי הסטטוס ועדכוני המערכת.
         </p>
       </div>
 
@@ -62,18 +62,18 @@ export default async function SuperActivityPage() {
       <Card className="shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <ScrollText className="size-5 text-slate-500" />
+            <ScrollText className="size-5 text-muted" />
             <CardTitle>היסטוריית שינויים</CardTitle>
           </div>
           <CardDescription>לוג אירועים פנימיים מוקלטים של הפלטפורמה.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           {sortedLogs.length === 0 ? (
-            <div className="text-center py-10 text-slate-400">
+            <div className="text-center py-10 text-muted">
               אין פעילות רשומה ביומן כעת.
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-border">
               {sortedLogs.map((log) => {
                 const formattedTime = new Date(log.createdAt).toLocaleString("he-IL", {
                   hour: "2-digit",
@@ -86,13 +86,13 @@ export default async function SuperActivityPage() {
                 });
 
                 return (
-                  <div key={log.id} className="p-5 flex items-start gap-4 hover:bg-slate-50/30 transition-colors">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 mt-0.5">
+                  <div key={log.id} className="p-5 flex items-start gap-4 hover:bg-brand-soft/30 transition-colors">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand mt-0.5">
                       <Clock className="size-4.5" />
                     </span>
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-slate-900 text-sm">
+                        <span className="font-bold text-foreground text-sm">
                           {formatActionLabel(log.action)}
                         </span>
                         <Badge variant="outline" className="text-[10px] uppercase font-mono">
@@ -100,9 +100,9 @@ export default async function SuperActivityPage() {
                         </Badge>
                       </div>
 
-                      <div className="text-xs text-slate-500 leading-normal space-y-1">
+                      <div className="text-xs text-muted leading-normal space-y-1">
                         <div className="flex items-center gap-1.5">
-                          <User className="size-3 text-slate-400" />
+                          <User className="size-3 text-muted" />
                           <span>מבצע הפעולה: {log.actorUserId || "מערכת (פנימי)"}</span>
                         </div>
                         {log.organizationId !== "system" && (
@@ -112,14 +112,14 @@ export default async function SuperActivityPage() {
 
                       {/* Display metadata if it has relevant info */}
                       {log.metadata && Object.keys(log.metadata).length > 0 && (
-                        <div className="bg-slate-50 border border-slate-100 rounded p-3 text-xs font-mono text-slate-600 overflow-x-auto mt-2 max-w-full">
+                        <div className="bg-brand-soft/30 border border-border rounded p-3 text-xs font-mono text-muted overflow-x-auto mt-2 max-w-full">
                           <pre className="whitespace-pre-wrap leading-relaxed">
                             {JSON.stringify(log.metadata, null, 2)}
                           </pre>
                         </div>
                       )}
                     </div>
-                    <div className="text-xs text-slate-400 whitespace-nowrap mt-1">
+                    <div className="text-xs text-muted whitespace-nowrap mt-1">
                       {formattedTime}
                     </div>
                   </div>

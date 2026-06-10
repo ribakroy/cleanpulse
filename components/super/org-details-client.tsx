@@ -20,6 +20,15 @@ import {
   createOrgUserAction,
 } from "@/app/super/organizations/[id]/actions";
 import type { OrganizationRecord, SafeUserRecord } from "@/lib/data/types";
+import { formatRoleLabel } from "@/lib/auth/permissions";
+
+const planLabels: Record<string, string> = {
+  free: "חינמי",
+  starter: "מתחיל",
+  basic: "בסיסי",
+  pro: "מקצועי",
+  enterprise: "ארגוני",
+};
 
 type OrgDetailsClientProps = {
   org: OrganizationRecord;
@@ -152,8 +161,8 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
               <CardDescription>שינוי מהיר של מצב הגישה של הלקוח.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
-                <span className="text-sm text-slate-500">סטטוס נוכחי:</span>
+              <div className="pb-3 border-b border-border flex items-center justify-between">
+                <span className="text-sm text-muted">סטטוס נוכחי:</span>
                 <Badge
                   variant={
                     computedStatus === "active"
@@ -228,19 +237,19 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm bg-slate-900 text-white">
+          <Card className="shadow-sm bg-brand-deep text-white border-none">
             <CardHeader>
               <CardTitle className="text-md text-white">מעבר מהיר</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-xs text-slate-400 leading-normal">
+              <p className="text-xs text-brand-water/90 leading-normal">
                 התחברות לאדמין העסק. שימו לב שעליכם להשתמש בפרטי המשתמש של העסק כדי להיכנס לפורטל הניהול שלהם.
               </p>
               <a
                 href={`/admin/dashboard`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-sky-500 hover:bg-sky-600 text-slate-950 font-bold text-sm transition-colors"
+                className="inline-flex h-10 w-full items-center justify-center rounded-[var(--radius-md)] bg-brand hover:bg-brand/90 text-white font-bold text-sm transition-colors"
               >
                 פתח פורטל אדמין עסק ↗
               </a>
@@ -276,7 +285,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                       required
                     />
                     <div className="space-y-1.5 text-right">
-                      <label htmlFor="plan" className="text-xs font-semibold text-slate-600">
+                      <label htmlFor="plan" className="text-xs font-semibold text-muted">
                         תוכנית מנוי
                       </label>
                       <select
@@ -360,49 +369,49 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                 <div className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2 text-sm">
                     <div>
-                      <span className="text-slate-400 block">סוג תוכנית:</span>
-                      <span className="font-semibold text-slate-900 capitalize">{org.plan}</span>
+                      <span className="text-muted block">סוג תוכנית:</span>
+                      <span className="font-semibold text-foreground">{planLabels[org.plan] || org.plan}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">מגבלת מסכים:</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="text-muted block">מגבלת מסכים:</span>
+                      <span className="font-semibold text-foreground">
                         {screensCount} / {org.allowedScreensLimit ?? 5} מסכים מוגדרים
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">עלות חודשית:</span>
-                      <span className="font-semibold text-slate-900">
+                      <span className="text-muted block">עלות חודשית:</span>
+                      <span className="font-semibold text-foreground">
                         {org.monthlyPrice ? `${org.monthlyPrice} ₪ לחודש` : "חינם / ללא עלות"}
                       </span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block">סניפים פעילים:</span>
-                      <span className="font-semibold text-slate-900">{branchesCount} סניפים מוגדרים</span>
+                      <span className="text-muted block">סניפים פעילים:</span>
+                      <span className="font-semibold text-foreground">{branchesCount} סניפים מוגדרים</span>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 space-y-2 text-sm">
-                    <h4 className="font-bold text-slate-800 text-xs">פרטי איש קשר לגבייה:</h4>
+                  <div className="pt-3 border-t border-border space-y-2 text-sm">
+                    <h4 className="font-bold text-foreground text-xs">פרטי איש קשר לגבייה:</h4>
                     <div className="grid gap-4 sm:grid-cols-3">
                       <div>
-                        <span className="text-slate-400 text-xs block">שם:</span>
-                        <span className="text-slate-900 font-medium">{org.contactName || "לא הוגדר"}</span>
+                        <span className="text-muted text-xs block">שם:</span>
+                        <span className="text-foreground font-medium">{org.contactName || "לא הוגדר"}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 text-xs block">טלפון:</span>
-                        <span className="text-slate-900 font-medium">{org.contactPhone || "לא הוגדר"}</span>
+                        <span className="text-muted text-xs block">טלפון:</span>
+                        <span className="text-foreground font-medium">{org.contactPhone || "לא הוגדר"}</span>
                       </div>
                       <div>
-                        <span className="text-slate-400 text-xs block">אימייל גבייה:</span>
-                        <span className="text-slate-900 font-medium">{org.billingEmail || "לא הוגדר"}</span>
+                        <span className="text-muted text-xs block">אימייל גבייה:</span>
+                        <span className="text-foreground font-medium">{org.billingEmail || "לא הוגדר"}</span>
                       </div>
                     </div>
                   </div>
 
                   {org.notes && (
-                    <div className="pt-3 border-t border-slate-100">
-                      <span className="text-slate-400 text-xs block">הערות פנימיות:</span>
-                      <p className="text-slate-700 bg-slate-50 p-3 rounded-[var(--radius-md)] border border-slate-100 text-sm mt-1 whitespace-pre-line leading-relaxed">
+                    <div className="pt-3 border-t border-border">
+                      <span className="text-muted text-xs block">הערות פנימיות:</span>
+                      <p className="text-foreground bg-brand-soft/30 p-3 rounded-[var(--radius-md)] border border-border text-sm mt-1 whitespace-pre-line leading-relaxed">
                         {org.notes}
                       </p>
                     </div>
@@ -417,7 +426,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="size-5 text-slate-500" />
+                  <Users className="size-5 text-muted" />
                   משתמשי המערכת של העסק
                 </CardTitle>
                 <CardDescription>משתמשים הרשאים לגשת לפורטל הניהול של הארגון.</CardDescription>
@@ -432,8 +441,8 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
             <CardContent className="space-y-4">
               {/* Form to add user */}
               {isAddingUser && (
-                <form onSubmit={handleAddUser} className="p-4 rounded-[var(--radius-lg)] border border-slate-200/60 bg-slate-50/50 space-y-4">
-                  <h4 className="font-bold text-slate-900 text-sm">הוספת משתמש חדש לעסק</h4>
+                <form onSubmit={handleAddUser} className="p-4 rounded-[var(--radius-lg)] border border-border bg-brand-soft/30 space-y-4">
+                  <h4 className="font-bold text-foreground text-sm">הוספת משתמש חדש לעסק</h4>
                   <div className="grid gap-4 sm:grid-cols-3">
                     <Input
                       label="שם מלא *"
@@ -459,7 +468,7 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
                   </div>
                   <div className="flex gap-4 items-end justify-between">
                     <div className="space-y-1.5 text-right flex-1 max-w-[200px]">
-                      <label htmlFor="role" className="text-xs font-semibold text-slate-600">
+                      <label htmlFor="role" className="text-xs font-semibold text-muted">
                         הרשאה (Role)
                       </label>
                       <select
@@ -516,17 +525,17 @@ export function OrgDetailsClient({ org, users, screensCount, branchesCount }: Or
               )}
 
               {/* Users list */}
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-border">
                 {users.map((user) => (
                   <div key={user.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                     <div>
-                      <div className="font-semibold text-slate-900 flex items-center gap-2">
+                      <div className="font-semibold text-foreground flex items-center gap-2">
                         {user.fullName}
                         <Badge variant={user.role === "owner" || user.role === "admin" ? "primary" : "outline"} className="text-[10px]">
-                          {user.role}
+                          {formatRoleLabel(user.role)}
                         </Badge>
                       </div>
-                      <div className="text-xs text-slate-500 mt-0.5">{user.email}</div>
+                      <div className="text-xs text-muted mt-0.5">{user.email}</div>
                     </div>
                     <div className="flex gap-2">
                       <Button

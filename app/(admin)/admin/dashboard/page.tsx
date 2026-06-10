@@ -2,13 +2,11 @@ import Link from "next/link";
 import { 
   BellRing, 
   Clock, 
-  ShieldAlert, 
   Star, 
   Activity, 
   TabletSmartphone,
   ChevronLeft,
   Mail,
-  LayoutTemplate
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +31,7 @@ import {
 } from "@/lib/reports/metrics";
 import { getSlaBadgeStyles } from "@/lib/utils/sla";
 import type { NotificationLogRecord } from "@/lib/data/types";
-import type { IssueTypeKey } from "@/types/domain";
+
 
 export const metadata = {
   title: "סקירה כללית | CleanPulse",
@@ -132,12 +130,12 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="סקירה כללית"
-        description={`מבט מהיר על ${organization?.name ?? "הארגון"} עם נתוני דיווח מעודכנים.`}
+        description={`${organization?.name ?? "הארגון"} — מצב פעיל`}
         actions={<IncidentsPolling />}
       />
 
       {/* KPI Cards Grid */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {[
           {
             label: "דיווחים פתוחים עכשיו",
@@ -154,13 +152,6 @@ export default async function AdminDashboardPage() {
             color: "bg-blue-50 text-blue-700 border-blue-200",
           },
           {
-            label: "דיווחים ב-7 ימים אחרונים",
-            value: metrics.openedLast7Days,
-            description: "תנועה שבועית מצטברת בארגון.",
-            icon: LayoutTemplate,
-            color: "bg-slate-50 text-slate-700 border-slate-200",
-          },
-          {
             label: "אחוז סגירת דיווחים",
             value: `${metrics.resolutionRateTodayPercentage}%`,
             description: "מתוך דיווחים שנפתחו היום.",
@@ -175,31 +166,17 @@ export default async function AdminDashboardPage() {
             color: "bg-amber-50 text-amber-700 border-amber-200",
           },
           {
-            label: "זמן טיפול ממוצע (היום)",
-            value: metrics.avgResolutionTimeTodayMinutes !== null ? `${metrics.avgResolutionTimeTodayMinutes} דק'` : "אין נתונים",
-            description: "זמן ממוצע מקבלה לפתרון.",
-            icon: Clock,
-            color: "bg-slate-50 text-slate-700 border-slate-200",
-          },
-          {
-            label: "דירוג שירותים ממוצע",
-            value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} / 5` : "אין דירוגים",
-            description: "ממוצע שביעות רצון לקוחות.",
+            label: "דירוג ממוצע (היום)",
+            value: metrics.avgRatingToday !== null ? `${metrics.avgRatingToday} / 5` : "—",
+            description: "שביעות רצון לקוחות היום.",
             icon: Star,
             color: "bg-blue-50 text-blue-700 border-blue-200",
-          },
-          {
-            label: "סוג תקלה נפוץ היום",
-            value: metrics.topIssueKeyToday ? (issueTypeLabels.get(metrics.topIssueKeyToday as IssueTypeKey) || metrics.topIssueKeyToday) : "אין דיווחים",
-            description: "תקלה שדווחה הכי הרבה היום.",
-            icon: ShieldAlert,
-            color: "bg-red-50 text-red-700 border-red-200",
           },
         ].map(({ label, value, description, icon: Icon, color }) => (
           <Card key={label} className="border shadow-soft">
             <CardHeader className="flex-row items-start justify-between gap-4 space-y-0 pb-2">
               <div className="space-y-1.5">
-                <CardDescription className="text-xs font-bold text-muted-foreground">{label}</CardDescription>
+                <CardDescription className="text-xs font-medium text-muted">{label}</CardDescription>
                 <CardTitle className="text-2xl font-extrabold">{value}</CardTitle>
               </div>
               <span className={`flex size-10 items-center justify-center rounded-xl border ${color}`}>
@@ -388,10 +365,9 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent className="pt-6 space-y-3">
               {[
-                { label: "נשלחה (סימולציה)", value: notifStats.mock_sent, color: "bg-blue-100 text-blue-700" },
-                { label: "נשלחה בפועל", value: notifStats.sent, color: "bg-brand-soft text-brand" },
-                { label: "נכשלה", value: notifStats.failed, color: "bg-red-100 text-red-700" },
-                { label: "ללא נמענים", value: notifStats.no_recipients, color: "bg-slate-200 text-slate-700" },
+                { label: "התראות שנשלחו", value: notifStats.mock_sent + notifStats.sent, color: "bg-blue-50 text-blue-700 border border-blue-100" },
+                { label: "נכשלו", value: notifStats.failed, color: "bg-red-50 text-red-700 border border-red-200" },
+                { label: "ללא נמענים", value: notifStats.no_recipients, color: "bg-slate-100 text-slate-700 border border-slate-200" },
               ].map(({ label, value, color }) => (
                 <div key={label} className="flex items-center justify-between text-sm">
                   <span className="text-muted">{label}</span>
