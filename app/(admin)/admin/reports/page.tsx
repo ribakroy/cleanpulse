@@ -42,6 +42,64 @@ export const metadata = {
   title: "דוחות ונתונים | CleanPulse",
 };
 
+function normalizeReportDate(value: string | undefined): string {
+  const trimmed = value?.trim();
+  if (!trimmed) return "";
+
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const year = isoMatch[1]!;
+    const month = isoMatch[2]!;
+    const day = isoMatch[3]!;
+    return isValidDateParts(year, month, day) ? `${year}-${month}-${day}` : "";
+  }
+
+  const localMatch = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (localMatch) {
+    const dayValue = localMatch[1]!;
+    const monthValue = localMatch[2]!;
+    const year = localMatch[3]!;
+    const day = dayValue.padStart(2, "0");
+    const month = monthValue.padStart(2, "0");
+    return isValidDateParts(year, month, day) ? `${year}-${month}-${day}` : "";
+  }
+
+  return "";
+}
+
+function isValidDateParts(year: string, month: string, day: string) {
+  const date = new Date(`${year}-${month}-${day}T12:00:00`);
+  return (
+    !Number.isNaN(date.getTime()) &&
+    date.getFullYear() === Number(year) &&
+    date.getMonth() + 1 === Number(month) &&
+    date.getDate() === Number(day)
+  );
+}
+
+function formatDateForInput(value: string | undefined) {
+  const normalized = normalizeReportDate(value);
+  if (!normalized) return value || "";
+  const [year, month, day] = normalized.split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function formatDayLabel(value: string) {
+  const normalized = normalizeReportDate(value);
+  if (!normalized) return value;
+  const [, month, day] = normalized.split("-");
+  return `${day}/${month}`;
+}
+
+function formatWeekdayLabel(value: string) {
+  const normalized = normalizeReportDate(value);
+  if (!normalized) return "";
+  return new Intl.DateTimeFormat("he-IL", {
+    weekday: "short",
+    timeZone: "Asia/Jerusalem",
+  }).format(new Date(`${normalized}T12:00:00`));
+}
+
 interface PageProps {
   searchParams: Promise<{
     startDate?: string;
@@ -66,8 +124,12 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
 
   // Resolve filters
   const params = await searchParams;
-  const filterStartDate = params.startDate || "";
-  const filterEndDate = params.endDate || "";
+  const rawStartDate = params.startDate || "";
+  const rawEndDate = params.endDate || "";
+  const filterStartDate = normalizeReportDate(rawStartDate);
+  const filterEndDate = normalizeReportDate(rawEndDate);
+  const startDateInputValue = formatDateForInput(rawStartDate);
+  const endDateInputValue = formatDateForInput(rawEndDate);
   const filterBranch = params.branchId || "";
   const filterRestroom = params.restroomId || "";
   const filterScreen = params.screenId || "";
@@ -224,25 +286,32 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
         </CardHeader>
         <CardContent className="pt-4">
           <form method="GET" action="/admin/reports" className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            
-            {/* Start Date */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="startDate" className="text-xs font-bold text-muted pr-1">מתאריך פתיחה</label>
-              <input
-                id="startDate"
-                name="startDate"
-                type="date"
-                defaultValue={filterStartDate}
-                className="border border-border p-2 rounded-lg text-xs bg-white focus:outline-none focus:border-brand"
-              />
-            </div>
+            <Input
+              id="startDate"
+              name="startDate"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              lang="he"
+              dir="ltr"
+              label="מתאריך פתיחה"
+              placeholder="10/06/2026"
+              defaultValue={startDateInputValue}
+              className="text-right font-medium tabular-nums"
+            />
 
             <Input
               id="endDate"
               name="endDate"
-              type="date"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              lang="he"
+              dir="ltr"
               label="עד תאריך פתיחה"
-              defaultValue={filterEndDate}
+              placeholder="10/06/2026"
+              defaultValue={endDateInputValue}
+              className="text-right font-medium tabular-nums"
             />
 
               {/* Branch */}
@@ -296,13 +365,13 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
               <div className="flex gap-2 items-end">
                 <button
                   type="submit"
-                  className={buttonVariants({ variant: "primary", size: "sm" }) + " flex-1"}
+                  className={buttonVariants({ variant: "primary", size: "lg" }) + " flex-1"}
                 >
                   סנן תוצאות
                 </button>
                 <Link
                   href="/admin/reports"
-                  className={buttonVariants({ variant: "ghost", size: "sm" })}
+                  className={buttonVariants({ variant: "ghost", size: "lg" })}
                 >
                   איפוס
                 </Link>
@@ -373,70 +442,81 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
         </Card>
       ) : (
         <>
-          <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <section className="grid min-w-0 gap-6 lg:grid-cols-2">
             
             {/* Incidents by Day */}
-            <Card className="border shadow-soft">
+            <Card className="min-w-0 border shadow-soft lg:col-span-2">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold">דיווחים לפי ימים</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="min-w-0 pt-6">
                 {incidentsByDay.length === 0 ? (
                   <p className="text-xs text-muted text-center py-4">אין נתוני ימים בטווח.</p>
                 ) : (
-                  <div className="flex items-end justify-between gap-2 h-36 pt-4 px-2">
-                    {incidentsByDay.map((d) => {
-                      const barHeight = d.count > 0 ? Math.max(4, Math.round((d.count / maxDayCount) * 80)) : 0;
-                      return (
-                        <div key={d.label} className="flex-1 flex flex-col justify-end items-center gap-1 group">
-                          <span className="text-[9px] font-bold text-brand-deep mb-1 shrink-0">
-                            {d.count > 0 ? d.count : ""}
-                          </span>
-                          {d.count > 0 ? (
-                            <div
-                              className="w-full max-w-[16px] bg-sky-400/30 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
-                              style={{ height: `${barHeight}px` }}
-                            />
-                          ) : (
-                            <div className="w-full max-w-[16px] h-1.5 bg-slate-100/80 rounded-t-sm shrink-0" />
-                          )}
-                          <span className="text-[8px] text-muted rotate-45 mt-2 whitespace-nowrap leading-none origin-right shrink-0">
-                            {d.label.substring(5)}
-                          </span>
-                        </div>
-                      );
-                    })}
+                  <div dir="ltr" className="max-w-full min-w-0 overflow-x-auto pb-2">
+                    <div
+                      dir="ltr"
+                      className="min-h-64 min-w-full rounded-[var(--radius-lg)] border border-border/70 bg-surface-muted/40 px-3 pb-5 pt-8 sm:px-4"
+                    >
+                      <div className="flex h-44 items-end gap-2 border-b border-border/70 pb-3 sm:gap-4">
+                        {incidentsByDay.map((d) => {
+                          const barHeight = d.count > 0 ? Math.max(14, Math.round((d.count / maxDayCount) * 128)) : 6;
+                          return (
+                            <div key={d.label} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
+                              <span className="text-sm font-extrabold text-brand-deep tabular-nums">
+                                {d.count > 0 ? d.count : ""}
+                              </span>
+                              <div
+                                className="w-full max-w-11 rounded-t-2xl bg-sky-300/70 transition-colors duration-200 hover:bg-brand"
+                                style={{ height: `${barHeight}px` }}
+                                aria-label={`${d.count} דיווחים ביום ${formatDayLabel(d.label)}`}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 flex gap-4">
+                        {incidentsByDay.map((d) => (
+                          <div key={d.label} className="flex flex-1 flex-col items-center gap-1 text-center">
+                            <span className="text-xs font-bold text-brand-deep tabular-nums" dir="ltr">
+                              {formatDayLabel(d.label)}
+                            </span>
+                            <span className="text-[11px] text-muted" dir="rtl">{formatWeekdayLabel(d.label)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Incidents by Hour */}
-            <Card className="border shadow-soft">
+            <Card className="min-w-0 border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold">דיווחים לפי שעות</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="min-w-0 px-3 pt-6 sm:px-5">
                 {incidentsByHour.length === 0 ? (
                   <p className="text-xs text-muted text-center py-4">אין נתוני שעות בטווח.</p>
                 ) : (
-                  <div className="flex items-end justify-between gap-1 h-36 pt-4">
+                  <div dir="ltr" className="flex h-48 items-end justify-between gap-1.5 pt-5">
                     {incidentsByHour.map((d) => {
-                      const barHeight = d.count > 0 ? Math.max(4, Math.round((d.count / maxHourCount) * 80)) : 0;
+                      const barHeight = d.count > 0 ? Math.max(8, Math.round((d.count / maxHourCount) * 122)) : 0;
                       return (
-                        <div key={d.label} className="flex-1 flex flex-col justify-end items-center gap-1 group">
-                          <span className="text-[8px] font-bold text-brand-deep mb-1 shrink-0">
+                        <div key={d.label} className="group flex flex-1 flex-col items-center justify-end gap-1.5">
+                          <span className="mb-1 text-[11px] font-bold text-brand-deep tabular-nums">
                             {d.count > 0 ? d.count : ""}
                           </span>
                           {d.count > 0 ? (
                             <div
-                              className="w-full max-w-[10px] bg-sky-400/25 hover:bg-brand rounded-t-sm transition-all duration-200 shrink-0"
+                              className="w-full max-w-4 rounded-t-xl bg-sky-300/60 transition-colors duration-200 hover:bg-brand"
                               style={{ height: `${barHeight}px` }}
                             />
                           ) : (
-                            <div className="w-full max-w-[10px] h-1.5 bg-slate-100/80 rounded-t-sm shrink-0" />
+                            <div className="h-1.5 w-full max-w-4 rounded-t-xl bg-slate-100/80" />
                           )}
-                          <span className="text-[7px] text-muted mt-1 leading-none whitespace-nowrap shrink-0">
+                          <span className="mt-1 text-[10px] leading-none text-muted tabular-nums">
                             {d.label.split(":")[0]}
                           </span>
                         </div>
@@ -448,11 +528,11 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
             </Card>
 
             {/* Incidents by Issue Type */}
-            <Card className="border shadow-soft md:col-span-2 lg:col-span-1">
+            <Card className="min-w-0 border shadow-soft">
               <CardHeader className="border-b border-border bg-white/40">
                 <CardTitle className="text-sm font-bold">דיווחים לפי סוג תקלה</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="min-w-0 px-3 pt-6 sm:px-5">
                 <ReportsDonutChart
                   incidentsByIssue={incidentsByIssue}
                   chartColors={chartColors}
