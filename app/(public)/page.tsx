@@ -1,527 +1,349 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
-  Activity,
-  AlertTriangle,
-  Bell,
+  ArrowLeft,
   Building2,
   CheckCircle2,
-  ChevronLeft,
   ClipboardCheck,
-  Clock3,
   Droplets,
-  Gem,
+  Layers3,
   Lock,
-  MailCheck,
+  MapPinned,
   ScanLine,
   ShieldCheck,
-  Star,
+  Sparkles,
   TabletSmartphone,
-  TimerReset,
-  TrendingUp,
+  type LucideIcon,
   UsersRound,
-  Zap,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  ClosingProcedureCard,
+  DashboardPreview,
+  HeroVisual,
+  PhoneReportMockup,
+  ScaleVisual,
+  TabletReportMockup,
+  WaterGlow,
+} from "@/components/public/homepage-visuals";
 
-const heroMetrics = [
-  { label: "דיווחים מטופלים", value: "1,248", detail: "בחודש האחרון" },
-  { label: "זמן תגובה", value: "18 דק׳", detail: "ממוצע טיפול" },
-  { label: "שביעות רצון", value: "4.8/5", detail: "מהלקוחות" },
+const navItems = [
+  { label: "איך זה עובד", href: "#how" },
+  { label: "למנהלים", href: "#managers" },
+  { label: "דיווח מהיר", href: "#report" },
+];
+
+const highlights = [
+  {
+    title: "דיווח בשנייה",
+    body: "סריקה. בחירה. תודה.",
+    icon: ScanLine,
+  },
+  {
+    title: "טיפול בלי בלבול",
+    body: "כל פנייה מגיעה למקום הנכון.",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "שליטה מכל מקום",
+    body: "פתוח, בטיפול, נסגר. ברור.",
+    icon: MapPinned,
+  },
 ];
 
 const flowSteps = [
   {
-    icon: ScanLine,
-    title: "הלקוח מדווח בשנייה",
-    body: "טאבלט בכניסה או QR ליד התא. בלי טפסים ארוכים, בלי חיכוך, בלי בלבול.",
+    number: "01",
+    title: "מישהו שם לב.",
+    body: "האורח סורק QR או נוגע במסך. אין אפליקציה ואין התחברות.",
   },
   {
-    icon: Bell,
-    title: "הצוות מקבל התראה",
-    body: "הפנייה מגיעה לנמען הנכון עם מיקום, סוג הבעיה ורמת הדחיפות.",
+    number: "02",
+    title: "הצוות כבר יודע.",
+    body: "הדיווח מגיע עם מיקום וסוג טיפול, בלי שיחות ובלי ניחושים.",
   },
   {
-    icon: ClipboardCheck,
-    title: "הטיפול נסגר ומתועד",
-    body: "כל פעולה נרשמת, הדשבורד מתעדכן, והעסק מבין איפה צריך להשתפר.",
+    number: "03",
+    title: "המנהל רואה תמונה.",
+    body: "מה פתוח. מה נסגר. איפה חוזרת בעיה. הכל נקי וברור.",
   },
 ];
 
-const featureCards = [
-  {
-    icon: TabletSmartphone,
-    title: "חוויה ציבורית שנראית מצוין",
-    body: "מסך טאבלט ו־QR שנראים כמו חלק מהעסק, לא כמו טופס פנימי.",
-    accent: "from-sky-100 to-white",
-  },
-  {
-    icon: TimerReset,
-    title: "איפוס סוף יום חכם",
-    body: "סגירת פניות פתוחות לפי נוהל העסק, בלי עבודה ידנית מיותרת.",
-    accent: "from-emerald-100 to-white",
-  },
-  {
-    icon: TrendingUp,
-    title: "תובנות שעוזרות לנהל",
-    body: "איפה חוזרות בעיות, מי מטפל מהר, ומה דורש שינוי תפעולי.",
-    accent: "from-indigo-100 to-white",
-  },
-];
-
-const liveMetrics = [
-  { label: "פתוחים עכשיו", value: "14", tone: "text-red-600", icon: AlertTriangle },
-  { label: "טופלו היום", value: "47", tone: "text-emerald-600", icon: CheckCircle2 },
-  { label: "תגובה ממוצעת", value: "18 דק׳", tone: "text-brand", icon: Clock3 },
-  { label: "מסכים פעילים", value: "22", tone: "text-brand-deep", icon: Activity },
-];
-
-const mockIncidents = [
-  { title: "חסר נייר", location: "קניון עזריאלי · קומה 2", status: "פתוח", tone: "bg-red-50 text-red-700 border-red-100" },
-  { title: "ציון כללי 2/5", location: "משרדי HQ · אזור אורחים", status: "בטיפול", tone: "bg-amber-50 text-amber-700 border-amber-100" },
-  { title: "ריח לא נעים", location: "בית קפה רוטשילד · קומה 1", status: "נסגר", tone: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-];
-
-const chartBars = [42, 66, 54, 82, 74, 92, 63, 78, 58, 88];
-
-const industryCards = [
-  { icon: Building2, title: "קניונים ומרכזים מסחריים", body: "עומסים גבוהים, הרבה אזורים, צורך בתגובה מיידית." },
-  { icon: UsersRound, title: "משרדים וחברות", body: "חוויה נקייה לעובדים, אורחים ומנהלים בכל שעות היום." },
-  { icon: Star, title: "בתי קפה ומסעדות", body: "כל ביקור בשירותים משפיע על תחושת המותג." },
-];
-
-const pricingPlans = [
-  {
-    title: "בסיסי",
-    description: "לעסק אחד שרוצה להתחיל לנהל שירותים בצורה חכמה.",
-    price: "₪149",
-    features: ["סניף אחד", "עד 3 אזורי שירותים", "QR וטאבלט", "התראות מייל", "דשבורד בסיסי"],
-    cta: "התחלה מהירה",
-    highlighted: false,
-  },
-  {
-    title: "מתקדם",
-    description: "לרשתות ועסקים עם תנועה גבוהה ויותר נקודות שירות.",
-    price: "₪299",
-    features: ["עד 5 סניפים", "אזורי שירותים ללא הגבלה", "דוחות מלאים", "CSV", "ליווי הקמה"],
-    cta: "המסלול המומלץ",
-    highlighted: true,
-  },
-  {
-    title: "ארגוני",
-    description: "לקניונים, מוסדות ורשתות עם צרכים תפעוליים מורכבים.",
-    price: "מותאם",
-    features: ["סניפים ללא הגבלה", "התאמות תפעול", "דוחות מותאמים", "תמיכה מורחבת", "תהליך הטמעה"],
-    cta: "שיחת התאמה",
-    highlighted: false,
-  },
-];
+const managerPoints = ["מה פתוח.", "איפה זה קרה.", "מי טיפל.", "מה נסגר."];
 
 const trustItems = [
-  { icon: Lock, text: "גישה מאובטחת" },
-  { icon: ShieldCheck, text: "הרשאות לפי תפקיד" },
-  { icon: Zap, text: "הטמעה מהירה" },
-  { icon: MailCheck, text: "התראות מסודרות" },
+  { title: "כל דיווח נשמר", icon: ClipboardCheck },
+  { title: "כל טיפול מתועד", icon: CheckCircle2 },
+  { title: "כל מסך במעקב", icon: ShieldCheck },
+];
+
+const scaleItems: Array<{ label: string; icon: LucideIcon }> = [
+  { label: "סניפים", icon: Building2 },
+  { label: "אזורי שירותים", icon: Layers3 },
+  { label: "צוותים", icon: UsersRound },
+  { label: "מסכי דיווח", icon: TabletSmartphone },
 ];
 
 export default function HomePage() {
   return (
-    <div className="overflow-x-hidden bg-[#f4faff] text-foreground">
-      <header className="sticky top-0 z-50 border-b border-white/70 bg-white/78 backdrop-blur-xl">
+    <div className="min-h-screen overflow-x-hidden bg-white text-foreground">
+      <header className="sticky top-0 z-50 border-b border-white/65 bg-white/76 backdrop-blur-2xl">
         <div className="container-shell flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-2xl bg-brand shadow-[0_10px_24px_rgba(30,136,229,0.25)]">
-              <Droplets className="size-4 text-white" aria-hidden="true" />
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="CleanPulse">
+            <span className="flex size-9 items-center justify-center rounded-full bg-brand text-white shadow-[0_16px_36px_rgba(30,136,229,0.2)]">
+              <Droplets className="size-4" aria-hidden="true" />
             </span>
-            <span className="text-lg font-extrabold text-foreground">CleanPulse</span>
+            <span className="text-base font-extrabold tracking-normal text-brand-deep">CleanPulse</span>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-sm font-semibold text-muted md:flex">
-            {[
-              { label: "איך זה עובד", href: "#flow" },
-              { label: "לוח בקרה", href: "#dashboard" },
-              { label: "למי זה מתאים", href: "#industries" },
-              { label: "מסלולים", href: "#pricing" },
-            ].map((item) => (
-              <Link key={item.label} href={item.href} className="hover:text-brand-deep">
+          <nav className="hidden items-center gap-8 text-sm font-extrabold text-muted md:flex" aria-label="ניווט ראשי">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href} className="hover:text-brand-deep">
                 {item.label}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/kiosk-demo"
-              className="hidden h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-muted hover:bg-brand-soft hover:text-brand-deep sm:inline-flex"
-            >
-              <TabletSmartphone className="size-4" aria-hidden="true" />
-              הדגמת טאבלט
+            <Link href="/login" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+              כניסה
             </Link>
-            <Link href="/login" className={buttonVariants({ variant: "primary", size: "sm" })}>
-              <Lock className="size-4" aria-hidden="true" />
-              <span className="sm:hidden">כניסה</span>
-              <span className="hidden sm:inline">כניסה למנהלים</span>
+            <Link href="/kiosk-demo" className={buttonVariants({ variant: "primary", size: "sm" })}>
+              <TabletSmartphone className="size-4" aria-hidden="true" />
+              דמו
             </Link>
           </div>
         </div>
       </header>
 
       <main>
-        <section className="relative isolate min-h-[calc(100svh-4rem)] overflow-hidden border-b border-white/70">
-          <Image
-            src="/home/cleanpulse-hero.png"
-            alt="מסך CleanPulse בכניסה לאזור שירותים נקי עם QR ולוח בקרה צף"
-            fill
-            priority
-            sizes="100vw"
-            className="z-0 object-cover object-left md:object-center"
-          />
-          <div className="absolute inset-0 z-10 bg-[linear-gradient(90deg,rgba(244,250,255,0.18)_0%,rgba(244,250,255,0.62)_42%,rgba(244,250,255,0.96)_72%,#f4faff_100%)]" aria-hidden="true" />
-          <div className="absolute inset-x-0 bottom-0 z-10 h-40 bg-gradient-to-t from-[#f4faff] to-transparent" aria-hidden="true" />
-
-          <div className="container-shell relative z-20 flex min-h-[calc(100svh-4rem)] items-center py-14">
-            <div className="w-full max-w-2xl space-y-8 home-reveal">
+        <section className="relative isolate overflow-hidden bg-[linear-gradient(180deg,#ffffff_0%,#f4faff_76%,#ffffff_100%)]">
+          <WaterGlow className="-right-28 top-16 h-80 w-80" />
+          <WaterGlow className="bottom-4 left-0 h-72 w-72" />
+          <div className="container-shell grid min-h-[calc(100svh-14rem)] gap-8 pb-6 pt-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:pb-8 lg:pt-14">
+            <div className="home-reveal max-w-2xl space-y-7">
               <div className="space-y-5">
-                <h1 className="text-balance font-heading text-5xl font-extrabold leading-[1.05] text-brand-deep sm:text-6xl lg:text-7xl">
-                  CleanPulse
+                <h1 className="text-balance font-heading text-5xl font-extrabold leading-[1.04] text-brand-deep sm:text-6xl lg:text-7xl">
+                  שקט תפעולי, בזמן אמת.
                 </h1>
-                <p className="max-w-xl text-2xl font-extrabold leading-9 text-brand sm:text-3xl">
-                  ניהול ניקיון בזמן אמת שמרגיש כמו שירות פרימיום.
-                </p>
-                <p className="max-w-xl text-lg font-medium leading-8 text-slate-700 sm:text-xl">
-                  לקוחות מדווחים בשנייה. הצוות מקבל התראה ברורה. המנהל רואה מה דורש טיפול, מה נסגר, ואיפה העסק יכול להשתפר.
+                <p className="max-w-xl text-lg font-bold leading-8 text-slate-700 sm:text-xl">
+                  CleanPulse מחבר בין מי שמדווח, מי שמטפל ומי שמנהל. בלי רעש, בלי ניירת, בלי פספוסים.
                 </p>
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link href="/login" className={buttonVariants({ variant: "primary", size: "xl" })}>
                   <Lock className="size-5" aria-hidden="true" />
-                  כניסה למנהלים
+                  כניסה למערכת
                 </Link>
                 <Link href="/kiosk-demo" className={buttonVariants({ variant: "secondary", size: "xl" })}>
-                  <TabletSmartphone className="size-5" aria-hidden="true" />
-                  צפייה במסך טאבלט
+                  צפייה בדמו
+                  <ArrowLeft className="size-5" aria-hidden="true" />
                 </Link>
               </div>
+            </div>
 
-              <div className="grid max-w-2xl gap-3 sm:grid-cols-3">
-                {heroMetrics.map((metric, index) => (
-                  <div
-                    key={metric.label}
-                    className="home-rise rounded-[var(--radius-lg)] border border-white/70 bg-white/72 p-4 shadow-soft backdrop-blur-xl"
-                    style={{ animationDelay: `${index * 90}ms` }}
-                  >
-                    <p className="text-xs font-bold text-muted">{metric.label}</p>
-                    <p className="mt-1 text-2xl font-extrabold text-brand-deep">{metric.value}</p>
-                    <p className="mt-1 text-xs font-semibold text-brand">{metric.detail}</p>
-                  </div>
-                ))}
-              </div>
+            <HeroVisual />
+          </div>
+        </section>
+
+        <section id="how" className="scroll-mt-24 bg-white pb-24 pt-8">
+          <div className="container-shell">
+            <div className="grid gap-4 md:grid-cols-3">
+              {highlights.map(({ icon: Icon, title, body }, index) => (
+                <article
+                  key={title}
+                  className="home-rise rounded-[2rem] border border-[#d8ecfa] bg-white/88 p-6 shadow-soft"
+                  style={{ animationDelay: `${index * 90}ms` }}
+                >
+                  <span className="flex size-11 items-center justify-center rounded-2xl bg-[#f4faff] text-brand">
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <h2 className="mt-6 text-2xl font-extrabold text-brand-deep">{title}</h2>
+                  <p className="mt-2 text-base font-bold text-muted">{body}</p>
+                </article>
+              ))}
             </div>
           </div>
         </section>
 
-        <section id="flow" className="scroll-mt-20 bg-[#f4faff] py-20">
-          <div className="container-shell space-y-12">
-            <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-              <div className="space-y-4">
-                <p className="text-sm font-extrabold text-brand">מהרגע שמישהו נכנס לשירותים</p>
-                <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-5xl">
-                  סוף סוף יש לך מערכת שמראה מה קורה באמת.
-                </h2>
-              </div>
-              <p className="max-w-2xl text-lg font-medium leading-8 text-muted">
-                CleanPulse מחבר בין הלקוח, צוות הניקיון והניהול. במקום תלונות מפוזרות, יש זרימה אחת פשוטה שמובילה לטיפול מהיר ולשיפור עקבי.
-              </p>
+        <section className="relative overflow-hidden bg-[#f4faff] py-24 sm:py-32">
+          <WaterGlow className="left-1/2 top-10 h-72 w-72 -translate-x-1/2" />
+          <div className="container-shell space-y-14">
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="section-label">מה משתנה ברגע</p>
+              <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                מהאורח הראשון ועד נוהל הסגירה.
+              </h2>
             </div>
 
             <div className="grid gap-5 lg:grid-cols-3">
-              {flowSteps.map(({ icon: Icon, title, body }, index) => (
-                <div
-                  key={title}
-                  className="home-card-lift group relative min-h-[260px] overflow-hidden rounded-[var(--radius-xl)] border border-white/80 bg-white p-7 shadow-soft"
-                >
-                  <div className="absolute inset-x-7 top-7 h-px bg-gradient-to-l from-brand via-brand-water to-transparent opacity-50" aria-hidden="true" />
-                  <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-soft text-brand shadow-soft">
-                    <Icon className="size-6" aria-hidden="true" />
-                  </span>
-                  <div className="mt-9 space-y-3">
-                    <p className="text-sm font-extrabold text-brand">0{index + 1}</p>
-                    <h3 className="text-2xl font-extrabold text-brand-deep">{title}</h3>
-                    <p className="text-base font-medium leading-8 text-muted">{body}</p>
-                  </div>
-                </div>
+              {flowSteps.map((step) => (
+                <article key={step.number} className="story-panel">
+                  <p className="text-sm font-extrabold text-brand">{step.number}</p>
+                  <h3 className="mt-8 text-3xl font-extrabold leading-tight text-brand-deep">{step.title}</h3>
+                  <p className="mt-4 text-base font-bold leading-8 text-muted">{step.body}</p>
+                </article>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section id="dashboard" className="scroll-mt-20 border-y border-border bg-white py-20">
-          <div className="container-shell grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-            <div className="space-y-7">
-              <div className="space-y-4">
-                <p className="text-sm font-extrabold text-brand">לוח בקרה חי</p>
-                <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-5xl">
-                  מנהל נכנס ומבין תוך עשר שניות מה דורש טיפול.
-                </h2>
-                <p className="text-lg font-medium leading-8 text-muted">
-                  לא טבלה טכנית. לא עומס. רק תמונת מצב ברורה: מה פתוח, איפה זה נמצא, מי צריך להגיב ומה כבר נסגר.
-                </p>
+            <div className="product-flow">
+              <div className="product-flow-screen">
+                <PhoneReportMockup />
               </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {featureCards.map(({ icon: Icon, title, body, accent }) => (
-                  <div key={title} className={`rounded-[var(--radius-lg)] border border-border bg-gradient-to-br ${accent} p-5 shadow-soft`}>
-                    <Icon className="size-6 text-brand" aria-hidden="true" />
-                    <h3 className="mt-4 text-lg font-extrabold text-brand-deep">{title}</h3>
-                    <p className="mt-2 text-sm font-medium leading-7 text-muted">{body}</p>
-                  </div>
-                ))}
+              <div className="product-flow-screen product-flow-screen-wide">
+                <TabletReportMockup />
               </div>
-            </div>
-
-            <div className="relative">
-              <div className="home-dashboard-shell overflow-hidden rounded-[1.6rem] border border-border bg-[#f4faff] shadow-panel">
-                <div className="flex items-center justify-between border-b border-border bg-white px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-9 items-center justify-center rounded-xl bg-brand text-white">
-                      <Droplets className="size-4" aria-hidden="true" />
-                    </span>
-                    <div>
-                      <p className="text-sm font-extrabold text-brand-deep">סקירה כללית</p>
-                      <p className="text-xs font-semibold text-muted">קפה דמו · מצב פעיל</p>
-                    </div>
+              <div className="product-flow-screen">
+                <div className="rounded-[2rem] bg-white p-5 shadow-soft">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-extrabold text-brand-deep">משימה לצוות</p>
+                    <span className="rounded-full bg-brand px-3 py-1 text-xs font-extrabold text-white">בטיפול</span>
                   </div>
-                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                    מחובר
-                  </span>
-                </div>
-
-                <div className="space-y-5 p-5">
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {liveMetrics.map(({ icon: Icon, label, value, tone }) => (
-                      <div key={label} className="rounded-2xl border border-border bg-white p-4 shadow-soft">
-                        <div className="flex items-center justify-between gap-2">
-                          <Icon className={`size-5 ${tone}`} aria-hidden="true" />
-                          <p className="text-[11px] font-bold text-muted">{label}</p>
-                        </div>
-                        <p className={`mt-3 text-2xl font-extrabold ${tone}`}>{value}</p>
+                  <div className="mt-8 space-y-3">
+                    {["לובי ראשי", "נדרש ניקיון", "נשלח לאחראי משמרת"].map((item) => (
+                      <div key={item} className="rounded-2xl bg-[#f4faff] px-4 py-3 text-sm font-extrabold text-brand-deep">
+                        {item}
                       </div>
                     ))}
                   </div>
-
-                  <div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
-                    <div className="rounded-2xl border border-border bg-white p-5 shadow-soft">
-                      <div className="mb-5 flex items-center justify-between">
-                        <p className="text-sm font-extrabold text-brand-deep">דיווחים לפי ימים</p>
-                        <span className="text-xs font-bold text-brand">+12%</span>
-                      </div>
-                      <div className="flex h-36 items-end gap-2">
-                        {chartBars.map((height, index) => (
-                          <div key={index} className="flex flex-1 flex-col items-center gap-2">
-                            <div className="relative w-full overflow-hidden rounded-t-xl bg-brand-soft">
-                              <div
-                                className="home-bar w-full rounded-t-xl bg-gradient-to-t from-brand to-brand-water"
-                                style={{ height: `${height}%`, animationDelay: `${index * 80}ms` }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-border bg-white p-5 shadow-soft">
-                      <p className="mb-4 text-sm font-extrabold text-brand-deep">דיווחים אחרונים</p>
-                      <div className="space-y-3">
-                        {mockIncidents.map((incident) => (
-                          <div key={incident.title} className="rounded-xl border border-border bg-white p-3">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="text-sm font-extrabold text-brand-deep">{incident.title}</p>
-                              <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${incident.tone}`}>
-                                {incident.status}
-                              </span>
-                            </div>
-                            <p className="mt-2 text-xs font-semibold text-muted">{incident.location}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="home-floating-card absolute -bottom-8 right-5 hidden w-64 rounded-2xl border border-white bg-white/88 p-4 shadow-panel backdrop-blur-xl lg:block">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                    <CheckCircle2 className="size-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-extrabold text-brand-deep">איפוס סוף יום בוצע</p>
-                    <p className="text-xs font-semibold text-muted">נסגרו 8 פניות פתוחות</p>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="industries" className="scroll-mt-20 bg-[#f4faff] py-20">
-          <div className="container-shell space-y-10">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-extrabold text-brand">מי מרוויח מזה</p>
-              <h2 className="mt-3 font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-5xl">
-                כל מקום שבו שירותים נקיים משפיעים על העסק.
-              </h2>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-3">
-              {industryCards.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="home-card-lift rounded-[var(--radius-xl)] border border-white/80 bg-white p-7 shadow-soft">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-brand-soft text-brand">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <h3 className="mt-6 text-xl font-extrabold text-brand-deep">{title}</h3>
-                  <p className="mt-3 text-base font-medium leading-8 text-muted">{body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="pricing" className="scroll-mt-20 border-y border-border bg-white py-20">
-          <div className="container-shell space-y-12">
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-extrabold text-brand">מסלולי שירות</p>
-              <h2 className="mt-3 font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-5xl">
-                מתחילים קטן, נראים כמו מוצר גדול מהיום הראשון.
-              </h2>
-              <p className="mt-4 text-lg font-medium leading-8 text-muted">
-                מחירים פשוטים, בלי מערכת כבדה ובלי חודשים של הטמעה.
-              </p>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-3">
-              {pricingPlans.map((plan) => (
-                <div
-                  key={plan.title}
-                  className={`relative flex min-h-[520px] flex-col overflow-hidden rounded-[var(--radius-xl)] border p-8 shadow-soft ${
-                    plan.highlighted
-                      ? "border-brand bg-[linear-gradient(180deg,#ffffff_0%,#f4faff_100%)] shadow-panel"
-                      : "border-border bg-white"
-                  }`}
-                >
-                  {plan.highlighted ? (
-                    <span className="absolute left-6 top-6 rounded-full bg-brand px-4 py-1.5 text-xs font-extrabold text-white">
-                      הכי מתאים לרוב העסקים
-                    </span>
-                  ) : null}
-
-                  <div className="flex-1 pt-10">
-                    <Gem className="size-7 text-brand" aria-hidden="true" />
-                    <h3 className="mt-5 text-2xl font-extrabold text-brand-deep">{plan.title}</h3>
-                    <p className="mt-3 min-h-[56px] text-sm font-medium leading-7 text-muted">{plan.description}</p>
-                    <div className="mt-7 flex items-end gap-2">
-                      <span className="text-5xl font-extrabold text-brand-deep">{plan.price}</span>
-                      {plan.price.startsWith("₪") ? <span className="pb-2 text-sm font-bold text-muted">לחודש</span> : null}
-                    </div>
-                    <ul className="mt-8 space-y-3 text-sm font-semibold text-foreground/85">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <Link
-                    href="/login"
-                    className={`mt-8 flex h-12 items-center justify-center rounded-full text-sm font-extrabold ${
-                      plan.highlighted
-                        ? "bg-brand text-white shadow-[0_14px_30px_rgba(30,136,229,0.2)] hover:bg-brand-deep"
-                        : "border border-brand/25 text-brand hover:bg-brand hover:text-white"
-                    }`}
-                  >
-                    {plan.cta}
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="contact" className="scroll-mt-20 bg-[#f4faff] py-20">
-          <div className="container-shell grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <section id="report" className="overflow-hidden bg-white py-24 sm:py-32">
+          <div className="container-shell grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div className="space-y-6">
-              <p className="text-sm font-extrabold text-brand">שיחה קצרה</p>
-              <h2 className="font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-5xl">
-                רוצים לראות איך זה נראה בעסק שלכם?
+              <p className="section-label">דיווח מהיר</p>
+              <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                דיווח שמרגיש טבעי.
               </h2>
-              <p className="text-lg font-medium leading-8 text-muted">
-                נבנה לכם הדגמה קצרה עם סניפים, אזורים ותסריטי דיווח אמיתיים מהשטח. תוך כמה דקות אפשר להבין אם זה מתאים.
-              </p>
+              <div className="space-y-4 text-xl font-extrabold leading-9 text-brand-deep">
+                <p>אין אפליקציה.</p>
+                <p>אין התחברות.</p>
+                <p>רק סריקה, בחירה ותודה.</p>
+              </div>
+              <Link href="/kiosk-demo" className={buttonVariants({ variant: "secondary", size: "xl" })}>
+                נסה מסך דוגמה
+                <ArrowLeft className="size-5" aria-hidden="true" />
+              </Link>
+            </div>
 
+            <div className="qr-stage">
+              <WaterGlow className="-left-10 top-8 h-64 w-64" />
+              <div className="mx-auto max-w-sm">
+                <PhoneReportMockup />
+              </div>
+              <div className="thank-you-card">
+                <CheckCircle2 className="size-5 text-emerald-600" aria-hidden="true" />
+                <span>תודה. הצוות קיבל.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="managers" className="bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-24 sm:py-32">
+          <div className="container-shell grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+            <div className="space-y-7">
+              <p className="section-label">למנהלים</p>
+              <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                לראות בדיוק מה דורש טיפול.
+              </h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                {trustItems.map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3 rounded-2xl border border-white bg-white/78 p-4 shadow-soft">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
-                      <Icon className="size-4" aria-hidden="true" />
-                    </span>
-                    <span className="text-sm font-extrabold text-brand-deep">{text}</span>
+                {managerPoints.map((point) => (
+                  <div key={point} className="rounded-3xl border border-white bg-white/78 px-5 py-4 text-lg font-extrabold text-brand-deep shadow-soft">
+                    {point}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[var(--radius-xl)] border border-white bg-white p-6 shadow-panel sm:p-8">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-2 text-sm font-bold text-brand-deep" htmlFor="form-name">
-                  שם מלא
-                  <input id="form-name" className="h-12 rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" placeholder="ישראל ישראלי" />
-                </label>
-                <label className="grid gap-2 text-sm font-bold text-brand-deep" htmlFor="form-company">
-                  שם העסק
-                  <input id="form-company" className="h-12 rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" placeholder="קניון / משרד / בית קפה" />
-                </label>
-                <label className="grid gap-2 text-sm font-bold text-brand-deep" htmlFor="form-email">
-                  אימייל
-                  <input id="form-email" type="email" className="h-12 rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" placeholder="email@example.com" />
-                </label>
-                <label className="grid gap-2 text-sm font-bold text-brand-deep" htmlFor="form-phone">
-                  טלפון
-                  <input id="form-phone" type="tel" className="h-12 rounded-xl border border-border bg-white px-4 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/15" placeholder="050-1234567" />
-                </label>
-              </div>
-              <label className="mt-4 grid gap-2 text-sm font-bold text-brand-deep" htmlFor="form-message">
-                מה חשוב לכם לשפר?
-                <textarea
-                  id="form-message"
-                  rows={5}
-                  className="resize-none rounded-xl border border-border bg-white px-4 py-3 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
-                  placeholder="לדוגמה: דיווחי QR, זמני תגובה, דוחות למנהל אזור..."
-                />
-              </label>
-              <a
-                href="mailto:sales@cleanpulse.co.il?subject=%D7%91%D7%A7%D7%A9%D7%AA%20%D7%94%D7%93%D7%92%D7%9E%D7%94%20%D7%9C-CleanPulse"
-                className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-brand px-6 text-base font-extrabold text-white shadow-[0_14px_30px_rgba(30,136,229,0.2)] hover:bg-brand-deep"
-              >
-                שליחת פנייה
-                <ChevronLeft className="size-5" aria-hidden="true" />
-              </a>
+            <DashboardPreview />
+          </div>
+        </section>
+
+        <section className="overflow-hidden bg-white py-24 sm:py-32">
+          <div className="container-shell grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <ClosingProcedureCard />
+            <div className="space-y-6">
+              <p className="section-label">נוהל סגירה</p>
+              <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                בסוף היום, הכל חוזר לנקודת התחלה.
+              </h2>
+              <p className="max-w-xl text-lg font-bold leading-8 text-muted">
+                נוהל סגירה מאפשר לאפס פניות פתוחות אחרי בדיקה מלאה, או להשאיר אותן להמשך טיפול לפי הדרך שבה העסק עובד.
+              </p>
             </div>
           </div>
         </section>
 
-        <section className="bg-brand-deep py-12 text-white">
-          <div className="container-shell flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-lg font-extrabold">CleanPulse</p>
-              <p className="mt-1 text-sm font-medium text-white/70">ניקיון ציבורי שמנוהל כמו מוצר פרימיום.</p>
+        <section className="relative overflow-hidden bg-[#f4faff] py-24 sm:py-32">
+          <div className="container-shell grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+            <div className="space-y-6">
+              <p className="section-label">מסניף לרשת</p>
+              <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                בנוי לצמוח מסניף אחד לרשת.
+              </h2>
+              <p className="max-w-xl text-lg font-bold leading-8 text-muted">
+                סניפים, אזורי שירותים, מסכים ו־QR. אותו שקט, גם כשהעסק גדל.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {scaleItems.map(({ label, icon: Icon }) => (
+                  <div key={label} className="flex items-center gap-3 rounded-3xl bg-white px-5 py-4 shadow-soft">
+                    <span className="flex size-10 items-center justify-center rounded-2xl bg-[#f4faff] text-brand">
+                      <Icon className="size-5" aria-hidden="true" />
+                    </span>
+                    <span className="text-sm font-extrabold text-brand-deep">{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm font-bold text-white/78">
-              <span>sales@cleanpulse.co.il</span>
-              <span>077-9876543</span>
-              <span>תל אביב</span>
+            <ScaleVisual />
+          </div>
+        </section>
+
+        <section className="bg-white py-24 sm:py-32">
+          <div className="container-shell">
+            <div className="mx-auto max-w-4xl text-center">
+              <p className="section-label">אמון</p>
+              <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                פחות רעש. יותר ודאות.
+              </h2>
+            </div>
+
+            <div className="mt-14 grid gap-4 md:grid-cols-3">
+              {trustItems.map(({ icon: Icon, title }) => (
+                <article key={title} className="trust-panel">
+                  <Icon className="size-7 text-brand" aria-hidden="true" />
+                  <h3 className="mt-8 text-2xl font-extrabold text-brand-deep">{title}</h3>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden bg-brand-deep py-24 text-white sm:py-32">
+          <WaterGlow className="-right-20 top-0 h-96 w-96 opacity-80" />
+          <div className="container-shell relative z-10 grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+            <div className="max-w-3xl space-y-6">
+              <Sparkles className="size-8 text-brand-water" aria-hidden="true" />
+              <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight sm:text-6xl">
+                להתחיל לראות מה באמת קורה.
+              </h2>
+              <p className="max-w-2xl text-lg font-bold leading-8 text-white/72">
+                תנו לצוות לטפל בזמן. תנו למנהלים שקט.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link href="/login" className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-white px-7 text-base font-extrabold text-brand-deep shadow-[0_20px_48px_rgba(255,255,255,0.14)] hover:bg-[#f4faff]">
+                כניסה למערכת
+              </Link>
+              <Link href="/kiosk-demo" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/18 bg-white/8 px-7 text-base font-extrabold text-white backdrop-blur-xl hover:bg-white/14">
+                צפייה בדמו
+                <ArrowLeft className="size-5" aria-hidden="true" />
+              </Link>
             </div>
           </div>
         </section>
