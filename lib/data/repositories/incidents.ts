@@ -29,6 +29,11 @@ export type CreateIncidentInput = {
   source: IncidentSource;
 };
 
+export type CreateVerifiedIncidentInput = CreateIncidentInput & {
+  verifiedIssueTypeId?: string | null | undefined;
+  verifiedIssueSeverity?: IncidentPriority | null | undefined;
+};
+
 export type UpdateIncidentStatusInput = {
   organizationId: string;
   incidentId: string;
@@ -82,6 +87,35 @@ function validateIncidentInput(input: CreateIncidentInput) {
   }
 }
 
+function buildIncidentRecord(input: CreateIncidentInput, context?: { issueTypeId?: string | null; issueSeverity?: IncidentPriority | null }) {
+  const createdAt = nowIso();
+
+  return {
+    id: createPrefixedId("incident"),
+    organizationId: input.organizationId,
+    branchId: input.branchId,
+    restroomId: input.restroomId,
+    screenId: input.screenId,
+    issueTypeId: context?.issueTypeId ?? null,
+    issueKey: input.issueKey ?? null,
+    rating: input.rating ?? null,
+    status: "open",
+    priority: input.priority ?? derivePriority(context?.issueSeverity ?? undefined, input.rating),
+    customerNote: input.customerNote ?? null,
+    openedAt: createdAt,
+    acknowledgedAt: null,
+    inProgressAt: null,
+    resolvedAt: null,
+    dismissedAt: null,
+    assignedToUserId: null,
+    resolvedByUserId: null,
+    resolutionNote: null,
+    source: input.source,
+    createdAt,
+    updatedAt: createdAt,
+  } satisfies IncidentRecord;
+}
+
 export async function createIncident(input: CreateIncidentInput) {
   validateIncidentInput(input);
 
@@ -103,31 +137,29 @@ export async function createIncident(input: CreateIncidentInput) {
     throw new DataLayerError("ISSUE_TYPE_NOT_FOUND", `Issue type "${input.issueKey}" was not found.`);
   }
 
-  const createdAt = nowIso();
-  const incidentRecord: IncidentRecord = {
-    id: createPrefixedId("incident"),
-    organizationId: input.organizationId,
-    branchId: branch.id,
-    restroomId: restroom.id,
-    screenId: screen.id,
-    issueTypeId: issueType?.id ?? null,
-    issueKey: input.issueKey ?? null,
-    rating: input.rating ?? null,
-    status: "open",
-    priority: input.priority ?? derivePriority(issueType?.severity, input.rating),
-    customerNote: input.customerNote ?? null,
-    openedAt: createdAt,
-    acknowledgedAt: null,
-    inProgressAt: null,
-    resolvedAt: null,
-    dismissedAt: null,
-    assignedToUserId: null,
-    resolvedByUserId: null,
-    resolutionNote: null,
-    source: input.source,
-    createdAt,
-    updatedAt: createdAt,
-  };
+  const incidentRecord = buildIncidentRecord(
+    {
+      ...input,
+      branchId: branch.id,
+      restroomId: restroom.id,
+      screenId: screen.id,
+    },
+    {
+      issueTypeId: issueType?.id ?? null,
+      issueSeverity: issueType?.severity ?? null,
+    },
+  );
+
+  return getDataAdapter().create("incidents", incidentRecord);
+}
+
+export async function createVerifiedIncident(input: CreateVerifiedIncidentInput) {
+  validateIncidentInput(input);
+
+  const incidentRecord = buildIncidentRecord(input, {
+    issueTypeId: input.verifiedIssueTypeId ?? null,
+    issueSeverity: input.verifiedIssueSeverity ?? null,
+  });
 
   return getDataAdapter().create("incidents", incidentRecord);
 }

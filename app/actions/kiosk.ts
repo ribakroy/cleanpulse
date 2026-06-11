@@ -1,13 +1,15 @@
 "use server";
 
+import { after } from "next/server";
 import { z } from "zod";
 import { findScreenByPublicToken, findScreenByQrToken } from "@/lib/data/repositories/screens";
 import { getBranchById } from "@/lib/data/repositories/branches";
 import { getRestroomById } from "@/lib/data/repositories/restrooms";
 import { getIssueTypeByKey } from "@/lib/data/repositories/issue-types";
-import { createIncident } from "@/lib/data/repositories/incidents";
+import { createVerifiedIncident } from "@/lib/data/repositories/incidents";
 import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 import { sendIncidentAlert } from "@/lib/email/send-incident-alert";
+import type { IncidentRecord } from "@/lib/data/types";
 import type { IssueTypeKey } from "@/types/domain";
 
 // In-memory rate limiter for local MVP development.
@@ -53,6 +55,37 @@ export type PublicIncidentInput = {
   rating?: (1 | 2 | 3 | 4 | 5) | null;
 };
 
+function scheduleIncidentSideEffects(input: {
+  incident: IncidentRecord;
+  source: "kiosk" | "qr";
+  issueKey?: string | null | undefined;
+  rating?: number | null | undefined;
+}) {
+  after(async () => {
+    try {
+      await createActivityLog({
+        organizationId: input.incident.organizationId,
+        actorUserId: null,
+        incidentId: input.incident.id,
+        action: "incident_created",
+        metadata: {
+          source: input.source,
+          issueKey: input.issueKey || null,
+          rating: input.rating || null,
+        },
+      });
+    } catch (activityError) {
+      console.error("Non-blocking error in createActivityLog:", activityError);
+    }
+
+    try {
+      await sendIncidentAlert(input.incident);
+    } catch (emailError) {
+      console.error("Non-blocking error in sendIncidentAlert call:", emailError);
+    }
+  });
+}
+
 export async function createPublicIncidentAction(input: PublicIncidentInput) {
   try {
     // 1. Zod input validation
@@ -90,8 +123,8 @@ export async function createPublicIncidentAction(input: PublicIncidentInput) {
     }
 
     // 4. Validate issueKey if provided, or rating
+    const issueType = issueKey ? await getIssueTypeByKey(issueKey as IssueTypeKey) : null;
     if (issueKey) {
-      const issueType = await getIssueTypeByKey(issueKey as IssueTypeKey);
       if (!issueType || !issueType.isActive) {
         return {
           success: false,
@@ -110,7 +143,7 @@ export async function createPublicIncidentAction(input: PublicIncidentInput) {
     }
 
     // 6. Create incident in repository
-    const incident = await createIncident({
+    const incident = await createVerifiedIncident({
       organizationId: screen.organizationId,
       branchId: screen.branchId,
       restroomId: screen.restroomId,
@@ -118,27 +151,17 @@ export async function createPublicIncidentAction(input: PublicIncidentInput) {
       issueKey: (issueKey as IssueTypeKey) || null,
       rating: (rating as 1 | 2 | 3 | 4 | 5) || null,
       source,
+      verifiedIssueTypeId: issueType?.id ?? null,
+      verifiedIssueSeverity: issueType?.severity ?? null,
     });
 
-    // 7. Write activity log
-    await createActivityLog({
-      organizationId: screen.organizationId,
-      actorUserId: null,
-      incidentId: incident.id,
-      action: "incident_created",
-      metadata: {
-        source,
-        issueKey: issueKey || null,
-        rating: rating || null,
-      },
+    // 7. Non-critical work runs after the response so public reporting stays fast.
+    scheduleIncidentSideEffects({
+      incident,
+      source,
+      issueKey,
+      rating,
     });
-
-    // 8. Trigger email notifications (non-blocking for client response)
-    try {
-      await sendIncidentAlert(incident);
-    } catch (emailError) {
-      console.error("Non-blocking error in sendIncidentAlert call:", emailError);
-    }
 
     return { success: true };
   } catch (error) {

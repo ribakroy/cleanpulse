@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { findScreenByPublicToken, updateScreenLastSeen } from "@/lib/data/repositories/screens";
 import { getBranchById } from "@/lib/data/repositories/branches";
 import { getRestroomById } from "@/lib/data/repositories/restrooms";
@@ -23,8 +24,8 @@ export default async function KioskPage({ params }: KioskPageProps) {
     return <PublicErrorState message="קישור זה אינו תקין או שמסך הטאבלט הושבת." />;
   }
 
-  // 2. Update lastSeenAt (non-blocking for page load)
-  await updateScreenLastSeen(screen.id);
+  // 2. Update lastSeenAt after the response so the public screen stays fast.
+  after(() => updateScreenLastSeen(screen.id));
 
   // 3. Resolve branch and restroom
   const branch = await getBranchById(screen.organizationId, screen.branchId);
