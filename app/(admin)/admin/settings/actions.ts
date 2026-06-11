@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { canManageSettings } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
+import { DataLayerError } from "@/lib/data/errors";
 import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 import { resolveOpenIncidentsForOrganization } from "@/lib/data/repositories/incidents";
 import { getOrganizationById, updateOrganization } from "@/lib/data/repositories/organizations";
@@ -20,6 +21,22 @@ function requireSettingsManager(user: Awaited<ReturnType<typeof requireUser>>) {
   if (!canManageSettings(user)) {
     throw new Error("אין הרשאה לעדכן את הגדרות העסק");
   }
+}
+
+function getFriendlyClosingErrorMessage(error: unknown) {
+  if (error instanceof DataLayerError) {
+    if (error.code.startsWith("GITHUB_")) {
+      return "לא הצלחנו לשמור את הפעולה כרגע. נסו שוב בעוד רגע.";
+    }
+
+    return "לא הצלחנו לעדכן את הנתונים. נסו שוב בעוד רגע.";
+  }
+
+  if (error instanceof Error && /[\u0590-\u05FF]/.test(error.message)) {
+    return error.message;
+  }
+
+  return "לא הצלחנו לבצע את הפעולה. נסו שוב בעוד רגע.";
 }
 
 function parseClosingResetMode(value: FormDataEntryValue | null): ClosingResetMode {
@@ -42,63 +59,82 @@ function parseClosingTime(value: FormDataEntryValue | null) {
 
 export async function updateClosingProcedureAction(formData: FormData): Promise<ClosingProcedureActionResult> {
   const user = await requireUser();
-  requireSettingsManager(user);
 
-  const closingTime = parseClosingTime(formData.get("closingTime"));
-  const closingResetMode = parseClosingResetMode(formData.get("closingResetMode"));
+  try {
+    requireSettingsManager(user);
 
-  await updateOrganization(user.organizationId, {
-    closingTime,
-    closingResetMode,
-  });
+    const closingTime = parseClosingTime(formData.get("closingTime"));
+    const closingResetMode = parseClosingResetMode(formData.get("closingResetMode"));
 
-  revalidatePath("/admin/settings");
+    await updateOrganization(user.organizationId, {
+      closingTime,
+      closingResetMode,
+    });
 
-  return {
-    ok: true,
-    message: "נוהל הסגירה נשמר.",
-  };
+    revalidatePath("/admin/settings");
+
+    return {
+      ok: true,
+      message: "נוהל הסגירה נשמר.",
+    };
+  } catch (error) {
+    console.error("Failed to update closing procedure:", error);
+    return {
+      ok: false,
+      message: getFriendlyClosingErrorMessage(error),
+    };
+  }
 }
 
 export async function runClosingResetNowAction(): Promise<ClosingProcedureActionResult> {
   const user = await requireUser();
-  requireSettingsManager(user);
 
-  const organization = await getOrganizationById(user.organizationId);
-  const resetMode = organization?.closingResetMode ?? "keep_open_incidents";
+  try {
+    requireSettingsManager(user);
 
-  if (resetMode !== "reset_open_incidents") {
+    const organization = await getOrganizationById(user.organizationId);
+    const resetMode = organization?.closingResetMode ?? "keep_open_incidents";
+
+    if (resetMode !== "reset_open_incidents") {
+      return {
+        ok: true,
+        message: "העסק מוגדר להשאיר פניות פתוחות בסוף היום, לכן לא בוצע איפוס.",
+        closedCount: 0,
+      };
+    }
+
+    const result = await resolveOpenIncidentsForOrganization({
+      organizationId: user.organizationId,
+      actorUserId: user.id,
+    });
+
+    await createActivityLog({
+      organizationId: user.organizationId,
+      actorUserId: user.id,
+      incidentId: null,
+      action: "closing_reset_run",
+      metadata: {
+        actorName: user.fullName,
+        resetAt: result.resetAt,
+        closedCount: result.closedCount,
+        closedIncidentIds: result.closedIncidentIds,
+      },
+    });
+
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/incidents");
+    revalidatePath("/admin/settings");
+
     return {
       ok: true,
-      message: "העסק מוגדר להשאיר פניות פתוחות בסוף היום, לכן לא בוצע איפוס.",
-      closedCount: 0,
+      message: `בוצע איפוס סוף יום. נסגרו ${result.closedCount} פניות פתוחות.`,
+      closedCount: result.closedCount,
+    };
+  } catch (error) {
+    console.error("Failed to run closing reset:", error);
+    return {
+      ok: false,
+      message: getFriendlyClosingErrorMessage(error),
     };
   }
-
-  const result = await resolveOpenIncidentsForOrganization({
-    organizationId: user.organizationId,
-    actorUserId: user.id,
-  });
-
-  await createActivityLog({
-    organizationId: user.organizationId,
-    actorUserId: user.id,
-    incidentId: null,
-    action: "closing_reset_run",
-    metadata: {
-      actorName: user.fullName,
-      resetAt: result.resetAt,
-      closedCount: result.closedCount,
-    },
-  });
-
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/admin/incidents");
-  revalidatePath("/admin/settings");
-
-  return {
-    ok: true,
-    message: `בוצע איפוס סוף יום. נסגרו ${result.closedCount} פניות פתוחות.`,
-    closedCount: result.closedCount,
-  };
 }

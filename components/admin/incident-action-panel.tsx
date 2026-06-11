@@ -33,7 +33,8 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
         await actionFn();
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "אירעה שגיאה בביצוע הפעולה");
+        console.error("Failed to update incident:", err);
+        setError("לא הצלחנו לבצע את הפעולה. נסו שוב בעוד רגע.");
       }
     });
   };
@@ -50,7 +51,8 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
         setSuccessMessage(`בוצע איפוס. נסגרו ${result.closedCount} פניות פתוחות.`);
         window.setTimeout(() => router.refresh(), 3600);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "אירעה שגיאה בביצוע האיפוס");
+        console.error("Failed to reset restroom incidents:", err);
+        setError("לא הצלחנו לבצע את האיפוס. נסו שוב בעוד רגע.");
       }
     });
   };

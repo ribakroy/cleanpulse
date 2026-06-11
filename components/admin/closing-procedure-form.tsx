@@ -55,9 +55,10 @@ export function ClosingProcedureForm({
         const result = await updateClosingProcedureAction(formData);
         setMessage({ type: result.ok ? "success" : "error", text: result.message });
       } catch (error) {
+        console.error("Failed to update closing procedure:", error);
         setMessage({
           type: "error",
-          text: error instanceof Error ? error.message : "לא הצלחנו לשמור את נוהל הסגירה",
+          text: "לא הצלחנו לשמור את נוהל הסגירה. נסו שוב בעוד רגע.",
         });
       }
     });
@@ -73,9 +74,10 @@ export function ClosingProcedureForm({
         const result = await runClosingResetNowAction();
         setMessage({ type: result.ok ? "success" : "error", text: result.message });
       } catch (error) {
+        console.error("Failed to run closing reset:", error);
         setMessage({
           type: "error",
-          text: error instanceof Error ? error.message : "לא הצלחנו לבצע איפוס סוף יום",
+          text: "לא הצלחנו לבצע איפוס סוף יום. נסו שוב בעוד רגע.",
         });
       }
     });

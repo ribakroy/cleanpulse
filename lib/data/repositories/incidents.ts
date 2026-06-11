@@ -260,16 +260,18 @@ async function resolveOpenIncidents(input: ResetOpenIncidentsInput & { restroomI
   const incidentsToClose = incidents.filter((incident) => isOpenBeforeReset(incident, resetAt));
   const resolutionNote = input.resolutionNote ?? RESET_RESOLUTION_NOTE;
 
-  const closedIncidents = await Promise.all(
-    incidentsToClose.map((incident) =>
-      getDataAdapter().update("incidents", incident.id, {
-        status: "resolved",
-        resolvedAt: resetAt,
-        resolvedByUserId: input.actorUserId,
-        resolutionNote,
-      }),
-    ),
-  );
+  const closedIncidents: IncidentRecord[] = [];
+  const dataAdapter = getDataAdapter();
+
+  for (const incident of incidentsToClose) {
+    const closedIncident = await dataAdapter.update("incidents", incident.id, {
+      status: "resolved",
+      resolvedAt: resetAt,
+      resolvedByUserId: input.actorUserId,
+      resolutionNote,
+    });
+    closedIncidents.push(closedIncident);
+  }
 
   return {
     resetAt,
