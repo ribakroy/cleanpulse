@@ -1,9 +1,11 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import type { SafeUserRecord } from "@/lib/data/types";
 import { env } from "@/lib/utils/env";
 import type { UserRole } from "@/types/domain";
+import { getUserById } from "@/lib/data/repositories/users";
 
 export const SESSION_COOKIE_NAME = "cleanpulse_session";
 
@@ -203,6 +205,10 @@ export async function getCurrentSession() {
   return verifySessionCookie();
 }
 
+export const getCachedUser = cache(async (organizationId: string, userId: string) => {
+  return await getUserById(organizationId, userId);
+});
+
 export async function getCurrentUser(): Promise<SafeUserRecord | null> {
   const session = await getCurrentSession();
 
@@ -210,16 +216,14 @@ export async function getCurrentUser(): Promise<SafeUserRecord | null> {
     return null;
   }
 
-  return {
-    id: session.user.id,
-    organizationId: session.user.organizationId,
-    email: session.user.email,
-    fullName: session.user.fullName,
-    role: session.user.role,
-    isActive: true,
-    createdAt: session.issuedAt,
-    updatedAt: session.issuedAt,
-  };
+  // Reload user from database (cached per request)
+  const dbUser = await getCachedUser(session.user.organizationId, session.user.id);
+
+  if (!dbUser || !dbUser.isActive) {
+    return null;
+  }
+
+  return dbUser;
 }
 
 export async function requireUser() {

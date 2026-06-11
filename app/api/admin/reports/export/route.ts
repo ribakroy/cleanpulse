@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth/session";
+import { canViewReports } from "@/lib/auth/permissions";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
@@ -14,6 +15,13 @@ export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user (scoping automatically starts here)
     const user = await requireUser();
+
+    if (!canViewReports(user)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     // 2. Extract filter parameters
     const { searchParams } = new URL(request.url);

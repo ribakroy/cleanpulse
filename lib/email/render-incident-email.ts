@@ -10,6 +10,16 @@ type RenderOptions = {
   adminUrl: string;
 };
 
+function escapeHtml(unsafe: string): string {
+  if (!unsafe) return "";
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export function renderIncidentEmail({
   incident,
   branchName,
@@ -18,6 +28,11 @@ export function renderIncidentEmail({
   issueLabel,
   adminUrl,
 }: RenderOptions) {
+  const safeBranchName = escapeHtml(branchName);
+  const safeRestroomName = escapeHtml(restroomName);
+  const safeScreenName = escapeHtml(screenName);
+  const safeIssueLabel = escapeHtml(issueLabel);
+  const safeCustomerNote = escapeHtml(incident.customerNote || "");
   const isRating = incident.rating !== null;
   const openedAtFormatted = formatDateTime(incident.openedAt);
   const sourceLabel = incident.source === "kiosk" ? "מסך טאבלט (Kiosk)" : "סריקת QR בנייד";
@@ -29,14 +44,14 @@ export function renderIncidentEmail({
 
   const typeLabel = isRating ? "חוות דעת / דירוג" : "דיווח תקלה";
   const detailLabel = isRating ? "דירוג שהתקבל:" : "סוג התקלה:";
-  const detailValue = isRating ? `${incident.rating} מתוך 5 כוכבים` : issueLabel;
+  const detailValue = isRating ? `${incident.rating} מתוך 5 כוכבים` : safeIssueLabel;
 
   // 2. Build HTML Body (RTL, Premium Water Blue theme)
   const html = `<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>${subject}</title>
+  <title>${escapeHtml(subject)}</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -156,15 +171,15 @@ export function renderIncidentEmail({
         </tr>
         <tr class="detail-row">
           <td class="detail-label">סניף:</td>
-          <td class="detail-value">${branchName}</td>
+          <td class="detail-value">${safeBranchName}</td>
         </tr>
         <tr class="detail-row">
           <td class="detail-label">אזור שירותים:</td>
-          <td class="detail-value">${restroomName}</td>
+          <td class="detail-value">${safeRestroomName}</td>
         </tr>
         <tr class="detail-row">
           <td class="detail-label">מסך:</td>
-          <td class="detail-value">${screenName}</td>
+          <td class="detail-value">${safeScreenName}</td>
         </tr>
         <tr class="detail-row">
           <td class="detail-label">${detailLabel}</td>
@@ -178,6 +193,11 @@ export function renderIncidentEmail({
           <td class="detail-label">מקור דיווח:</td>
           <td class="detail-value">${sourceLabel}</td>
         </tr>
+        ${safeCustomerNote ? `
+        <tr class="detail-row">
+          <td class="detail-label">הערת לקוח:</td>
+          <td class="detail-value">${safeCustomerNote}</td>
+        </tr>` : ''}
       </table>
       
       <div class="button-container">

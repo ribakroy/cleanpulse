@@ -13,10 +13,18 @@ import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTi
 function escapeCsvValue(val: string | number | null | undefined): string {
   if (val === null || typeof val === "undefined") return "";
   const str = String(val);
-  if (/[",\r\n]/.test(str)) {
-    return `"${str.replace(/"/g, '""')}"`;
+  
+  // Prevent CSV Formula Injection
+  const firstChar = str.charAt(0);
+  let safeStr = str;
+  if (firstChar === "=" || firstChar === "+" || firstChar === "-" || firstChar === "@" || firstChar === "\t" || firstChar === "\r") {
+    safeStr = "'" + str;
   }
-  return str;
+
+  if (/[",\r\n]/.test(safeStr)) {
+    return `"${safeStr.replace(/"/g, '""')}"`;
+  }
+  return safeStr;
 }
 
 export function generateIncidentsCsv(
