@@ -8,7 +8,7 @@ import type {
 } from "@/lib/data/types";
 import { formatDateTime } from "@/lib/utils/format";
 import { getTimeToAcknowledgement, getTimeToResolution } from "@/lib/utils/sla";
-import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
+import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 
 function escapeCsvValue(val: string | number | null | undefined): string {
   if (val === null || typeof val === "undefined") return "";
@@ -75,7 +75,8 @@ export function generateIncidentsCsv(
     "סניף",
     "אזור שירותים",
     "מסך",
-    "סוג תקלה / דירוג",
+    "מה דווח",
+    "ציון כללי",
     "מקור",
     "זמן עד אישור (דק')",
     "זמן עד סגירה (דק')",
@@ -105,6 +106,7 @@ export function generateIncidentsCsv(
       restroomName,
       screenName,
       title,
+      formatIncidentRatingSubtitle(inc),
       sourceLabel,
       timeToAck,
       timeToResolve,

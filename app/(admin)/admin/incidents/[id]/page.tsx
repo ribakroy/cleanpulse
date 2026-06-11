@@ -23,7 +23,7 @@ import {
   getSlaBadgeStyles
 } from "@/lib/utils/sla";
 import { IncidentActionPanel } from "@/components/admin/incident-action-panel";
-import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
+import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 import { listIssueTypes } from "@/lib/data/repositories/issue-types";
 
 export const metadata = {
@@ -119,6 +119,7 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
+            <p className="text-sm font-semibold text-muted">מה דווח על ידי הלקוחות</p>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{title}</h1>
               <StatusBadge status={incident.status} />
@@ -129,6 +130,9 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                 {slaBadge.label}
               </Badge>
             </div>
+            <p className="text-base font-semibold text-brand-deep">
+              {formatIncidentRatingSubtitle(incident)}
+            </p>
           </div>
         </div>
       </div>
@@ -145,6 +149,14 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
               </CardTitle>
             </CardHeader>
             <CardContent className="divide-y divide-border/60 text-sm">
+              <div className="grid grid-cols-3 py-3">
+                <span className="font-bold text-muted">מה דווח</span>
+                <span className="col-span-2 text-foreground font-semibold">{title}</span>
+              </div>
+              <div className="grid grid-cols-3 py-3">
+                <span className="font-bold text-muted">ציון כללי</span>
+                <span className="col-span-2 text-foreground font-semibold">{formatIncidentRatingSubtitle(incident)}</span>
+              </div>
               <div className="grid grid-cols-3 py-3">
                 <span className="font-bold text-muted">סניף</span>
                 <span className="col-span-2 text-foreground font-semibold">{branch?.name ?? "לא ידוע"}</span>

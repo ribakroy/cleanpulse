@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
+import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 import { canResolveIncident, canViewIncidents } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
@@ -132,7 +132,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
     if (filterSearch) {
       const branchName = (branchNames.get(incident.branchId) || "").toLowerCase();
       const restroomName = (restroomNames.get(incident.restroomId) || "").toLowerCase();
-      const title = formatIncidentTitle(incident, issueTypeLabels).toLowerCase();
+      const title = `${formatIncidentTitle(incident, issueTypeLabels)} ${formatIncidentRatingSubtitle(incident)}`.toLowerCase();
       const match = branchName.includes(filterSearch) || 
                     restroomName.includes(filterSearch) || 
                     title.includes(filterSearch) || 
@@ -250,9 +250,15 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
                 >
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-lg font-bold text-foreground">
-                        {formatIncidentTitle(incident, issueTypeLabels)}
-                      </span>
+                      <div className="min-w-[180px] space-y-1">
+                        <p className="text-xs font-semibold text-muted">מה דווח על ידי הלקוחות</p>
+                        <span className="block text-lg font-bold text-foreground">
+                          {formatIncidentTitle(incident, issueTypeLabels)}
+                        </span>
+                        <p className="text-sm font-semibold text-brand-deep">
+                          {formatIncidentRatingSubtitle(incident)}
+                        </p>
+                      </div>
                       <StatusBadge status={incident.status} />
                       <Badge variant="outline" className="font-bold">
                         {incident.priority === "critical" ? "קריטי" : incident.priority === "high" ? "גבוה" : incident.priority === "medium" ? "בינוני" : "נמוך"}

@@ -10,10 +10,18 @@ export function formatIncidentTitle(incident: IncidentRecord, issueTypeLabels: M
   }
 
   if (incident.rating) {
-    return `דירוג כללי ${incident.rating}/5`;
+    return "ציון כללי";
   }
 
   return "דיווח כללי";
+}
+
+export function formatIncidentRatingSubtitle(incident: Pick<IncidentRecord, "rating">) {
+  if (incident.rating) {
+    return `ציון כללי ${incident.rating}/5`;
+  }
+
+  return "לא צורף ציון כללי";
 }
 
 export function countActiveIncidents(incidents: IncidentRecord[]) {

@@ -15,7 +15,7 @@ import { listScreensByOrganization } from "@/lib/data/repositories/screens";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
 import { formatDateTime } from "@/lib/utils/format";
 import { IncidentsPolling } from "@/components/admin/incidents-polling";
-import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
+import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 import { 
   calculateDashboardMetrics, 
   groupIncidentsByHour, 
@@ -205,12 +205,18 @@ export default async function AdminDashboardPage() {
                     >
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Link
-                            href={`/admin/incidents/${incident.id}`}
-                            className="font-bold text-brand hover:underline"
-                          >
-                            {formatIncidentTitle(incident, issueTypeLabels)}
-                          </Link>
+                          <div className="min-w-[160px] space-y-1">
+                            <p className="text-[11px] font-semibold text-muted">מה דווח על ידי הלקוחות</p>
+                            <Link
+                              href={`/admin/incidents/${incident.id}`}
+                              className="block font-bold text-brand hover:underline"
+                            >
+                              {formatIncidentTitle(incident, issueTypeLabels)}
+                            </Link>
+                            <p className="text-xs font-semibold text-brand-deep">
+                              {formatIncidentRatingSubtitle(incident)}
+                            </p>
+                          </div>
                           <StatusBadge status={incident.status} />
                           <Badge variant="outline" className="text-xs">
                             {incident.priority === "critical" ? "קריטי" : incident.priority === "high" ? "גבוה" : incident.priority === "medium" ? "בינוני" : "נמוך"}
@@ -377,15 +383,19 @@ export default async function AdminDashboardPage() {
               ) : (
                 recentIncidents.map((incident) => (
                   <div key={incident.id} className="text-xs border-b border-border/50 pb-2.5 last:border-0 last:pb-0">
+                    <p className="mb-1 text-[10px] font-semibold text-muted">מה דווח על ידי הלקוחות</p>
                     <div className="flex items-center justify-between gap-2">
                       <Link
                         href={`/admin/incidents/${incident.id}`}
-                        className="font-bold text-foreground hover:text-brand hover:underline truncate max-w-[150px]"
+                        className="block max-w-[190px] font-bold text-foreground hover:text-brand hover:underline"
                       >
                         {formatIncidentTitle(incident, issueTypeLabels)}
                       </Link>
                       <StatusBadge status={incident.status} />
                     </div>
+                    <p className="mt-1 text-[10px] font-semibold text-brand-deep">
+                      {formatIncidentRatingSubtitle(incident)}
+                    </p>
                     <div className="flex items-center justify-between text-[10px] text-muted mt-1 leading-relaxed">
                       <span>{branchNames.get(incident.branchId) || "סניף"}</span>
                       <span className="font-mono">{formatDateTime(incident.openedAt)}</span>

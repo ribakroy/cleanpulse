@@ -23,7 +23,7 @@ import {
   groupIncidentsByHour,
   getDurationMinutes
 } from "@/lib/reports/metrics";
-import { createIssueTypeLabelMap, formatIncidentTitle } from "@/lib/admin/presenters";
+import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 import type { NotificationLogRecord } from "@/lib/data/types";
 import type { IssueTypeKey } from "@/types/domain";
 import { ReportsDonutChart } from "@/components/admin/reports-donut-chart";
@@ -613,7 +613,11 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
                       href={`/admin/incidents/${incident.id}`}
                       className="block rounded-[var(--radius-md)] border border-danger/20 bg-danger/5 p-3 text-xs hover:bg-danger/8"
                     >
-                      <p className="font-bold text-danger">{formatIncidentTitle(incident, issueTypeLabels)}</p>
+                      <p className="text-[11px] font-semibold text-muted">מה דווח על ידי הלקוחות</p>
+                      <p className="mt-1 font-bold text-danger">{formatIncidentTitle(incident, issueTypeLabels)}</p>
+                      <p className="mt-1 font-semibold text-brand-deep">
+                        {formatIncidentRatingSubtitle(incident)}
+                      </p>
                       <p className="mt-1 text-muted">
                         {branchNames.get(incident.branchId) || "לא ידוע"} · {restroomNames.get(incident.restroomId) || "לא ידוע"}
                       </p>
