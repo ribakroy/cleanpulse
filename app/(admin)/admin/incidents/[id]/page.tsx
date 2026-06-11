@@ -97,6 +97,8 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         return "פתרון וסגירת דיווח";
       case "status_dismissed":
         return "דחיית דיווח";
+      case "restroom_reset":
+        return "איפוס מצב השירותים";
       default:
         return action;
     }
@@ -283,6 +285,11 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                         {log.metadata?.resolutionNote ? (
                           <div className="text-xs bg-surface-muted p-2 rounded border text-muted">
                             <p>הערה: <strong className="text-foreground">{String(log.metadata.resolutionNote)}</strong></p>
+                          </div>
+                        ) : null}
+                        {log.action === "restroom_reset" && typeof log.metadata?.closedCount === "number" ? (
+                          <div className="text-xs bg-emerald-50 p-2 rounded border border-emerald-100 text-emerald-800">
+                            נסגרו {Number(log.metadata.closedCount)} פניות פתוחות באזור השירותים.
                           </div>
                         ) : null}
                       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import { flushSync } from "react-dom";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertCircle,
@@ -31,6 +32,10 @@ const iconMap: Record<string, LucideIcon> = {
   dirty_floor: Footprints,
 };
 
+const SUCCESS_RESET_DELAY_MS = 2200;
+const ERROR_RESET_DELAY_MS = 4200;
+const DEMO_FEEDBACK_DELAY_MS = 120;
+
 type IssueType = {
   id: string;
   key: string;
@@ -56,8 +61,9 @@ export function PublicReportForm({
   issueTypes,
   isDemo = false,
 }: PublicReportFormProps) {
-  const [isPending, startTransition] = useTransition();
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [isIssuePending, startIssueTransition] = useTransition();
+  const [, startRatingTransition] = useTransition();
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -88,20 +94,20 @@ export function PublicReportForm({
     const cooldownKey = `issue_${issueKey}`;
     if (cooldowns[cooldownKey]) return;
 
-    setStatus("idle");
-    setErrorMessage(null);
+    flushSync(() => {
+      setStatus("submitting");
+      setErrorMessage(null);
+      setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
+    });
 
-    // Add immediate client side cooldown
-    setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
-
-    startTransition(async () => {
+    startIssueTransition(async () => {
       if (isDemo) {
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, DEMO_FEEDBACK_DELAY_MS));
         setStatus("success");
         setTimeout(() => {
           setStatus("idle");
           setSelectedRating(null);
-        }, 3000);
+        }, SUCCESS_RESET_DELAY_MS);
         return;
       }
 
@@ -113,19 +119,22 @@ export function PublicReportForm({
 
       if (result.success) {
         setStatus("success");
-        // Automatically reset to idle and reset rating after 3 seconds
         setTimeout(() => {
           setStatus("idle");
           setSelectedRating(null);
-        }, 3000);
+        }, SUCCESS_RESET_DELAY_MS);
       } else {
         setStatus("error");
         setErrorMessage(result.error || "שגיאה לא ידועה בשליחת הדיווח");
-        // Reset to idle and reset rating after 5 seconds on error
+        setCooldowns((prev) => {
+          const next = { ...prev };
+          delete next[cooldownKey];
+          return next;
+        });
         setTimeout(() => {
           setStatus("idle");
           setSelectedRating(null);
-        }, 5000);
+        }, ERROR_RESET_DELAY_MS);
       }
     });
   };
@@ -134,17 +143,16 @@ export function PublicReportForm({
     const cooldownKey = `rating_${ratingValue}`;
     if (cooldowns[cooldownKey]) return;
 
-    setStatus("idle");
-    setErrorMessage(null);
+    flushSync(() => {
+      setStatus("idle");
+      setErrorMessage(null);
+      setSelectedRating(ratingValue);
+      setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
+    });
 
-    // Transition state immediately to show issues step
-    setSelectedRating(ratingValue);
-
-    setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
-
-    startTransition(async () => {
+    startRatingTransition(async () => {
       if (isDemo) {
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, DEMO_FEEDBACK_DELAY_MS));
         return;
       }
 
@@ -155,50 +163,64 @@ export function PublicReportForm({
       });
 
       if (!result.success) {
-        console.error("Failed to submit rating:", result.error);
+        setStatus("error");
+        setErrorMessage(result.error || "לא הצלחנו לשלוח את הדירוג");
+        setCooldowns((prev) => {
+          const next = { ...prev };
+          delete next[cooldownKey];
+          return next;
+        });
+        setTimeout(() => {
+          setStatus("idle");
+          setSelectedRating(null);
+        }, ERROR_RESET_DELAY_MS);
       }
     });
   };
 
   const handleCompleteWithoutIssue = () => {
-    setStatus("success");
-    // Reset back to stars view after 3 seconds
+    flushSync(() => setStatus("success"));
     setTimeout(() => {
       setStatus("idle");
       setSelectedRating(null);
-    }, 3000);
+    }, SUCCESS_RESET_DELAY_MS);
   };
 
   const isTablet = source === "kiosk";
 
+  if (status === "submitting") {
+    return (
+      <div className="flex min-h-[56vh] flex-col items-center justify-center p-6 text-center">
+        <div className="mx-auto flex w-full max-w-md flex-col items-center gap-5 rounded-[var(--radius-xl)] border border-brand-water/50 bg-white/94 px-7 py-8 shadow-soft">
+          <span className="flex size-20 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <Loader2 className="size-10 animate-spin" />
+          </span>
+          <div className="space-y-2">
+            <h2 className="font-heading text-2xl font-extrabold tracking-tight text-foreground">
+              שולחים את הדיווח
+            </h2>
+            <p className="text-base leading-7 text-muted">
+              זה ייקח רגע קצר.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (status === "success") {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[56vh] text-center p-6 space-y-7 animate-success-pop max-w-md mx-auto">
-        <div className="relative flex items-center justify-center">
-          {/* Animated pulsing rings */}
-          <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping duration-1000 scale-150" />
-          <div className="absolute inset-0 rounded-full bg-emerald-500/5 animate-pulse duration-1000 scale-125" />
-          <span className="relative flex size-28 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_12px_30px_rgba(16,185,129,0.3)]">
-            <CheckCircle2 className="size-16 stroke-[2.5]" />
-          </span>
-        </div>
-        
-        <div className="space-y-3">
-          <h2 className="text-3xl font-extrabold tracking-tight text-foreground font-heading">
+      <div className="mx-auto flex min-h-[56vh] max-w-md flex-col items-center justify-center space-y-6 p-6 text-center">
+        <span className="flex size-24 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_12px_30px_rgba(16,185,129,0.22)]">
+          <CheckCircle2 className="size-14 stroke-[2.5]" />
+        </span>
+
+        <div className="space-y-2">
+          <h2 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
             תודה, קיבלנו את הדיווח
           </h2>
           <p className="text-lg text-muted leading-relaxed">
             הצוות קיבל עדכון ויטפל בזה בהקדם.
-          </p>
-        </div>
-        
-        {/* Countdown visual loader */}
-        <div className="w-full space-y-2 pt-4">
-          <div className="h-1.5 w-full bg-emerald-100 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full animate-countdown" />
-          </div>
-          <p className="text-xs font-medium text-muted/70">
-            המסך יתאפס מיד.
           </p>
         </div>
       </div>
@@ -279,7 +301,7 @@ export function PublicReportForm({
                   <button
                     key={value}
                     type="button"
-                    disabled={isPending || isOnCooldown}
+                    disabled={isOnCooldown}
                     onMouseEnter={() => !isOnCooldown && setHoveredRating(value)}
                     onMouseLeave={() => setHoveredRating(null)}
                     onClick={() => {
@@ -383,7 +405,7 @@ export function PublicReportForm({
                   <button
                     key={issue.key}
                     type="button"
-                    disabled={isPending || isOnCooldown}
+                    disabled={isIssuePending || isOnCooldown}
                     onClick={() => {
                       // Haptic vibration feedback
                       if (typeof window !== "undefined" && window.navigator.vibrate) {
@@ -406,7 +428,7 @@ export function PublicReportForm({
                         ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]" 
                         : "bg-brand-soft text-brand group-hover:scale-110"
                     )}>
-                      {isPending && !isOnCooldown ? (
+                      {isIssuePending && !isOnCooldown ? (
                         <Loader2 className="size-6 animate-spin" />
                       ) : isOnCooldown ? (
                         <CheckCircle2 className="size-7 stroke-[2.5]" />

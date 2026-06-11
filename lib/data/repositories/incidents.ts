@@ -14,6 +14,9 @@ import { assertUserInOrganization } from "@/lib/data/repositories/users";
 import type { IncidentRecord, QueryFilter } from "@/lib/data/types";
 import type { IncidentPriority, IncidentSource, IncidentStatus, IssueTypeKey } from "@/types/domain";
 
+const RESET_RESOLUTION_NOTE = "נסגר בעקבות איפוס מצב השירותים.";
+const activeIncidentStatuses = new Set<IncidentStatus>(["open", "acknowledged", "in_progress"]);
+
 export type CreateIncidentInput = {
   organizationId: string;
   branchId: string;
@@ -34,6 +37,23 @@ export type UpdateIncidentStatusInput = {
   assignedToUserId?: string | null | undefined;
   resolvedByUserId?: string | null | undefined;
   resolutionNote?: string | null | undefined;
+};
+
+export type ResetOpenIncidentsInput = {
+  organizationId: string;
+  actorUserId: string;
+  resetAt?: string | undefined;
+  resolutionNote?: string | undefined;
+};
+
+export type ResetRestroomIncidentsInput = ResetOpenIncidentsInput & {
+  restroomId: string;
+};
+
+export type ResetOpenIncidentsResult = {
+  resetAt: string;
+  closedCount: number;
+  closedIncidentIds: string[];
 };
 
 function derivePriority(issueSeverity?: IncidentPriority, rating?: number | null) {
@@ -177,4 +197,59 @@ export async function updateIncidentStatus(input: UpdateIncidentStatusInput) {
   }
 
   return getDataAdapter().update("incidents", incident.id, patch);
+}
+
+function isOpenBeforeReset(incident: IncidentRecord, resetAt: string) {
+  if (!activeIncidentStatuses.has(incident.status)) {
+    return false;
+  }
+
+  const openedAt = new Date(incident.openedAt).getTime();
+  const resetTime = new Date(resetAt).getTime();
+
+  if (Number.isNaN(openedAt) || Number.isNaN(resetTime)) {
+    return false;
+  }
+
+  return openedAt <= resetTime;
+}
+
+async function resolveOpenIncidents(input: ResetOpenIncidentsInput & { restroomId?: string | undefined }) {
+  await assertUserInOrganization(input.organizationId, input.actorUserId);
+
+  const resetAt = input.resetAt ?? nowIso();
+  const incidents = await listIncidentsByOrganization(input.organizationId, {
+    includeInactive: true,
+    restroomId: input.restroomId,
+    sortBy: "openedAt",
+    sortDirection: "asc",
+  });
+
+  const incidentsToClose = incidents.filter((incident) => isOpenBeforeReset(incident, resetAt));
+  const resolutionNote = input.resolutionNote ?? RESET_RESOLUTION_NOTE;
+
+  const closedIncidents = await Promise.all(
+    incidentsToClose.map((incident) =>
+      getDataAdapter().update("incidents", incident.id, {
+        status: "resolved",
+        resolvedAt: resetAt,
+        resolvedByUserId: input.actorUserId,
+        resolutionNote,
+      }),
+    ),
+  );
+
+  return {
+    resetAt,
+    closedCount: closedIncidents.length,
+    closedIncidentIds: closedIncidents.map((incident) => incident.id),
+  } satisfies ResetOpenIncidentsResult;
+}
+
+export async function resolveOpenIncidentsForRestroom(input: ResetRestroomIncidentsInput) {
+  return resolveOpenIncidents(input);
+}
+
+export async function resolveOpenIncidentsForOrganization(input: ResetOpenIncidentsInput) {
+  return resolveOpenIncidents(input);
 }

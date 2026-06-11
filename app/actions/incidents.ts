@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import { canResolveIncident } from "@/lib/auth/permissions";
-import { updateIncidentStatus, getIncidentById } from "@/lib/data/repositories/incidents";
+import {
+  updateIncidentStatus,
+  getIncidentById,
+  resolveOpenIncidentsForRestroom,
+} from "@/lib/data/repositories/incidents";
 import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 
 export async function acknowledgeIncidentAction(incidentId: string) {
@@ -154,4 +158,41 @@ export async function dismissIncidentAction(incidentId: string, resolutionNote?:
 
   revalidatePath("/admin/incidents");
   revalidatePath(`/admin/incidents/${incidentId}`);
+}
+
+export async function resetRestroomIncidentsAction(incidentId: string) {
+  const user = await requireUser();
+  if (!canResolveIncident(user)) {
+    throw new Error("אין הרשאה לאפס את מצב השירותים");
+  }
+
+  const incident = await getIncidentById(user.organizationId, incidentId);
+  if (!incident) {
+    throw new Error("הדיווח לא נמצא במערכת");
+  }
+
+  if (incident.status === "resolved" || incident.status === "dismissed") {
+    throw new Error("דיווח זה כבר סגור");
+  }
+
+  const result = await resolveOpenIncidentsForRestroom({
+    organizationId: user.organizationId,
+    restroomId: incident.restroomId,
+    actorUserId: user.id,
+  });
+
+  await createActivityLog({
+    organizationId: user.organizationId,
+    actorUserId: user.id,
+    incidentId,
+    action: "restroom_reset",
+    metadata: {
+      actorName: user.fullName,
+      restroomId: incident.restroomId,
+      resetAt: result.resetAt,
+      closedCount: result.closedCount,
+    },
+  });
+
+  return result;
 }

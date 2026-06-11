@@ -1,4 +1,5 @@
 import { NoAccessState } from "@/components/admin/no-access-state";
+import { ClosingProcedureForm } from "@/components/admin/closing-procedure-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -87,6 +88,22 @@ export default async function AdminSettingsPage() {
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>נוהל סגירה</CardTitle>
+          <CardDescription>
+            מה קורה לפניות פתוחות אחרי סגירת העסק.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ClosingProcedureForm
+            closingTime={organization?.closingTime}
+            closingResetMode={organization?.closingResetMode}
+            canManage={canManageSettings(user)}
+          />
+        </CardContent>
+      </Card>
 
       {/* Users table */}
       <Card>

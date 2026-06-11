@@ -13,6 +13,8 @@ import type {
 
 export type SortDirection = "asc" | "desc";
 
+export type ClosingResetMode = "reset_open_incidents" | "keep_open_incidents";
+
 export type CollectionName =
   | "organizations"
   | "users"
@@ -54,6 +56,8 @@ export type OrganizationRecord = TimestampedRecord & {
   allowedScreensLimit?: number;
   monthlyPrice?: number;
   currency?: string;
+  closingTime?: string | undefined;
+  closingResetMode?: ClosingResetMode | undefined;
 };
 
 export type UserRecord = TimestampedRecord & {
