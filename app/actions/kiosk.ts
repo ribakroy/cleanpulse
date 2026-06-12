@@ -44,8 +44,6 @@ const inputSchema = z.object({
   rating: z.number().int().min(1).max(5).nullable().optional(),
 }).refine(data => data.issueKey || data.rating, {
   message: "Incident requires either issueKey or rating",
-}).refine(data => !(data.issueKey && data.rating), {
-  message: "Incident cannot contain both issueKey and rating together",
 });
 
 export type PublicIncidentInput = {
@@ -122,7 +120,7 @@ export async function createPublicIncidentAction(input: PublicIncidentInput) {
       };
     }
 
-    // 4. Validate issueKey if provided, or rating
+    // 4. Validate issueKey if provided. Rating may be attached to the same report.
     const issueType = issueKey ? await getIssueTypeByKey(issueKey as IssueTypeKey) : null;
     if (issueKey) {
       if (!issueType || !issueType.isActive) {
@@ -134,8 +132,8 @@ export async function createPublicIncidentAction(input: PublicIncidentInput) {
     }
 
     // 5. In-memory rate limiting check (server-side cooldown)
-    const limitKey = issueKey ? `issue_${issueKey}` : `rating_${rating}`;
-    if (!checkRateLimit(token, limitKey)) {
+    const limitKey = issueKey && rating ? `combined_${issueKey}_${rating}` : issueKey ? `issue_${issueKey}` : null;
+    if (limitKey && !checkRateLimit(token, limitKey)) {
       return {
         success: false,
         error: "דיווח דומה התקבל לאחרונה ממסך זה. אנא המתן מספר שניות.",

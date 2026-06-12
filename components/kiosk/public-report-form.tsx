@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { flushSync } from "react-dom";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -35,6 +35,7 @@ const iconMap: Record<string, LucideIcon> = {
 const SUCCESS_RESET_DELAY_MS = 2200;
 const ERROR_RESET_DELAY_MS = 4200;
 const DEMO_FEEDBACK_DELAY_MS = 120;
+const REPORT_SESSION_WINDOW_MS = 20000;
 
 type IssueType = {
   id: string;
@@ -67,6 +68,10 @@ export function PublicReportForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [hoveredRating, setHoveredRating] = useState<number | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const ratingSubmitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ratingCountdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const ratingWindowActiveRef = useRef(false);
   
   // Prevent accidental duplicate taps on public screens.
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
@@ -90,69 +95,62 @@ export function PublicReportForm({
     return () => clearInterval(interval);
   }, []);
 
-  const handleReportIssue = (issueKey: string) => {
-    const cooldownKey = `issue_${issueKey}`;
-    if (cooldowns[cooldownKey]) return;
+  useEffect(() => {
+    return () => {
+      if (ratingSubmitTimerRef.current) {
+        clearTimeout(ratingSubmitTimerRef.current);
+      }
+      if (ratingCountdownTimerRef.current) {
+        clearInterval(ratingCountdownTimerRef.current);
+      }
+    };
+  }, []);
 
+  const clearRatingSubmitTimer = () => {
+    ratingWindowActiveRef.current = false;
+    if (ratingSubmitTimerRef.current) {
+      clearTimeout(ratingSubmitTimerRef.current);
+      ratingSubmitTimerRef.current = null;
+    }
+    if (ratingCountdownTimerRef.current) {
+      clearInterval(ratingCountdownTimerRef.current);
+      ratingCountdownTimerRef.current = null;
+    }
+  };
+
+  const resetReportSession = () => {
+    clearRatingSubmitTimer();
+    setStatus("idle");
+    setErrorMessage(null);
+    setHoveredRating(null);
+    setSelectedRating(null);
+    setRemainingSeconds(null);
+    setCooldowns({});
+  };
+
+  const finishWithSuccess = () => {
+    setStatus("success");
+    setTimeout(resetReportSession, SUCCESS_RESET_DELAY_MS);
+  };
+
+  const finishWithError = (message: string) => {
+    setStatus("error");
+    setErrorMessage(message);
+    setTimeout(resetReportSession, ERROR_RESET_DELAY_MS);
+  };
+
+  const submitRatingOnly = (ratingValue: number) => {
+    clearRatingSubmitTimer();
     flushSync(() => {
       setStatus("submitting");
       setErrorMessage(null);
-      setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
-    });
-
-    startIssueTransition(async () => {
-      if (isDemo) {
-        await new Promise((resolve) => setTimeout(resolve, DEMO_FEEDBACK_DELAY_MS));
-        setStatus("success");
-        setTimeout(() => {
-          setStatus("idle");
-          setSelectedRating(null);
-        }, SUCCESS_RESET_DELAY_MS);
-        return;
-      }
-
-      const result = await createPublicIncidentAction({
-        token,
-        source,
-        issueKey: issueKey as IssueTypeKey,
-      });
-
-      if (result.success) {
-        setStatus("success");
-        setTimeout(() => {
-          setStatus("idle");
-          setSelectedRating(null);
-        }, SUCCESS_RESET_DELAY_MS);
-      } else {
-        setStatus("error");
-        setErrorMessage(result.error || "שגיאה לא ידועה בשליחת הדיווח");
-        setCooldowns((prev) => {
-          const next = { ...prev };
-          delete next[cooldownKey];
-          return next;
-        });
-        setTimeout(() => {
-          setStatus("idle");
-          setSelectedRating(null);
-        }, ERROR_RESET_DELAY_MS);
-      }
-    });
-  };
-
-  const handleRate = (ratingValue: number) => {
-    const cooldownKey = `rating_${ratingValue}`;
-    if (cooldowns[cooldownKey]) return;
-
-    flushSync(() => {
-      setStatus("idle");
-      setErrorMessage(null);
-      setSelectedRating(ratingValue);
-      setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
+      setRemainingSeconds(null);
     });
 
     startRatingTransition(async () => {
       if (isDemo) {
         await new Promise((resolve) => setTimeout(resolve, DEMO_FEEDBACK_DELAY_MS));
+        finishWithSuccess();
         return;
       }
 
@@ -162,28 +160,93 @@ export function PublicReportForm({
         rating: ratingValue as 1 | 2 | 3 | 4 | 5,
       });
 
-      if (!result.success) {
-        setStatus("error");
-        setErrorMessage(result.error || "לא הצלחנו לשלוח את הדירוג");
+      if (result.success) {
+        finishWithSuccess();
+      } else {
+        finishWithError(result.error || "לא הצלחנו לשלוח את הדירוג");
+      }
+    });
+  };
+
+  const scheduleRatingOnlySubmit = (ratingValue: number) => {
+    clearRatingSubmitTimer();
+    ratingWindowActiveRef.current = true;
+    setRemainingSeconds(Math.round(REPORT_SESSION_WINDOW_MS / 1000));
+    ratingCountdownTimerRef.current = setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current === null) return null;
+        const next = Math.max(0, current - 1);
+        if (next === 0) {
+          ratingWindowActiveRef.current = false;
+        }
+        return next;
+      });
+    }, 1000);
+    ratingSubmitTimerRef.current = setTimeout(() => {
+      submitRatingOnly(ratingValue);
+    }, REPORT_SESSION_WINDOW_MS);
+  };
+
+  const handleReportIssue = (issueKey: string) => {
+    const cooldownKey = `issue_${issueKey}`;
+    if (cooldowns[cooldownKey]) return;
+    const shouldAttachRating = selectedRating !== null && ratingWindowActiveRef.current;
+
+    if (selectedRating !== null && remainingSeconds === 0) {
+      submitRatingOnly(selectedRating);
+      return;
+    }
+
+    flushSync(() => {
+      setStatus("submitting");
+      setErrorMessage(null);
+      setCooldowns((prev) => ({ ...prev, [cooldownKey]: Date.now() }));
+    });
+    clearRatingSubmitTimer();
+
+    startIssueTransition(async () => {
+      if (isDemo) {
+        await new Promise((resolve) => setTimeout(resolve, DEMO_FEEDBACK_DELAY_MS));
+        finishWithSuccess();
+        return;
+      }
+
+      const result = await createPublicIncidentAction({
+        token,
+        source,
+        issueKey: issueKey as IssueTypeKey,
+        rating: shouldAttachRating ? selectedRating as 1 | 2 | 3 | 4 | 5 : null,
+      });
+
+      if (result.success) {
+        finishWithSuccess();
+      } else {
         setCooldowns((prev) => {
           const next = { ...prev };
           delete next[cooldownKey];
           return next;
         });
-        setTimeout(() => {
-          setStatus("idle");
-          setSelectedRating(null);
-        }, ERROR_RESET_DELAY_MS);
+        finishWithError(result.error || "שגיאה לא ידועה בשליחת הדיווח");
       }
     });
   };
 
-  const handleCompleteWithoutIssue = () => {
-    flushSync(() => setStatus("success"));
-    setTimeout(() => {
+  const handleRate = (ratingValue: number) => {
+    flushSync(() => {
       setStatus("idle");
-      setSelectedRating(null);
-    }, SUCCESS_RESET_DELAY_MS);
+      setErrorMessage(null);
+      setSelectedRating(ratingValue);
+    });
+    scheduleRatingOnlySubmit(ratingValue);
+  };
+
+  const handleCompleteWithoutIssue = () => {
+    if (selectedRating !== null) {
+      submitRatingOnly(selectedRating);
+      return;
+    }
+
+    finishWithSuccess();
   };
 
   const isTablet = source === "kiosk";
@@ -263,7 +326,7 @@ export function PublicReportForm({
         <p className="text-base text-muted max-w-lg leading-7 transition-all duration-300 sm:text-lg">
           {selectedRating === null 
             ? "דרגו בכוכבים או דווחו על תקלה."
-            : "האם יש בעיה ספציפית שתרצו לדווח עליה?"}
+            : `אם יש תקלה, בחרו אותה עכשיו. אחרת הציון יישמר לבד בעוד ${remainingSeconds ?? Math.round(REPORT_SESSION_WINDOW_MS / 1000)} שניות.`}
         </p>
         
         <div className="w-full max-w-xl rounded-[var(--radius-lg)] border border-border bg-white/88 px-4 py-3 shadow-soft sm:inline-flex sm:w-auto sm:items-center sm:gap-3">
@@ -291,9 +354,6 @@ export function PublicReportForm({
           <div className="flex flex-col items-center gap-4">
             <div className="flex w-full items-center justify-center gap-0.5 py-2 sm:gap-2">
               {Array.from({ length: 5 }, (_, index) => index + 1).map((value) => {
-                const cooldownKey = `rating_${value}`;
-                const isOnCooldown = !!cooldowns[cooldownKey];
-                
                 const isSelected = selectedRating === value;
                 const isHighlighted = (hoveredRating !== null ? value <= hoveredRating : isSelected);
 
@@ -301,8 +361,7 @@ export function PublicReportForm({
                   <button
                     key={value}
                     type="button"
-                    disabled={isOnCooldown}
-                    onMouseEnter={() => !isOnCooldown && setHoveredRating(value)}
+                    onMouseEnter={() => setHoveredRating(value)}
                     onMouseLeave={() => setHoveredRating(null)}
                     onClick={() => {
                       if (typeof window !== "undefined" && window.navigator.vibrate) {
@@ -311,8 +370,7 @@ export function PublicReportForm({
                       handleRate(value);
                     }}
                     className={cn(
-                      "rounded-full p-1.5 hover:bg-amber-50/70 active:scale-90 transition-transform disabled:cursor-not-allowed cursor-pointer sm:p-3",
-                      isOnCooldown ? "text-amber-500" : "text-brand"
+                      "rounded-full p-1.5 text-brand hover:bg-amber-50/70 active:scale-90 transition-transform cursor-pointer sm:p-3"
                     )}
                     aria-label={`דירוג ${value} מתוך 5 כוכבים`}
                   >
@@ -474,7 +532,7 @@ export function PublicReportForm({
               {selectedRating >= 4 ? (
                 <span>הכל תקין, תודה</span>
               ) : (
-                <span>סיום ללא דיווח נוסף</span>
+                <span>סיום עם הציון בלבד</span>
               )}
             </button>
           </div>

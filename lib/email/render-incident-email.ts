@@ -33,18 +33,22 @@ export function renderIncidentEmail({
   const safeScreenName = escapeHtml(screenName);
   const safeIssueLabel = escapeHtml(issueLabel);
   const safeCustomerNote = escapeHtml(incident.customerNote || "");
-  const isRating = incident.rating !== null;
+  const hasIssue = incident.issueKey !== null;
+  const hasRating = incident.rating !== null;
   const openedAtFormatted = formatDateTime(incident.openedAt);
   const sourceLabel = incident.source === "kiosk" ? "מסך טאבלט (Kiosk)" : "סריקת QR בנייד";
 
   // 1. Build Subject
-  const subject = isRating
+  const subject = hasIssue && hasRating
+    ? `דיווח שירותים חדש — ${issueLabel} + דירוג ${incident.rating}/5 | ${branchName}`
+    : hasRating
     ? `דירוג שירותים חדש — ${incident.rating}/5 | ${branchName}`
     : `דיווח שירותים חדש — ${issueLabel} | ${branchName}`;
 
-  const typeLabel = isRating ? "חוות דעת / דירוג" : "דיווח תקלה";
-  const detailLabel = isRating ? "דירוג שהתקבל:" : "סוג התקלה:";
-  const detailValue = isRating ? `${incident.rating} מתוך 5 כוכבים` : safeIssueLabel;
+  const typeLabel = hasIssue && hasRating ? "דיווח תקלה + ציון כללי" : hasRating ? "חוות דעת / דירוג" : "דיווח תקלה";
+  const detailLabel = hasIssue ? "סוג התקלה:" : "דירוג שהתקבל:";
+  const detailValue = hasIssue ? safeIssueLabel : `${incident.rating} מתוך 5 כוכבים`;
+  const ratingValue = hasRating ? `${incident.rating} מתוך 5 כוכבים` : "";
 
   // 2. Build HTML Body (RTL, Premium Water Blue theme)
   const html = `<!DOCTYPE html>
@@ -185,6 +189,11 @@ export function renderIncidentEmail({
           <td class="detail-label">${detailLabel}</td>
           <td class="detail-value highlight">${detailValue}</td>
         </tr>
+        ${hasIssue && hasRating ? `
+        <tr class="detail-row">
+          <td class="detail-label">ציון כללי:</td>
+          <td class="detail-value highlight">${ratingValue}</td>
+        </tr>` : ''}
         <tr class="detail-row">
           <td class="detail-label">זמן פתיחה:</td>
           <td class="detail-value">${openedAtFormatted}</td>
@@ -227,7 +236,7 @@ export function renderIncidentEmail({
 אזור שירותים: ${restroomName}
 מסך:        ${screenName}
 ${detailLabel}  ${detailValue}
-זמן פתיחה:   ${openedAtFormatted}
+${hasIssue && hasRating ? `ציון כללי:  ${ratingValue}\n` : ""}זמן פתיחה:   ${openedAtFormatted}
 מקור דיווח:  ${sourceLabel}
 
 מעבר וטיפול בדיווח בממשק הניהול:

@@ -78,10 +78,6 @@ function validateIncidentInput(input: CreateIncidentInput) {
     throw new DataLayerError("INCIDENT_INPUT_INVALID", "Incident requires either issueKey or rating.");
   }
 
-  if (input.issueKey && input.rating) {
-    throw new DataLayerError("INCIDENT_INPUT_INVALID", "Incident cannot contain both issueKey and rating together.");
-  }
-
   if (input.rating && (input.rating < 1 || input.rating > 5)) {
     throw new DataLayerError("INCIDENT_RATING_INVALID", "Rating incidents must be between 1 and 5.");
   }
