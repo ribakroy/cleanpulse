@@ -232,7 +232,7 @@ export default function HomePage() {
                 CleanPulse מחבר בין מי שמדווח, מי שמטפל ומי שמנהל. בלי רעש, בלי ניירת, בלי פספוסים.
               </p>
 
-              <div className="hero-cta-row flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <div className="hero-cta-row flex w-full flex-col items-end gap-3 sm:flex-row sm:justify-start">
                 <Link href="/login" className={buttonVariants({ variant: "primary", size: "xl" })}>
                   <Lock className="size-5" aria-hidden="true" />
                   כניסה למערכת
@@ -243,7 +243,7 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="hero-signal-row sm:justify-end" aria-label="יכולות מרכזיות">
+              <div className="hero-signal-row w-full justify-start" aria-label="יכולות מרכזיות">
                 {heroSignals.map((signal) => (
                   <span key={signal}>{signal}</span>
                 ))}
