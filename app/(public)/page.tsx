@@ -10,10 +10,8 @@ import {
   Droplets,
   Layers3,
   Lock,
-  Mail,
   MapPinned,
   ScanLine,
-  Send,
   ShieldCheck,
   Sparkles,
   TabletSmartphone,
@@ -22,6 +20,7 @@ import {
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/public/before-after-slider";
+import { ContactLeadFormModal, ContactLeadModal } from "@/components/public/contact-lead-modal";
 
 const navItems = [
   { label: "איך זה עובד", href: "#how" },
@@ -193,12 +192,28 @@ export default function HomePage() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-left md:object-center"
+            className="hero-photo-layer hero-photo-layer-1 object-cover object-left md:object-center"
+          />
+          <Image
+            src="/home/cp-contact.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className="hero-photo-layer hero-photo-layer-2 object-cover object-center"
+            aria-hidden="true"
+          />
+          <Image
+            src="/home/cp-before-clean.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className="hero-photo-layer hero-photo-layer-3 object-cover object-center"
+            aria-hidden="true"
           />
           <div className="hero-photo-wash" aria-hidden="true" />
           <div className="hero-photo-vignette" aria-hidden="true" />
 
-          <div className="container-shell relative z-10 grid min-h-[calc(100svh-9rem)] items-center gap-10 py-10 lg:grid-cols-[0.86fr_1.14fr]">
+          <div className="container-shell relative z-10 grid min-h-[calc(100svh-9rem)] items-center justify-items-start py-10">
             <div className="home-reveal max-w-2xl space-y-7">
               <h1 className="text-balance font-heading text-5xl font-extrabold leading-[1.03] text-brand-deep sm:text-6xl lg:text-7xl">
                 שירותים שמרגישים מטופלים.
@@ -218,14 +233,7 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="hero-proof-strip" aria-label="תקציר יכולות">
-                {["דיווח קטן.", "טיפול ברור.", "ניהול שקט."].map((item) => (
-                  <span key={item}>{item}</span>
-                ))}
-              </div>
             </div>
-
-            <ProductMockupDeck />
           </div>
         </section>
 
@@ -277,31 +285,28 @@ export default function HomePage() {
 
         <section className="closer-section bg-white py-24 sm:py-32">
           <div className="container-shell space-y-10">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <div className="max-w-3xl">
-                <p className="section-label">מבט מקרוב</p>
-                <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
-                  כל רגע קטן מקבל מקום ברור.
-                </h2>
-              </div>
-              <p className="max-w-sm text-base font-bold leading-7 text-muted">
-                ארבעה רגעים. אותה שפה. בלי להעמיס על האורח, הצוות או המנהל.
-              </p>
+            <div className="max-w-3xl">
+              <p className="section-label">מבט מקרוב</p>
+              <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
+                כל רגע קטן מקבל מקום ברור.
+              </h2>
             </div>
 
             <div className="closer-rail" aria-label="מבט מקרוב על CleanPulse">
-              {closerItems.map((item, index) => (
-                <article key={item.label} className="closer-card motion-card" style={{ animationDelay: `${index * 90}ms` }}>
-                  <div className="closer-card-media">
-                    <Image src={item.image} alt={item.alt} fill sizes="(max-width: 768px) 82vw, 36vw" className="object-cover" />
-                  </div>
-                  <div className="closer-card-copy">
-                    <p>{item.label}</p>
-                    <h3>{item.title}</h3>
-                    <span>{item.body}</span>
-                  </div>
-                </article>
-              ))}
+              <div className="closer-track">
+                {[...closerItems, ...closerItems].map((item, index) => (
+                  <article key={`${item.label}-${index}`} className="closer-card motion-card" style={{ animationDelay: `${(index % closerItems.length) * 90}ms` }}>
+                    <div className="closer-card-media">
+                      <Image src={item.image} alt={index < closerItems.length ? item.alt : ""} fill sizes="(max-width: 768px) 82vw, 36vw" className="object-cover" />
+                    </div>
+                    <div className="closer-card-copy">
+                      <p>{item.label}</p>
+                      <h3>{item.title}</h3>
+                      <span>{item.body}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -362,7 +367,6 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover"
               />
-              <ManagerOverlayMockup />
             </div>
           </div>
         </section>
@@ -536,13 +540,7 @@ export default function HomePage() {
                 שלחו בקשה ונחזור עם הצעה קצרה לפי כמות מסכים, סניפים וצורת עבודה.
               </p>
 
-              <Link
-                href="mailto:roy.ribak@gmail.com?subject=CleanPulse%20-%20בקשה%20לדמו"
-                className="mt-8 inline-flex h-14 w-full items-center justify-center gap-2 rounded-full bg-white px-7 text-base font-extrabold text-brand-deep shadow-[0_20px_48px_rgba(255,255,255,0.14)] hover:bg-[#f4faff]"
-              >
-                <Mail className="size-5" aria-hidden="true" />
-                דברו איתנו
-              </Link>
+              <ContactLeadModal />
 
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Link href="/kiosk-demo" className="contact-secondary-link">
@@ -558,86 +556,7 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-    </div>
-  );
-}
-
-function ProductMockupDeck() {
-  return (
-    <div className="product-mockup-deck home-reveal" aria-hidden="true">
-      <div className="mockup-glow" />
-      <div className="mockup-tablet home-float-slow">
-        <div className="mockup-topbar">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="mockup-screen">
-          <div className="mockup-screen-header">
-            <span>CleanPulse</span>
-            <strong>עכשיו</strong>
-          </div>
-          <div className="mockup-kpis">
-            <span>3 פתוחים</span>
-            <span>8 טופלו</span>
-            <span>100% מסכים</span>
-          </div>
-          <div className="mockup-task mockup-task-active">
-            <span />
-            <div>
-              <strong>קומה 2</strong>
-              <p>נייר חסר בתא 4</p>
-            </div>
-            <em>בטיפול</em>
-          </div>
-          <div className="mockup-task">
-            <span />
-            <div>
-              <strong>לובי</strong>
-              <p>בדיקה לפני עומס</p>
-            </div>
-            <em>חדש</em>
-          </div>
-        </div>
-      </div>
-
-      <div className="mockup-phone home-float">
-        <div className="mockup-phone-speaker" />
-        <div className="mockup-phone-qr">
-          <ScanLine className="size-8" aria-hidden="true" />
-        </div>
-        <p>דיווח נשלח</p>
-      </div>
-
-      <div className="mockup-alert home-float-reverse">
-        <CheckCircle2 className="size-5 text-brand" aria-hidden="true" />
-        <span>המשימה נסגרה</span>
-      </div>
-    </div>
-  );
-}
-
-function ManagerOverlayMockup() {
-  return (
-    <div className="manager-overlay-mockup" aria-hidden="true">
-      <div>
-        <p>תמונת מצב</p>
-        <strong>12:42</strong>
-      </div>
-      <div className="manager-overlay-row">
-        <span />
-        <em>ניקיון</em>
-        <b>נסגר</b>
-      </div>
-      <div className="manager-overlay-row">
-        <span />
-        <em>ציוד</em>
-        <b>בטיפול</b>
-      </div>
-      <div className="manager-overlay-send">
-        <Send className="size-4" aria-hidden="true" />
-        צוות עודכן
-      </div>
+      <ContactLeadFormModal />
     </div>
   );
 }
@@ -696,7 +615,9 @@ function QrScanMotion() {
         <ScanLine className="size-7" />
         <span>סריקה נקייה</span>
       </div>
+      <div className="qr-focus-frame" />
       <div className="qr-scan-beam" />
+      <div className="qr-clean-glow" />
       <div className="soap-bubble soap-bubble-1" />
       <div className="soap-bubble soap-bubble-2" />
       <div className="soap-bubble soap-bubble-3" />
