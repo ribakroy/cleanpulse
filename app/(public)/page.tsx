@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import {
   ArrowLeft,
   Building2,
@@ -21,6 +21,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { BeforeAfterSlider } from "@/components/public/before-after-slider";
 import { ContactLeadFormModal, ContactLeadModal } from "@/components/public/contact-lead-modal";
+import { HomepageMotion } from "@/components/public/homepage-motion";
 
 const navItems = [
   { label: "איך זה עובד", href: "#how" },
@@ -121,6 +122,16 @@ const trustItems = [
   { title: "כל מסך במעקב", icon: ShieldCheck },
 ];
 
+const heroSignals = ["QR בלי אפליקציה", "טיפול מתועד", "נוהל סגירה"];
+
+const managerStatusRows = [
+  { status: "פתוח", title: "רצפה רטובה", meta: "קומה 1 · לפני 2 דק׳", tone: "open" },
+  { status: "בטיפול", title: "חסר נייר", meta: "צוות ערב · דנה לוי", tone: "progress" },
+  { status: "נסגר", title: "בדיקת ניקיון", meta: "נסגר עם צילום", tone: "done" },
+];
+
+const closingChecklistItems = ["רצפה יבשה", "תאים נבדקו", "מלאי הושלם", "פניות נסגרו"];
+
 const pricingPlans = [
   {
     name: "Starter",
@@ -154,11 +165,12 @@ const pricingPlans = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white text-foreground">
-      <header className="sticky top-0 z-50 border-b border-white/70 bg-white/72 backdrop-blur-2xl">
+    <div className="cleanpulse-home min-h-screen overflow-x-hidden bg-white text-foreground">
+      <HomepageMotion />
+      <header className="site-header sticky top-0 z-50 border-b border-white/70 bg-white/72 backdrop-blur-2xl">
         <div className="container-shell flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="CleanPulse">
-            <span className="flex size-9 items-center justify-center rounded-full bg-brand text-white shadow-[0_16px_36px_rgba(30,136,229,0.2)]">
+          <Link href="/" className="brand-mark flex shrink-0 items-center gap-2.5" aria-label="CleanPulse">
+            <span className="brand-mark-icon flex size-9 items-center justify-center rounded-full bg-brand text-white shadow-[0_16px_36px_rgba(30,136,229,0.2)]">
               <Droplets className="size-4" aria-hidden="true" />
             </span>
             <span className="text-base font-extrabold tracking-normal text-brand-deep">CleanPulse</span>
@@ -166,7 +178,7 @@ export default function HomePage() {
 
           <nav className="hidden items-center gap-5 text-sm font-extrabold text-muted md:flex lg:gap-8" aria-label="ניווט ראשי">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-brand-deep">
+              <Link key={item.href} href={item.href} data-home-nav className="site-nav-link hover:text-brand-deep">
                 {item.label}
               </Link>
             ))}
@@ -185,7 +197,7 @@ export default function HomePage() {
       </header>
 
       <main>
-        <section className="hero-photo-section">
+        <section className="hero-photo-section hero-premium-section">
           <Image
             src="/home/cp-hero-cinematic.webp"
             alt="כניסה יוקרתית לאזור שירותים עם עמדת דיווח CleanPulse"
@@ -198,6 +210,7 @@ export default function HomePage() {
             src="/home/cp-contact.webp"
             alt=""
             fill
+            priority
             sizes="100vw"
             className="hero-photo-layer hero-photo-layer-2 object-cover object-center"
             aria-hidden="true"
@@ -212,17 +225,22 @@ export default function HomePage() {
           />
           <div className="hero-photo-wash" aria-hidden="true" />
           <div className="hero-photo-vignette" aria-hidden="true" />
+          <div className="hero-ambient-glow hero-ambient-glow-a" aria-hidden="true" />
+          <div className="hero-ambient-glow hero-ambient-glow-b" aria-hidden="true" />
 
-          <div className="container-shell relative z-10 grid min-h-[calc(100svh-9rem)] items-center justify-items-start py-10">
-            <div className="home-reveal max-w-2xl space-y-7">
-              <h1 className="text-balance font-heading text-5xl font-extrabold leading-[1.03] text-brand-deep sm:text-6xl lg:text-7xl">
-                שירותים שמרגישים מטופלים.
+          <div className="container-shell relative z-10 grid min-h-[calc(100svh-9rem)] items-center gap-10 py-10 lg:grid-cols-[0.92fr_1.08fr]">
+            <div className="hero-copy home-reveal max-w-2xl space-y-7">
+              <p className="hero-kicker">דיווח. טיפול. ודאות.</p>
+              <h1 className="hero-headline text-balance font-heading text-5xl font-extrabold leading-[1.03] text-brand-deep sm:text-6xl lg:text-7xl">
+                <span className="hero-headline-line">שירותים שמרגישים</span>
+                {" "}
+                <span className="hero-headline-line hero-headline-line-second">מטופלים.</span>
               </h1>
               <p className="max-w-xl text-lg font-bold leading-8 text-slate-700 sm:text-xl">
                 CleanPulse מחבר בין מי שמדווח, מי שמטפל ומי שמנהל. בלי רעש, בלי ניירת, בלי פספוסים.
               </p>
 
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="hero-cta-row flex flex-col gap-3 sm:flex-row">
                 <Link href="/login" className={buttonVariants({ variant: "primary", size: "xl" })}>
                   <Lock className="size-5" aria-hidden="true" />
                   כניסה למערכת
@@ -233,7 +251,14 @@ export default function HomePage() {
                 </Link>
               </div>
 
+              <div className="hero-signal-row" aria-label="יכולות מרכזיות">
+                {heroSignals.map((signal) => (
+                  <span key={signal}>{signal}</span>
+                ))}
+              </div>
             </div>
+
+            <HeroProductMoment />
           </div>
         </section>
 
@@ -241,7 +266,11 @@ export default function HomePage() {
           <div className="container-shell">
             <div className="scroll-card-grid grid gap-5 md:grid-cols-3">
               {highlights.map(({ icon: Icon, title, body, image }, index) => (
-                <article key={title} className="highlight-photo-card home-rise" style={{ animationDelay: `${index * 90}ms` }}>
+                <article
+                  key={title}
+                  className="highlight-photo-card home-premium-card home-reveal-on-scroll"
+                  style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
+                >
                   <div className="highlight-photo-media">
                     <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
                   </div>
@@ -258,7 +287,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="scroll-section bg-[#f4faff] py-24 sm:py-32">
+        <section className="flow-story-section scroll-section bg-[#f4faff] py-24 sm:py-32">
           <div className="container-shell space-y-14">
             <div className="scroll-copy mx-auto max-w-4xl text-center">
               <p className="section-label">מה משתנה ברגע</p>
@@ -268,10 +297,16 @@ export default function HomePage() {
             </div>
 
             <div className="scroll-card-grid story-photo-grid">
-              {storySteps.map((step) => (
-                <article key={step.number} className="story-photo-panel">
+              <div className="story-flow-line" aria-hidden="true" />
+              {storySteps.map((step, index) => (
+                <article
+                  key={step.number}
+                  className="story-photo-panel home-reveal-on-scroll"
+                  style={{ "--reveal-delay": `${index * 120}ms` } as CSSProperties}
+                >
                   <Image src={step.image} alt={step.alt} fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
                   <div className="story-photo-scrim" aria-hidden="true" />
+                  <div className="story-step-node" aria-hidden="true">{step.number}</div>
                   <div className="story-photo-copy">
                     <p className="text-sm font-extrabold text-brand-water">{step.number}</p>
                     <h3 className="mt-4 text-3xl font-extrabold leading-tight text-white">{step.title}</h3>
@@ -292,21 +327,24 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="closer-rail scroll-media" aria-label="מבט מקרוב על CleanPulse">
-              <div className="closer-track">
-                {[...closerItems, ...closerItems].map((item, index) => (
-                  <article key={`${item.label}-${index}`} className="closer-card motion-card" style={{ animationDelay: `${(index % closerItems.length) * 90}ms` }}>
-                    <div className="closer-card-media">
-                      <Image src={item.image} alt={index < closerItems.length ? item.alt : ""} fill sizes="(max-width: 768px) 82vw, 36vw" className="object-cover" />
-                    </div>
-                    <div className="closer-card-copy">
-                      <p>{item.label}</p>
-                      <h3>{item.title}</h3>
-                      <span>{item.body}</span>
-                    </div>
-                  </article>
-                ))}
-              </div>
+            <div className="closer-editorial-grid scroll-media" aria-label="מבט מקרוב על CleanPulse">
+              {closerItems.map((item, index) => (
+                <article
+                  key={item.label}
+                  className={`closer-card home-reveal-on-scroll ${index === 0 ? "closer-card-featured" : ""}`}
+                  style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
+                >
+                  <div className="closer-card-media">
+                    <Image src={item.image} alt={item.alt} fill sizes={index === 0 ? "(max-width: 768px) 100vw, 52vw" : "(max-width: 768px) 100vw, 28vw"} className="object-cover" />
+                    <div className="closer-card-light" aria-hidden="true" />
+                  </div>
+                  <div className="closer-card-copy">
+                    <p>{item.label}</p>
+                    <h3>{item.title}</h3>
+                    <span>{item.body}</span>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -369,6 +407,7 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover"
               />
+              <ManagerLiveOverlay />
             </div>
           </div>
         </section>
@@ -379,6 +418,7 @@ export default function HomePage() {
           body="אפשר לאפס פניות אחרי בדיקה מלאה, או להשאיר אותן להמשך טיפול לפי הדרך שבה העסק עובד."
           image="/home/cp-closing.webp"
           alt="נוהל סגירה על טאבלט במסדרון שירותים נקי"
+          visual={<ClosingChecklistMotion />}
           reverse
         />
 
@@ -412,6 +452,7 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover"
               />
+              <ScaleNetworkMotion />
             </div>
           </div>
         </section>
@@ -441,8 +482,12 @@ export default function HomePage() {
             </div>
 
             <div className="pricing-grid scroll-card-grid">
-              {pricingPlans.map((plan) => (
-                <article key={plan.name} className={`pricing-plan motion-card ${plan.featured ? "pricing-plan-featured" : ""}`}>
+              {pricingPlans.map((plan, index) => (
+                <article
+                  key={plan.name}
+                  className={`pricing-plan home-reveal-on-scroll ${plan.featured ? "pricing-plan-featured" : ""}`}
+                  style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-sm font-extrabold text-brand">{plan.label}</p>
@@ -481,7 +526,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="scroll-section relative isolate overflow-hidden bg-white py-24 sm:py-32">
+        <section className="trust-section scroll-section relative isolate overflow-hidden bg-white py-24 sm:py-32">
           <div className="absolute inset-x-0 top-0 h-1/2 bg-[#f4faff]" aria-hidden="true" />
           <div className="container-shell relative z-10 space-y-12">
             <div className="premium-media-frame scroll-media mx-auto aspect-[16/7] max-w-6xl">
@@ -503,8 +548,8 @@ export default function HomePage() {
             </div>
 
             <div className="scroll-card-grid grid gap-4 md:grid-cols-3">
-              {trustItems.map(({ icon: Icon, title }) => (
-                <article key={title} className="trust-panel">
+              {trustItems.map(({ icon: Icon, title }, index) => (
+                <article key={title} className="trust-panel home-reveal-on-scroll" style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}>
                   <Icon className="size-7 text-brand" aria-hidden="true" />
                   <h3 className="mt-8 text-2xl font-extrabold text-brand-deep">{title}</h3>
                 </article>
@@ -514,7 +559,7 @@ export default function HomePage() {
         </section>
 
         <section id="contact" className="final-photo-cta scroll-section scroll-mt-24">
-          <Image src="/home/cp-contact.webp" alt="מנהל תפעול עם טאבלט ליד אזור שירותים יוקרתי" fill sizes="100vw" className="object-cover" />
+          <Image src="/home/cp-contact.webp" alt="מנהל תפעול עם טאבלט ליד אזור שירותים יוקרתי" fill loading="eager" sizes="100vw" className="object-cover" />
           <div className="final-photo-overlay" aria-hidden="true" />
           <div className="container-shell relative z-10 grid gap-10 py-24 text-white lg:grid-cols-[1fr_26rem] lg:items-end sm:py-32">
             <div className="scroll-copy max-w-3xl space-y-6">
@@ -525,6 +570,11 @@ export default function HomePage() {
               <p className="max-w-2xl text-lg font-bold leading-8 text-white/76">
                 דמו קצר, התאמה לפי מספר הסניפים, והבנה מה צריך כדי להתחיל נקי.
               </p>
+              <div className="final-trust-pills" aria-label="מה כולל הדמו">
+                <span>דמו קצר</span>
+                <span>התאמה לפי סניפים</span>
+                <span>בלי התחייבות כבדה</span>
+              </div>
             </div>
 
             <div className="contact-panel scroll-media">
@@ -559,6 +609,163 @@ export default function HomePage() {
         </section>
       </main>
       <ContactLeadFormModal />
+    </div>
+  );
+}
+
+function HeroProductMoment() {
+  return (
+    <div className="hero-product-moment home-reveal-on-scroll" style={{ "--reveal-delay": "320ms" } as CSSProperties} aria-hidden="true">
+      <div className="hero-product-halo" />
+      <div className="hero-dashboard-mock">
+        <div className="device-topbar" aria-hidden="true">
+          <span className="device-dot" />
+          <span className="device-dot" />
+          <span className="device-dot" />
+        </div>
+        <div className="hero-dashboard-header">
+          <span>תמונת מצב</span>
+          <strong>עכשיו</strong>
+        </div>
+        <div className="hero-metric-strip">
+          <span>
+            <strong>4</strong>
+            פתוח
+          </span>
+          <span>
+            <strong>7</strong>
+            נסגר
+          </span>
+          <span>
+            <strong>98%</strong>
+            זמינות
+          </span>
+        </div>
+        <div className="hero-mini-chart" aria-hidden="true">
+          {[46, 74, 58, 88, 64].map((height, index) => (
+            <i key={index} style={{ height: `${height}%`, animationDelay: `${index * 110}ms` }} />
+          ))}
+        </div>
+        <div className="hero-status-list">
+          {managerStatusRows.map((row) => (
+            <span key={row.title} data-tone={row.tone}>
+              <i />
+              {row.title}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="hero-phone-mock">
+        <div className="phone-speaker" />
+        <div className="hero-phone-title">סריקה מהירה</div>
+        <div className="qr-code-visual" aria-hidden="true">
+          {Array.from({ length: 25 }).map((_, index) => (
+            <span key={index} />
+          ))}
+          <i />
+        </div>
+        <div className="hero-rating-row">
+          <span>נקי</span>
+          <span>חסר</span>
+          <span>רטוב</span>
+        </div>
+      </div>
+
+      <div className="hero-alert-card">
+        <CheckCircle2 className="size-5" aria-hidden="true" />
+        <span>הצוות עודכן</span>
+      </div>
+    </div>
+  );
+}
+
+function ManagerLiveOverlay() {
+  return (
+    <div className="manager-live-overlay" aria-hidden="true">
+      <div className="manager-live-panel">
+        <div className="manager-live-head">
+          <span>Live</span>
+          <strong>דוח צוות</strong>
+        </div>
+        <div className="manager-metric-grid">
+          <span>
+            <strong>4</strong>
+            פתוח
+          </span>
+          <span>
+            <strong>2</strong>
+            בטיפול
+          </span>
+          <span>
+            <strong>18</strong>
+            נסגר
+          </span>
+        </div>
+        <div className="manager-status-list">
+          {managerStatusRows.map((row, index) => (
+            <div key={row.title} className="manager-status-row" data-tone={row.tone} style={{ animationDelay: `${index * 120}ms` }}>
+              <i />
+              <div>
+                <strong>{row.title}</strong>
+                <span>{row.meta}</span>
+              </div>
+              <em>{row.status}</em>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClosingChecklistMotion() {
+  return (
+    <div className="closing-checklist-motion" aria-hidden="true">
+      <div className="closing-tablet-mock">
+        <div className="device-topbar" aria-hidden="true">
+          <span className="device-dot" />
+          <span className="device-dot" />
+          <span className="device-dot" />
+        </div>
+        <div className="closing-headline">
+          <span>נוהל סגירה</span>
+          <strong>בדיקה מלאה</strong>
+        </div>
+        <div className="closing-check-list">
+          {closingChecklistItems.map((item, index) => (
+            <span key={item} style={{ animationDelay: `${index * 260}ms` }}>
+              <CheckCircle2 className="size-4" aria-hidden="true" />
+              {item}
+            </span>
+          ))}
+        </div>
+        <div className="closing-progress-track">
+          <i />
+        </div>
+        <div className="closing-done-pill">היום נסגר נקי</div>
+      </div>
+    </div>
+  );
+}
+
+function ScaleNetworkMotion() {
+  return (
+    <div className="scale-network-motion" aria-hidden="true">
+      <div className="scale-network-card">
+        <span className="scale-node scale-node-main">HQ</span>
+        <span className="scale-node scale-node-a">סניף 1</span>
+        <span className="scale-node scale-node-b">סניף 2</span>
+        <span className="scale-node scale-node-c">סניף 3</span>
+        <span className="scale-line scale-line-a" />
+        <span className="scale-line scale-line-b" />
+        <span className="scale-line scale-line-c" />
+        <div className="scale-floating-pills">
+          <span>QR</span>
+          <span>צוות</span>
+          <span>מסך</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -612,19 +819,40 @@ function ImageStorySection({
 
 function QrScanMotion() {
   return (
-    <div className="qr-scan-motion" aria-hidden="true">
-      <div className="qr-scan-card">
-        <ScanLine className="size-7" />
-        <span>סריקה נקייה</span>
-      </div>
-      <div className="qr-focus-frame" />
-      <div className="qr-scan-beam" />
+    <div className="qr-scan-motion qr-product-motion" aria-hidden="true">
       <div className="qr-clean-glow" />
+      <div className="qr-acrylic-stand">
+        <div className="qr-stand-label">CleanPulse</div>
+        <div className="qr-stand-code">
+          {Array.from({ length: 49 }).map((_, index) => (
+            <span key={index} />
+          ))}
+          <i />
+        </div>
+        <div className="qr-demo-label">QR דמו</div>
+      </div>
+
+      <div className="qr-camera-frame">
+        <div className="qr-focus-frame" />
+        <div className="qr-scan-beam" />
+        <div className="qr-camera-dot" />
+      </div>
+
+      <div className="qr-scan-card">
+        <ScanLine className="size-6" />
+        <span>סריקה</span>
+        <small>בחירה</small>
+        <strong>הצוות עודכן</strong>
+      </div>
+
+      <div className="qr-thanks-card">
+        <CheckCircle2 className="size-5" />
+        תודה, זה בטיפול
+      </div>
+
       <div className="soap-bubble soap-bubble-1" />
       <div className="soap-bubble soap-bubble-2" />
       <div className="soap-bubble soap-bubble-3" />
-      <div className="soap-bubble soap-bubble-4" />
-      <div className="soap-bubble soap-bubble-5" />
     </div>
   );
 }
