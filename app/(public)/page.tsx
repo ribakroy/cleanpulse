@@ -220,8 +220,8 @@ export default function HomePage() {
           <div className="hero-ambient-glow hero-ambient-glow-a" aria-hidden="true" />
           <div className="hero-ambient-glow hero-ambient-glow-b" aria-hidden="true" />
 
-          <div className="container-shell relative z-10 grid min-h-[calc(100svh-6rem)] items-start py-14 sm:min-h-[calc(100svh-7rem)] lg:min-h-[calc(100svh-9rem)] lg:items-center lg:py-10 lg:justify-items-end">
-            <div className="hero-copy home-reveal w-full max-w-2xl space-y-7 pt-4 sm:pt-6 lg:pt-0">
+          <div className="container-shell relative z-10 grid min-h-[34rem] items-start py-12 sm:min-h-[38rem] sm:py-14 lg:min-h-[42rem] lg:items-center lg:py-10 lg:justify-items-start xl:min-h-[45rem]">
+            <div className="hero-copy home-reveal w-full max-w-2xl space-y-7 pt-4 text-right sm:pt-6 lg:max-w-[38rem] lg:pt-0 lg:ps-8 xl:max-w-[40rem] xl:ps-12">
               <p className="hero-kicker">דיווח. טיפול. ודאות.</p>
               <h1 className="hero-headline text-balance font-heading text-5xl font-extrabold leading-[1.03] text-brand-deep sm:text-6xl lg:text-7xl">
                 <span className="hero-headline-line">שירותים שמרגישים</span>
@@ -232,7 +232,7 @@ export default function HomePage() {
                 CleanPulse מחבר בין מי שמדווח, מי שמטפל ומי שמנהל. בלי רעש, בלי ניירת, בלי פספוסים.
               </p>
 
-              <div className="hero-cta-row flex flex-col gap-3 sm:flex-row">
+              <div className="hero-cta-row flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <Link href="/login" className={buttonVariants({ variant: "primary", size: "xl" })}>
                   <Lock className="size-5" aria-hidden="true" />
                   כניסה למערכת
@@ -243,7 +243,7 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              <div className="hero-signal-row" aria-label="יכולות מרכזיות">
+              <div className="hero-signal-row sm:justify-end" aria-label="יכולות מרכזיות">
                 {heroSignals.map((signal) => (
                   <span key={signal}>{signal}</span>
                 ))}
