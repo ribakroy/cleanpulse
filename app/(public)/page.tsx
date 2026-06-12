@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import {
   ArrowLeft,
   Building2,
@@ -124,14 +124,6 @@ const trustItems = [
 
 const heroSignals = ["QR בלי אפליקציה", "טיפול מתועד", "נוהל סגירה"];
 
-const managerStatusRows = [
-  { status: "פתוח", title: "רצפה רטובה", meta: "קומה 1 · לפני 2 דק׳", tone: "open" },
-  { status: "בטיפול", title: "חסר נייר", meta: "צוות ערב · דנה לוי", tone: "progress" },
-  { status: "נסגר", title: "בדיקת ניקיון", meta: "נסגר עם צילום", tone: "done" },
-];
-
-const closingChecklistItems = ["רצפה יבשה", "תאים נבדקו", "מלאי הושלם", "פניות נסגרו"];
-
 const pricingPlans = [
   {
     name: "Starter",
@@ -228,8 +220,8 @@ export default function HomePage() {
           <div className="hero-ambient-glow hero-ambient-glow-a" aria-hidden="true" />
           <div className="hero-ambient-glow hero-ambient-glow-b" aria-hidden="true" />
 
-          <div className="container-shell relative z-10 grid min-h-[calc(100svh-9rem)] items-center gap-10 py-10 lg:grid-cols-[0.92fr_1.08fr]">
-            <div className="hero-copy home-reveal max-w-2xl space-y-7">
+          <div className="container-shell relative z-10 grid min-h-[calc(100svh-6rem)] items-start py-14 sm:min-h-[calc(100svh-7rem)] lg:min-h-[calc(100svh-9rem)] lg:items-center lg:py-10 lg:justify-items-end">
+            <div className="hero-copy home-reveal w-full max-w-2xl space-y-7 pt-4 sm:pt-6 lg:pt-0">
               <p className="hero-kicker">דיווח. טיפול. ודאות.</p>
               <h1 className="hero-headline text-balance font-heading text-5xl font-extrabold leading-[1.03] text-brand-deep sm:text-6xl lg:text-7xl">
                 <span className="hero-headline-line">שירותים שמרגישים</span>
@@ -257,8 +249,6 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-
-            <HeroProductMoment />
           </div>
         </section>
 
@@ -380,7 +370,6 @@ export default function HomePage() {
           image="/home/cp-qr-report.webp"
           alt="סריקת QR ליד עמדת שירותים יוקרתית"
           cta={{ label: "נסה מסך דוגמה", href: "/kiosk-demo" }}
-          visual={<QrScanMotion />}
         />
 
         <section id="managers" className="scroll-section scroll-mt-24 bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-24 sm:py-32">
@@ -407,7 +396,6 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover"
               />
-              <ManagerLiveOverlay />
             </div>
           </div>
         </section>
@@ -418,7 +406,6 @@ export default function HomePage() {
           body="אפשר לאפס פניות אחרי בדיקה מלאה, או להשאיר אותן להמשך טיפול לפי הדרך שבה העסק עובד."
           image="/home/cp-closing.webp"
           alt="נוהל סגירה על טאבלט במסדרון שירותים נקי"
-          visual={<ClosingChecklistMotion />}
           reverse
         />
 
@@ -452,7 +439,6 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 className="object-cover"
               />
-              <ScaleNetworkMotion />
             </div>
           </div>
         </section>
@@ -613,163 +599,6 @@ export default function HomePage() {
   );
 }
 
-function HeroProductMoment() {
-  return (
-    <div className="hero-product-moment home-reveal-on-scroll" style={{ "--reveal-delay": "320ms" } as CSSProperties} aria-hidden="true">
-      <div className="hero-product-halo" />
-      <div className="hero-dashboard-mock">
-        <div className="device-topbar" aria-hidden="true">
-          <span className="device-dot" />
-          <span className="device-dot" />
-          <span className="device-dot" />
-        </div>
-        <div className="hero-dashboard-header">
-          <span>תמונת מצב</span>
-          <strong>עכשיו</strong>
-        </div>
-        <div className="hero-metric-strip">
-          <span>
-            <strong>4</strong>
-            פתוח
-          </span>
-          <span>
-            <strong>7</strong>
-            נסגר
-          </span>
-          <span>
-            <strong>98%</strong>
-            זמינות
-          </span>
-        </div>
-        <div className="hero-mini-chart" aria-hidden="true">
-          {[46, 74, 58, 88, 64].map((height, index) => (
-            <i key={index} style={{ height: `${height}%`, animationDelay: `${index * 110}ms` }} />
-          ))}
-        </div>
-        <div className="hero-status-list">
-          {managerStatusRows.map((row) => (
-            <span key={row.title} data-tone={row.tone}>
-              <i />
-              {row.title}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="hero-phone-mock">
-        <div className="phone-speaker" />
-        <div className="hero-phone-title">סריקה מהירה</div>
-        <div className="qr-code-visual" aria-hidden="true">
-          {Array.from({ length: 25 }).map((_, index) => (
-            <span key={index} />
-          ))}
-          <i />
-        </div>
-        <div className="hero-rating-row">
-          <span>נקי</span>
-          <span>חסר</span>
-          <span>רטוב</span>
-        </div>
-      </div>
-
-      <div className="hero-alert-card">
-        <CheckCircle2 className="size-5" aria-hidden="true" />
-        <span>הצוות עודכן</span>
-      </div>
-    </div>
-  );
-}
-
-function ManagerLiveOverlay() {
-  return (
-    <div className="manager-live-overlay" aria-hidden="true">
-      <div className="manager-live-panel">
-        <div className="manager-live-head">
-          <span>Live</span>
-          <strong>דוח צוות</strong>
-        </div>
-        <div className="manager-metric-grid">
-          <span>
-            <strong>4</strong>
-            פתוח
-          </span>
-          <span>
-            <strong>2</strong>
-            בטיפול
-          </span>
-          <span>
-            <strong>18</strong>
-            נסגר
-          </span>
-        </div>
-        <div className="manager-status-list">
-          {managerStatusRows.map((row, index) => (
-            <div key={row.title} className="manager-status-row" data-tone={row.tone} style={{ animationDelay: `${index * 120}ms` }}>
-              <i />
-              <div>
-                <strong>{row.title}</strong>
-                <span>{row.meta}</span>
-              </div>
-              <em>{row.status}</em>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ClosingChecklistMotion() {
-  return (
-    <div className="closing-checklist-motion" aria-hidden="true">
-      <div className="closing-tablet-mock">
-        <div className="device-topbar" aria-hidden="true">
-          <span className="device-dot" />
-          <span className="device-dot" />
-          <span className="device-dot" />
-        </div>
-        <div className="closing-headline">
-          <span>נוהל סגירה</span>
-          <strong>בדיקה מלאה</strong>
-        </div>
-        <div className="closing-check-list">
-          {closingChecklistItems.map((item, index) => (
-            <span key={item} style={{ animationDelay: `${index * 260}ms` }}>
-              <CheckCircle2 className="size-4" aria-hidden="true" />
-              {item}
-            </span>
-          ))}
-        </div>
-        <div className="closing-progress-track">
-          <i />
-        </div>
-        <div className="closing-done-pill">היום נסגר נקי</div>
-      </div>
-    </div>
-  );
-}
-
-function ScaleNetworkMotion() {
-  return (
-    <div className="scale-network-motion" aria-hidden="true">
-      <div className="scale-network-card">
-        <span className="scale-node scale-node-main">HQ</span>
-        <span className="scale-node scale-node-a">סניף 1</span>
-        <span className="scale-node scale-node-b">סניף 2</span>
-        <span className="scale-node scale-node-c">סניף 3</span>
-        <span className="scale-line scale-line-a" />
-        <span className="scale-line scale-line-b" />
-        <span className="scale-line scale-line-c" />
-        <div className="scale-floating-pills">
-          <span>QR</span>
-          <span>צוות</span>
-          <span>מסך</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ImageStorySection({
   id,
   label,
@@ -778,7 +607,6 @@ function ImageStorySection({
   image,
   alt,
   cta,
-  visual,
   reverse = false,
 }: {
   id?: string;
@@ -788,7 +616,6 @@ function ImageStorySection({
   image: string;
   alt: string;
   cta?: { label: string; href: string };
-  visual?: ReactNode;
   reverse?: boolean;
 }) {
   return (
@@ -796,7 +623,6 @@ function ImageStorySection({
       <div className={`container-shell grid gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-center ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
         <div className="premium-media-frame scroll-media aspect-[16/10]">
           <Image src={image} alt={alt} fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" />
-          {visual}
         </div>
 
         <div className="scroll-copy space-y-6">
@@ -814,45 +640,5 @@ function ImageStorySection({
         </div>
       </div>
     </section>
-  );
-}
-
-function QrScanMotion() {
-  return (
-    <div className="qr-scan-motion qr-product-motion" aria-hidden="true">
-      <div className="qr-clean-glow" />
-      <div className="qr-acrylic-stand">
-        <div className="qr-stand-label">CleanPulse</div>
-        <div className="qr-stand-code">
-          {Array.from({ length: 49 }).map((_, index) => (
-            <span key={index} />
-          ))}
-          <i />
-        </div>
-        <div className="qr-demo-label">QR דמו</div>
-      </div>
-
-      <div className="qr-camera-frame">
-        <div className="qr-focus-frame" />
-        <div className="qr-scan-beam" />
-        <div className="qr-camera-dot" />
-      </div>
-
-      <div className="qr-scan-card">
-        <ScanLine className="size-6" />
-        <span>סריקה</span>
-        <small>בחירה</small>
-        <strong>הצוות עודכן</strong>
-      </div>
-
-      <div className="qr-thanks-card">
-        <CheckCircle2 className="size-5" />
-        תודה, זה בטיפול
-      </div>
-
-      <div className="soap-bubble soap-bubble-1" />
-      <div className="soap-bubble soap-bubble-2" />
-      <div className="soap-bubble soap-bubble-3" />
-    </div>
   );
 }
