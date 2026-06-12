@@ -35,5 +35,6 @@ jobs:
       - name: Run Production Build
         run: npm run build
 
-      - name: Run Security Audit (High/Critical)
-        run: npm audit --audit-level=high || echo "Audit found vulnerabilities, check details."
+      - name: Security audit high/critical only
+        # Moderate Next/PostCSS advisory is tracked separately; fail CI only on high/critical.
+        run: npm audit --audit-level=high
