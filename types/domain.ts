@@ -19,6 +19,31 @@ export type NotificationLogStatus = "queued" | "sent" | "failed" | "mock_sent" |
 
 export type NotificationChannel = "email";
 
+export type EmailMode = "mock" | "test" | "live";
+
+export type EmailDomainStatus = "not_configured" | "pending" | "verified";
+
+export type MagicLoginPurpose =
+  | "incident_alert"
+  | "worker_task"
+  | "shift_summary"
+  | "user_invite"
+  | "password_reset"
+  | "system_notification"
+  | "urgent_incident_alert"
+  | "incident_resolved"
+  | "restroom_reset";
+
+export type BrandedEmailTemplateKey =
+  | "incident_alert"
+  | "urgent_incident_alert"
+  | "worker_task_assigned"
+  | "incident_resolved"
+  | "restroom_reset"
+  | "shift_summary"
+  | "user_invite"
+  | "password_reset";
+
 export type NotificationScopeType = "organization" | "branch" | "restroom" | "screen";
 
 export type IncidentSource = "kiosk" | "qr";

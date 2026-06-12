@@ -435,3 +435,40 @@ Fallback:
 - `branchNameSnapshot`, `restroomNameSnapshot`, `screenNameSnapshot` מייצבים דוחות.
 - `version` נועד ל־optimistic updates ברמת האפליקציה.
 - `publicTokenHashSnapshot` מספק עקיבות גם אם הטוקן הוחלף בהמשך.
+
+## 10. Magic Login and Email Settings
+
+### `magic_login_tokens`
+
+- `organizationId`
+- `userId`
+- `tokenHash` בלבד. raw token לא נשמר.
+- `targetPath`
+- `purpose`
+- `expiresAt`
+- `usedAt`
+- `revokedAt`
+- `createdAt`
+- `updatedAt`
+- `createdByUserId`
+- `metadata`
+
+הטוקן קצר חיים, חד־פעמי, קשור למשתמש ולארגון, ולא עוקף role/scope.
+
+### `system_settings`
+
+רשומה ראשית: `email_domain_settings`.
+
+- `appUrl`
+- `emailProvider`
+- `emailMode`
+- `fromName`
+- `fromEmail`
+- `replyToEmail`
+- `allowedTestRecipients`
+- `domainStatus`
+- `resendDomain`
+- `updatedAt`
+- `updatedByUserId`
+
+המסך `/super/email-settings` מנהל את ההגדרות בלי secrets ובלי הפעלת מיילים חיים.

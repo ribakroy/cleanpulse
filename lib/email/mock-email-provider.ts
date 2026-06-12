@@ -1,5 +1,6 @@
 import type { EmailProvider } from "@/lib/email/email-provider";
 import type { EmailMessage, EmailSendResult } from "./types";
+import { redactMagicLoginTokens } from "@/lib/email/redact";
 
 export class MockEmailProvider implements EmailProvider {
   readonly mode = "mock" as const;
@@ -14,7 +15,7 @@ export class MockEmailProvider implements EmailProvider {
       console.log(`Reply-To: ${message.replyTo}`);
     }
     console.log("--- תוכן טקסט (Text Fallback) ---");
-    console.log(message.text || "לא הוגדר טקסט גיבוי");
+    console.log(redactMagicLoginTokens(message.text) || "לא הוגדר טקסט גיבוי");
     console.log("---------------------------------");
     console.log("=========================================\n");
 

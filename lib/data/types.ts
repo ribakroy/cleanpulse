@@ -6,6 +6,9 @@ import type {
   NotificationLogStatus,
   NotificationProvider,
   NotificationScopeType,
+  EmailDomainStatus,
+  EmailMode,
+  MagicLoginPurpose,
   UserRole,
   IssueTypeKey,
   IssueSeverity,
@@ -19,6 +22,8 @@ export type CollectionName =
   | "organizations"
   | "users"
   | "shifts"
+  | "magic_login_tokens"
+  | "system_settings"
   | "branches"
   | "restrooms"
   | "screens"
@@ -90,6 +95,32 @@ export type ShiftRecord = TimestampedRecord & {
   endsAt: string;
   daysOfWeek?: number[] | undefined;
   isActive: boolean;
+};
+
+export type MagicLoginTokenRecord = TimestampedRecord & {
+  organizationId: string;
+  userId: string;
+  tokenHash: string;
+  targetPath: string;
+  purpose: MagicLoginPurpose;
+  expiresAt: string;
+  usedAt?: string | undefined;
+  revokedAt?: string | undefined;
+  createdByUserId?: string | undefined;
+  metadata?: Record<string, unknown> | undefined;
+};
+
+export type EmailDomainSettingsRecord = TimestampedRecord & {
+  appUrl: string;
+  emailProvider: NotificationProvider;
+  emailMode: EmailMode;
+  fromName: string;
+  fromEmail: string;
+  replyToEmail?: string | undefined;
+  allowedTestRecipients?: string[] | undefined;
+  domainStatus?: EmailDomainStatus | undefined;
+  resendDomain?: string | undefined;
+  updatedByUserId: string;
 };
 
 export type BranchRecord = TimestampedRecord & {
@@ -193,6 +224,8 @@ export type CollectionRecordMap = {
   organizations: OrganizationRecord;
   users: UserRecord;
   shifts: ShiftRecord;
+  magic_login_tokens: MagicLoginTokenRecord;
+  system_settings: EmailDomainSettingsRecord;
   branches: BranchRecord;
   restrooms: RestroomRecord;
   screens: ScreenRecord;

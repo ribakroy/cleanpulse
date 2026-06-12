@@ -1,13 +1,16 @@
 import type { IncidentRecord } from "@/lib/data/types";
 import { resolveIncidentRecipients } from "./resolve-incident-recipients";
-import { renderIncidentEmail } from "./render-incident-email";
+import { renderBrandedEmailTemplate } from "./branded-email-templates";
 import { getEmailProvider } from "./get-email-provider";
+import { MockEmailProvider } from "./mock-email-provider";
 import { getBranchById } from "@/lib/data/repositories/branches";
 import { getRestroomById } from "@/lib/data/repositories/restrooms";
 import { getScreenById } from "@/lib/data/repositories/screens";
 import { getIssueTypeByKey } from "@/lib/data/repositories/issue-types";
 import { createNotificationLog } from "@/lib/data/repositories/notification-logs";
-import { env } from "@/lib/utils/env";
+import { getUserByEmail } from "@/lib/data/repositories/users";
+import { getEmailDomainSettings, isRecipientAllowedByEmailMode } from "@/lib/data/repositories/system-settings";
+import { createMagicLoginLink } from "@/lib/auth/magic-login";
 import type { IssueTypeKey } from "@/types/domain";
 
 export async function sendIncidentAlert(incident: IncidentRecord): Promise<void> {
@@ -51,33 +54,72 @@ export async function sendIncidentAlert(incident: IncidentRecord): Promise<void>
     const restroomName = restroom?.name ?? "אזור שירותים לא ידוע";
     const screenName = screen?.name ?? "מסך לא ידוע";
 
-    // Link in admin dashboard: detail views will be supported in future versions, for now direct to /admin/incidents
-    const adminUrl = `${env.appUrl}/admin/incidents`;
-
-    // 4. Render email subject, HTML and plain text
-    const { subject, html, text } = renderIncidentEmail({
-      incident,
-      branchName,
-      restroomName,
-      screenName,
-      issueLabel,
-      adminUrl,
-    });
-
-    // 5. Get current active email provider
-    const provider = getEmailProvider();
+    const settings = await getEmailDomainSettings();
+    const isUrgent = incident.priority === "high" || incident.priority === "critical";
+    const template = isUrgent ? "urgent_incident_alert" : "incident_alert";
+    const purpose = isUrgent ? "urgent_incident_alert" : "incident_alert";
+    const targetPath = `/admin/incidents/${incident.id}`;
+    const fallbackAdminUrl = `${settings.appUrl}${targetPath}`;
+    const provider = settings.emailMode === "mock" ? new MockEmailProvider() : getEmailProvider();
 
     // 6. Send to each recipient in separate try-catches
     for (const recipient of recipients) {
       if (!recipient.enabled) continue;
 
       try {
+        if (settings.emailMode === "test" && !isRecipientAllowedByEmailMode(settings, recipient.email)) {
+          await createNotificationLog({
+            organizationId: orgId,
+            incidentId: incident.id,
+            recipientId: recipient.id,
+            provider: "mock",
+            status: "failed",
+            errorMessage: "נמען לא נמצא ברשימת allowedTestRecipients ולכן לא נשלח מייל.",
+          });
+          continue;
+        }
+
+        const recipientUser = await getUserByEmail(orgId, recipient.email);
+        let ctaUrl = fallbackAdminUrl;
+        let magicLinkGenerated = false;
+
+        if (recipientUser?.isActive) {
+          const magicLink = await createMagicLoginLink({
+            user: recipientUser,
+            purpose,
+            targetPath,
+            metadata: {
+              incidentId: incident.id,
+              notificationRecipientId: recipient.id,
+            },
+          });
+          ctaUrl = magicLink.url;
+          magicLinkGenerated = true;
+        }
+
+        const { subject, html, text } = renderBrandedEmailTemplate({
+          template,
+          ctaUrl,
+          targetPath,
+          recipientName: recipient.name,
+          organizationName: "CleanPulse",
+          details: [
+            { label: "סניף", value: branchName },
+            { label: "אזור שירותים", value: restroomName },
+            { label: "מסך", value: screenName },
+            { label: incident.issueKey ? "דיווח" : "ציון כללי", value: issueLabel },
+            ...(incident.rating !== null && incident.issueKey ? [{ label: "ציון כללי", value: `${incident.rating}/5` }] : []),
+            { label: "עדיפות", value: incident.priority },
+          ],
+          magicLinkGenerated,
+        });
+
         const result = await provider.send({
           to: [recipient.email],
           subject,
           html,
           text,
-          replyTo: env.emailReplyTo || undefined,
+          replyTo: settings.replyToEmail || undefined,
         });
 
         // Determine log status based on provider mode

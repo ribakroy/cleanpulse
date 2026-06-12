@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { env } from "@/lib/utils/env";
 import { getDataAdapter } from "@/lib/data/get-data-adapter";
-import type { ScreenRecord, BranchRecord, IncidentRecord, UserRecord, OrganizationRecord, RestroomRecord, NotificationRecipientRecord, NotificationLogRecord, ActivityLogRecord } from "@/lib/data/types";
+import type { ScreenRecord, BranchRecord, IncidentRecord, UserRecord, OrganizationRecord, RestroomRecord, NotificationRecipientRecord, NotificationLogRecord, ActivityLogRecord, MagicLoginTokenRecord, EmailDomainSettingsRecord } from "@/lib/data/types";
 
 export const revalidate = 0; // Dynamic
 
@@ -21,6 +21,8 @@ export default async function SuperSystemPage() {
     notification_recipients: 0,
     notification_logs: 0,
     activity_logs: 0,
+    magic_login_tokens: 0,
+    system_settings: 0,
   };
 
   let loadError: string | null = null;
@@ -36,6 +38,8 @@ export default async function SuperSystemPage() {
       recipients,
       notificationLogs,
       activityLogs,
+      magicLoginTokens,
+      systemSettings,
     ] = await Promise.all([
       adapter.list("organizations", { includeInactive: true }) as Promise<OrganizationRecord[]>,
       adapter.list("users", { includeInactive: true }) as Promise<UserRecord[]>,
@@ -46,6 +50,8 @@ export default async function SuperSystemPage() {
       adapter.list("notification_recipients", { includeInactive: true }) as Promise<NotificationRecipientRecord[]>,
       adapter.list("notification_logs", { includeInactive: true }) as Promise<NotificationLogRecord[]>,
       adapter.list("activity_logs", { includeInactive: true }) as Promise<ActivityLogRecord[]>,
+      adapter.list("magic_login_tokens", { includeInactive: true }) as Promise<MagicLoginTokenRecord[]>,
+      adapter.list("system_settings", { includeInactive: true }) as Promise<EmailDomainSettingsRecord[]>,
     ]);
 
     counts = {
@@ -58,6 +64,8 @@ export default async function SuperSystemPage() {
       notification_recipients: recipients.length,
       notification_logs: notificationLogs.length,
       activity_logs: activityLogs.length,
+      magic_login_tokens: magicLoginTokens.length,
+      system_settings: systemSettings.length,
     };
   } catch (err: unknown) {
     loadError = err instanceof Error ? err.message : "שגיאה בטעינת נתוני המערכת.";
@@ -221,6 +229,8 @@ export default async function SuperSystemPage() {
               { label: "נמעני התראות", value: counts.notification_recipients },
               { label: "תיעוד התראות", value: counts.notification_logs },
               { label: "תיעוד פעילות", value: counts.activity_logs },
+              { label: "Magic links", value: counts.magic_login_tokens },
+              { label: "הגדרות מערכת", value: counts.system_settings },
             ].map(({ label, value }) => (
               <div key={label} className="p-5 flex flex-col gap-1">
                 <span className="text-xs text-muted">{label}</span>

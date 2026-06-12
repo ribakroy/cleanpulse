@@ -3,6 +3,7 @@ import { Droplets, ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
 import { getDefaultRouteForRole } from "@/lib/auth/permissions";
+import { getMagicLoginErrorMessage } from "@/lib/auth/magic-login-messages";
 import { getCurrentUser } from "@/lib/auth/session";
 import { env } from "@/lib/utils/env";
 
@@ -11,9 +12,17 @@ export const metadata = {
   description: "כניסה מאובטחת למערכת ניהול CleanPulse",
 };
 
-export default async function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    magic?: string | undefined;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
   const currentUser = await getCurrentUser();
   const showDemoNotice = process.env.NODE_ENV !== "production" || env.demoMode;
+  const params = await searchParams;
+  const magicLoginMessage = getMagicLoginErrorMessage(params.magic);
 
   if (currentUser?.isActive) {
     redirect(getDefaultRouteForRole(currentUser.role));
@@ -57,6 +66,12 @@ export default async function LoginPage() {
 
         {/* Login card */}
         <div className="surface-panel rounded-[var(--radius-xl)] p-7 sm:p-8">
+          {magicLoginMessage && (
+            <div className="mb-5 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+              {magicLoginMessage}
+            </div>
+          )}
+
           <LoginForm />
 
           {showDemoNotice && (

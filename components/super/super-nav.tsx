@@ -7,6 +7,7 @@ import {
   Building2,
   CreditCard,
   LayoutDashboard,
+  Mail,
   Server,
   ScrollText,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navItems: NavItem[] = [
   { href: "/super/organizations", label: "לקוחות ועסקים", icon: Building2 },
   { href: "/super/billing", label: "גבייה ותוכניות", icon: CreditCard },
   { href: "/super/usage", label: "מדדי שימוש", icon: Activity },
+  { href: "/super/email-settings", label: "מייל ודומיין", icon: Mail },
   { href: "/super/system", label: "מצב מערכת", icon: Server },
   { href: "/super/activity", label: "יומן פעילות", icon: ScrollText },
 ];
