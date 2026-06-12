@@ -33,6 +33,9 @@ jobs:
         run: npm test
 
       - name: Run Production Build
+        # CI-only placeholder for Next.js production route analysis; real runtime secret stays in deployment env.
+        env:
+          AUTH_SECRET: cleanpulse-ci-build-only-auth-secret
         run: npm run build
 
       - name: Security audit high/critical only
