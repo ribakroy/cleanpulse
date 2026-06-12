@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CalendarDays, CheckCircle2, ClipboardList, LogOut, MapPin } from "lucide-react";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { WorkerActionPanel } from "@/components/work/worker-action-panel";
+import { WorkPresenceBeacon } from "@/components/work/work-presence-beacon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -152,6 +153,7 @@ export default async function WorkerPortalPage() {
           </Card>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <WorkPresenceBeacon restroomId={visibleRestrooms[0]!.id} />
             <div className="space-y-4">
               <Card>
                 <CardHeader>

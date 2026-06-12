@@ -3,6 +3,7 @@ import { GET } from "@/app/api/admin/reports/team/export/route";
 import type {
   ActivityLogRecord,
   BranchRecord,
+  DetectedShiftRecord,
   IncidentRecord,
   RestroomRecord,
   SafeUserRecord,
@@ -13,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   requireUser: vi.fn(),
   listActivityLogsByOrganization: vi.fn(),
   listBranchesByOrganization: vi.fn(),
+  listDetectedShiftsByOrganization: vi.fn(),
   listIncidentsByOrganization: vi.fn(),
   listRestroomsByOrganization: vi.fn(),
   listShiftsByOrganization: vi.fn(),
@@ -29,6 +31,10 @@ vi.mock("@/lib/data/repositories/activity-logs", () => ({
 
 vi.mock("@/lib/data/repositories/branches", () => ({
   listBranchesByOrganization: mocks.listBranchesByOrganization,
+}));
+
+vi.mock("@/lib/data/repositories/detected-shifts", () => ({
+  listDetectedShiftsByOrganization: mocks.listDetectedShiftsByOrganization,
 }));
 
 vi.mock("@/lib/data/repositories/incidents", () => ({
@@ -162,6 +168,23 @@ const shifts: ShiftRecord[] = [
   },
 ];
 
+const detectedShifts: DetectedShiftRecord[] = [
+  {
+    id: "detected_1",
+    organizationId: "org_1",
+    branchId: "branch_1",
+    restroomIds: ["restroom_1"],
+    assignedUserIds: ["worker_1"],
+    shiftName: "זוהתה בוקר",
+    source: "detected",
+    status: "needs_completion",
+    missingFields: ["managerUserId"],
+    confidence: "medium",
+    createdAt: "2026-06-12T08:00:00.000Z",
+    updatedAt: "2026-06-12T08:20:00.000Z",
+  },
+];
+
 function incident(overrides: Partial<IncidentRecord>): IncidentRecord {
   return {
     id: "incident_1",
@@ -223,6 +246,7 @@ describe("team report CSV export", () => {
     mocks.listBranchesByOrganization.mockResolvedValue(branches);
     mocks.listRestroomsByOrganization.mockResolvedValue(restrooms);
     mocks.listShiftsByOrganization.mockResolvedValue(shifts);
+    mocks.listDetectedShiftsByOrganization.mockResolvedValue(detectedShifts);
     mocks.listUsersByOrganization.mockResolvedValue([owner, manager, worker, hiddenWorker]);
     mocks.listIncidentsByOrganization.mockResolvedValue([
       incident({ id: "incident_1" }),
@@ -237,6 +261,17 @@ describe("team report CSV export", () => {
         incidentId: null,
         shiftId: undefined,
         metadata: { shiftResolution: "none" },
+      }),
+      activityLog({
+        id: "visible_detected",
+        action: "detected_shift_created",
+        actionType: "detected_shift_created",
+        incidentId: null,
+        shiftId: undefined,
+        detectedShiftId: "detected_1",
+        targetType: "detected_shift",
+        targetId: "detected_1",
+        metadata: { shiftLinkType: "detected" },
       }),
       activityLog({
         id: "hidden_formula",
@@ -265,6 +300,15 @@ describe("team report CSV export", () => {
 
     expect(csv).toContain("ללא שיוך משמרת");
     expect(csv).toContain("none");
+  });
+
+  it("exports detected shift rows with the same shiftLink filter", async () => {
+    const csv = await exportCsv("http://localhost/api/admin/reports/team/export?shiftLink=needs_completion");
+
+    expect(csv).toContain("זוהתה בוקר");
+    expect(csv).toContain("משמרת שזוהתה - דורשת השלמה");
+    expect(csv).toContain("זיהוי משמרת");
+    expect(csv).not.toContain("משמרת ידנית");
   });
 
   it("keeps area manager CSV scoped to visible restrooms", async () => {

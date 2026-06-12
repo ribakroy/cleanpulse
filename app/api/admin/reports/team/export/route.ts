@@ -13,6 +13,7 @@ import {
 import { requireUser } from "@/lib/auth/session";
 import { listActivityLogsByOrganization } from "@/lib/data/repositories/activity-logs";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
+import { listDetectedShiftsByOrganization } from "@/lib/data/repositories/detected-shifts";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { listShiftsByOrganization } from "@/lib/data/repositories/shifts";
@@ -22,6 +23,7 @@ import { escapeCsvValue } from "@/lib/reports/csv";
 import { filterIncidents } from "@/lib/reports/metrics";
 
 const roleFilterOptions: UserRole[] = ["owner", "admin", "area_manager", "operations_worker", "manager", "cleaner"];
+const shiftLinkOptions = new Set(["confirmed", "detected", "needs_completion", "no_shift"]);
 
 function normalizeReportDate(value: string | null): string {
   const trimmed = value?.trim();
@@ -61,7 +63,44 @@ const actionLabels: Record<string, string> = {
   shift_created: "יצירת משמרת",
   shift_updated: "עדכון משמרת",
   shift_disabled: "השבתת משמרת",
+  user_login: "כניסה למערכת",
+  work_portal_viewed: "כניסה לאזור עבודה",
+  detected_shift_created: "זיהוי משמרת",
+  detected_shift_updated: "עדכון זיהוי משמרת",
+  detected_shift_completion_requested: "בקשת השלמת משמרת",
+  detected_shift_confirmed: "אישור משמרת שזוהתה",
+  detected_shift_dismissed: "דחיית משמרת שזוהתה",
 };
+
+function getDetectedShiftStatusLabel(status: string | undefined) {
+  if (status === "confirmed") return "משמרת שזוהתה ואושרה";
+  if (status === "needs_completion") return "משמרת שזוהתה - דורשת השלמה";
+  if (status === "dismissed") return "משמרת שזוהתה - נדחתה";
+  return "משמרת שזוהתה";
+}
+
+function getShiftLinkLabel(input: {
+  shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
+  detectedStatus?: string | undefined;
+}) {
+  if (input.shiftId) return "משמרת ידנית";
+  if (input.detectedShiftId) return getDetectedShiftStatusLabel(input.detectedStatus);
+  return "ללא שיוך משמרת";
+}
+
+function matchesShiftLinkFilter(input: {
+  shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
+  detectedStatus?: string | undefined;
+}, filter: string) {
+  if (!filter) return true;
+  if (filter === "confirmed") return Boolean(input.shiftId || input.detectedStatus === "confirmed");
+  if (filter === "detected") return Boolean(input.detectedShiftId);
+  if (filter === "needs_completion") return input.detectedStatus === "needs_completion";
+  if (filter === "no_shift") return !input.shiftId && !input.detectedShiftId;
+  return true;
+}
 
 export async function GET(request: NextRequest) {
   const user = await requireUser();
@@ -81,16 +120,18 @@ export async function GET(request: NextRequest) {
   const filterUser = searchParams.get("userId") || "";
   const filterRole = roleFilterOptions.includes(searchParams.get("role") as UserRole) ? searchParams.get("role") as UserRole : "";
   const filterShift = searchParams.get("shiftId") || "";
+  const filterShiftLink = shiftLinkOptions.has(searchParams.get("shiftLink") || "") ? searchParams.get("shiftLink") || "" : "";
   const filterAction = searchParams.get("action") || "";
   const filterManager = searchParams.get("managerId") || "";
 
-  const [allIncidents, allBranches, allRestrooms, users, activityLogs, shifts] = await Promise.all([
+  const [allIncidents, allBranches, allRestrooms, users, activityLogs, shifts, detectedShifts] = await Promise.all([
     listIncidentsByOrganization(user.organizationId),
     listBranchesByOrganization(user.organizationId),
     listRestroomsByOrganization(user.organizationId),
     listUsersByOrganization(user.organizationId),
     listActivityLogsByOrganization(user.organizationId, { limit: 1000 }),
     listShiftsByOrganization(user.organizationId),
+    listDetectedShiftsByOrganization(user.organizationId),
   ]);
 
   const scopedIncidents = filterIncidentsForUser(user, allIncidents);
@@ -101,6 +142,14 @@ export async function GET(request: NextRequest) {
   const branchNames = new Map(branches.map((branch) => [branch.id, branch.name] as const));
   const restroomNames = new Map(restrooms.map((restroom) => [restroom.id, restroom.name] as const));
   const shiftNames = new Map(shifts.filter((shift) => !shift.branchId || visibleBranchIds.has(shift.branchId)).map((shift) => [shift.id, shift.name] as const));
+  const scopedDetectedShifts = detectedShifts.filter((shift) => {
+    if (shift.branchId && !visibleBranchIds.has(shift.branchId)) return false;
+    if (shift.restroomIds?.length && shift.restroomIds.some((restroomId) => !visibleRestroomIds.has(restroomId))) return false;
+    return Boolean(shift.branchId || shift.restroomIds?.length || isOrganizationOwner(user));
+  });
+  const detectedShiftsById = new Map(scopedDetectedShifts.map((shift) => [shift.id, shift] as const));
+  const detectedShiftNames = new Map(scopedDetectedShifts.map((shift) => [shift.id, shift.shiftName ?? "משמרת שזוהתה"] as const));
+  const visibleDetectedShiftIds = new Set(scopedDetectedShifts.map((shift) => shift.id));
   const usersById = new Map(users.map((reportUser) => [reportUser.id, reportUser] as const));
   const incidentsById = new Map(scopedIncidents.map((incident) => [incident.id, incident] as const));
   const filteredIncidents = filterIncidents(scopedIncidents, {
@@ -120,11 +169,12 @@ export async function GET(request: NextRequest) {
     .filter((log) => {
       if (!isLogInDateRange(log.createdAt, startDate, endDate)) return false;
       if (log.incidentId) return incidentIds.has(log.incidentId);
+      if (log.detectedShiftId && !visibleDetectedShiftIds.has(log.detectedShiftId)) return false;
       if (log.restroomId && !visibleRestroomIds.has(log.restroomId)) return false;
       if (log.branchId && !visibleBranchIds.has(log.branchId)) return false;
       if (filterRestroom && log.restroomId !== filterRestroom) return false;
       if (filterBranch && log.branchId !== filterBranch) return false;
-      return Boolean(log.branchId || log.restroomId);
+      return Boolean(log.branchId || log.restroomId || log.detectedShiftId);
     })
     .filter((log) => {
       if (!selectedManager) return true;
@@ -145,12 +195,17 @@ export async function GET(request: NextRequest) {
         const actorRole = log.actorRole ?? (log.actorUserId ? usersById.get(log.actorUserId)?.role : undefined);
         if (actorRole !== filterRole) return false;
       }
-      if (filterShift && log.shiftId !== filterShift) return false;
+      if (filterShift && log.shiftId !== filterShift && log.detectedShiftId !== filterShift) return false;
+      if (filterShiftLink && !matchesShiftLinkFilter({
+        shiftId: log.shiftId,
+        detectedShiftId: log.detectedShiftId,
+        detectedStatus: log.detectedShiftId ? detectedShiftsById.get(log.detectedShiftId)?.status : undefined,
+      }, filterShiftLink)) return false;
       if (filterAction && log.action !== filterAction) return false;
       return true;
     });
 
-  const headers = ["שם עובד", "תפקיד", "משמרת", "סניף", "אזור שירותים", "סוג פעולה", "זמן", "שיוך משמרת"];
+  const headers = ["שם עובד", "תפקיד", "משמרת", "סוג שיוך", "סניף", "אזור שירותים", "סוג פעולה", "זמן", "שיוך משמרת"];
   const rows = [headers.map(escapeCsvValue).join(",")];
 
   for (const log of logs) {
@@ -158,7 +213,16 @@ export async function GET(request: NextRequest) {
     rows.push([
       log.actorFullName ?? "משתמש מערכת",
       actorRole ? formatRoleLabel(actorRole as UserRole) : "לא זמין",
-      log.shiftId ? shiftNames.get(log.shiftId) ?? "משמרת לא זמינה" : "ללא שיוך משמרת",
+      log.shiftId
+        ? shiftNames.get(log.shiftId) ?? "משמרת לא זמינה"
+        : log.detectedShiftId
+          ? detectedShiftNames.get(log.detectedShiftId) ?? "משמרת שזוהתה"
+          : "ללא שיוך משמרת",
+      getShiftLinkLabel({
+        shiftId: log.shiftId,
+        detectedShiftId: log.detectedShiftId,
+        detectedStatus: log.detectedShiftId ? detectedShiftsById.get(log.detectedShiftId)?.status : undefined,
+      }),
       log.branchId ? branchNames.get(log.branchId) ?? "סניף לא זמין" : "",
       log.restroomId ? restroomNames.get(log.restroomId) ?? "אזור לא זמין" : "",
       actionLabels[log.action] ?? log.action,

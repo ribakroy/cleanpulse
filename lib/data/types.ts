@@ -9,6 +9,8 @@ import type {
   EmailDomainStatus,
   EmailMode,
   MagicLoginPurpose,
+  DetectedShiftConfidence,
+  DetectedShiftStatus,
   UserRole,
   IssueTypeKey,
   IssueSeverity,
@@ -22,6 +24,7 @@ export type CollectionName =
   | "organizations"
   | "users"
   | "shifts"
+  | "detected_shifts"
   | "magic_login_tokens"
   | "system_settings"
   | "branches"
@@ -95,6 +98,31 @@ export type ShiftRecord = TimestampedRecord & {
   endsAt: string;
   daysOfWeek?: number[] | undefined;
   isActive: boolean;
+};
+
+export type DetectedShiftRecord = TimestampedRecord & {
+  organizationId: string;
+  branchId?: string | undefined;
+  restroomIds?: string[] | undefined;
+  assignedUserIds?: string[] | undefined;
+  managerUserId?: string | undefined;
+  inferredStartAt?: string | undefined;
+  inferredEndAt?: string | undefined;
+  confirmedStartAt?: string | undefined;
+  confirmedEndAt?: string | undefined;
+  shiftName?: string | undefined;
+  daysOfWeek?: number[] | undefined;
+  source: "detected";
+  status: DetectedShiftStatus;
+  missingFields: string[];
+  confidence?: DetectedShiftConfidence | undefined;
+  createdFromActivityLogIds?: string[] | undefined;
+  completionRequestedAt?: string | undefined;
+  completionRequestedToUserIds?: string[] | undefined;
+  confirmedByUserId?: string | undefined;
+  confirmedAt?: string | undefined;
+  dismissedByUserId?: string | undefined;
+  dismissedAt?: string | undefined;
 };
 
 export type MagicLoginTokenRecord = TimestampedRecord & {
@@ -193,7 +221,9 @@ export type NotificationRecipientRecord = TimestampedRecord & {
 
 export type NotificationLogRecord = CollectionRecordBase & {
   organizationId: string;
-  incidentId: string;
+  incidentId: string | null;
+  targetType?: string | undefined;
+  targetId?: string | undefined;
   recipientId: string | null;
   provider: NotificationProvider;
   channel: NotificationChannel;
@@ -216,6 +246,7 @@ export type ActivityLogRecord = CollectionRecordBase & {
   restroomId?: string | undefined;
   branchId?: string | undefined;
   shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
   metadata: Record<string, unknown>;
   createdAt: string;
 };
@@ -224,6 +255,7 @@ export type CollectionRecordMap = {
   organizations: OrganizationRecord;
   users: UserRecord;
   shifts: ShiftRecord;
+  detected_shifts: DetectedShiftRecord;
   magic_login_tokens: MagicLoginTokenRecord;
   system_settings: EmailDomainSettingsRecord;
   branches: BranchRecord;

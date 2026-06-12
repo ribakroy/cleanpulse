@@ -28,6 +28,21 @@ vi.mock('@/lib/auth/session', () => ({
   createSessionCookie: vi.fn(),
 }));
 
+vi.mock('@/lib/shifts/detect-shift', () => ({
+  detectOrUpdateShiftFromActivity: vi.fn(async () => ({
+    id: 'detected_shift_1',
+    status: 'needs_completion',
+  })),
+}));
+
+vi.mock('@/lib/data/repositories/activity-logs', () => ({
+  createActivityLog: vi.fn(async () => ({ id: 'activity_log_1' })),
+}));
+
+vi.mock('@/lib/data/repositories/detected-shifts', () => ({
+  attachActivityLogToDetectedShift: vi.fn(async () => ({})),
+}));
+
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));

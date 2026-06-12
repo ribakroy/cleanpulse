@@ -217,7 +217,7 @@ export function calculateReportMetrics(
 
   // Notification success rate (mock_sent and sent are successes, failed is failure)
   const incidentIds = new Set(incidents.map((inc) => inc.id));
-  const relevantLogs = notificationLogs.filter((log) => incidentIds.has(log.incidentId));
+  const relevantLogs = notificationLogs.filter((log) => log.incidentId ? incidentIds.has(log.incidentId) : false);
   const attempts = relevantLogs.filter((log) => log.status !== "no_recipients");
   const successes = attempts.filter((log) => log.status === "sent" || log.status === "mock_sent");
   const notificationSuccessRatePercentage = attempts.length > 0

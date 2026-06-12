@@ -138,6 +138,7 @@ describe("team activity report", () => {
       {
         shiftId: "shift_1",
         shiftName: "בוקר",
+        shiftType: "manual",
         totalActions: 2,
         actorCount: 2,
       },

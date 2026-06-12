@@ -44,6 +44,7 @@ export function generateIncidentsCsv(
   // Group notification logs by incidentId
   const logsByIncident = new Map<string, NotificationLogRecord[]>();
   for (const log of notificationLogs) {
+    if (!log.incidentId) continue;
     const list = logsByIncident.get(log.incidentId) || [];
     list.push(log);
     logsByIncident.set(log.incidentId, list);

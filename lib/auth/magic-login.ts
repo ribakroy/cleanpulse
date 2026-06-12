@@ -6,6 +6,7 @@ import {
   markMagicLoginTokenUsed,
 } from "@/lib/data/repositories/magic-login-tokens";
 import { getEmailDomainSettings } from "@/lib/data/repositories/system-settings";
+import { getDetectedShiftById } from "@/lib/data/repositories/detected-shifts";
 import { getIncidentById } from "@/lib/data/repositories/incidents";
 import { getUserById } from "@/lib/data/repositories/users";
 import type { SafeUserRecord } from "@/lib/data/types";
@@ -13,10 +14,12 @@ import {
   canManageRecipients,
   canManageSettings,
   canManageUsers,
+  canCompleteDetectedShift,
   canViewIncident,
   canViewLocations,
   canViewReports,
   canViewScreens,
+  canViewShifts,
   getDefaultRouteForRole,
   isAreaManager,
   isOperationsWorker,
@@ -93,7 +96,18 @@ export async function canUseMagicLoginTarget(user: SafeUserRecord, targetPath: s
     }
 
     if (targetPath.startsWith("/admin/shifts")) {
-      return canManageUsers(user);
+      if (canManageUsers(user)) {
+        return true;
+      }
+
+      const detectedShiftId = new URL(targetPath, "https://cleanpulse.local").searchParams.get("detectedShiftId");
+      if (!detectedShiftId) {
+        return canViewShifts(user);
+      }
+
+      const detectedShift = await getDetectedShiftById(user.organizationId, detectedShiftId).catch(() => null);
+
+      return detectedShift ? canCompleteDetectedShift(user, detectedShift) : false;
     }
 
     if (targetPath.startsWith("/admin/settings")) {

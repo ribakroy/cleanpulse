@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
-import { canDismissIncident, canResetRestroom, canUpdateIncident } from "@/lib/auth/permissions";
+import { canDismissIncident, canResetRestroom, canUpdateIncident, isAreaManager, isOperationsWorker } from "@/lib/auth/permissions";
 import {
   updateIncidentStatus,
   getIncidentById,
@@ -10,6 +10,8 @@ import {
 } from "@/lib/data/repositories/incidents";
 import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 import { listShiftsByOrganization } from "@/lib/data/repositories/shifts";
+import { attachActivityLogToDetectedShift } from "@/lib/data/repositories/detected-shifts";
+import { detectOrUpdateShiftFromActivity } from "@/lib/shifts/detect-shift";
 import { resolveShiftForAction } from "@/lib/shifts/resolve-shift";
 import type { IncidentRecord, SafeUserRecord } from "@/lib/data/types";
 
@@ -39,8 +41,18 @@ async function logIncidentAction(input: {
     timestamp,
     shifts,
   });
+  const shouldDetectShift = !shift.shiftId && (isOperationsWorker(input.user) || isAreaManager(input.user));
+  const detectedShift = shouldDetectShift
+    ? await detectOrUpdateShiftFromActivity({
+      user: input.user,
+      actionType: input.action,
+      branchId: input.incident.branchId,
+      restroomId: input.incident.restroomId,
+      timestamp,
+    })
+    : null;
 
-  return createActivityLog({
+  const log = await createActivityLog({
     organizationId: input.user.organizationId,
     actorUserId: input.user.id,
     actorFullName: input.user.fullName,
@@ -52,13 +64,22 @@ async function logIncidentAction(input: {
     branchId: input.incident.branchId,
     restroomId: input.incident.restroomId,
     shiftId: shift.shiftId,
+    detectedShiftId: detectedShift?.id,
     metadata: {
       actorName: input.user.fullName,
       actorRole: input.user.role,
       shiftResolution: shift.shiftResolution,
+      shiftLinkType: shift.shiftId ? "manual" : detectedShift ? "detected" : "none",
+      detectedShiftStatus: detectedShift?.status,
       ...input.metadata,
     },
   });
+
+  if (detectedShift) {
+    await attachActivityLogToDetectedShift(input.user.organizationId, detectedShift.id, log.id);
+  }
+
+  return log;
 }
 
 export async function acknowledgeIncidentAction(incidentId: string) {

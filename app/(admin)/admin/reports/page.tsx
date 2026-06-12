@@ -210,7 +210,9 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
 
   // Email notifications breakdown
   const incidentIds = new Set(filteredIncidents.map((inc) => inc.id));
-  const relevantLogs = (notificationLogs as NotificationLogRecord[]).filter((log) => incidentIds.has(log.incidentId));
+  const relevantLogs = (notificationLogs as NotificationLogRecord[]).filter((log) =>
+    log.incidentId ? incidentIds.has(log.incidentId) : false,
+  );
 
   // Comparison tables data
   // Restrooms comparison

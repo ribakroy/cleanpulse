@@ -32,7 +32,8 @@ export type MagicLoginPurpose =
   | "system_notification"
   | "urgent_incident_alert"
   | "incident_resolved"
-  | "restroom_reset";
+  | "restroom_reset"
+  | "shift_completion_required";
 
 export type BrandedEmailTemplateKey =
   | "incident_alert"
@@ -41,8 +42,13 @@ export type BrandedEmailTemplateKey =
   | "incident_resolved"
   | "restroom_reset"
   | "shift_summary"
+  | "shift_completion_required"
   | "user_invite"
   | "password_reset";
+
+export type DetectedShiftStatus = "draft" | "needs_completion" | "confirmed" | "dismissed";
+
+export type DetectedShiftConfidence = "low" | "medium" | "high";
 
 export type NotificationScopeType = "organization" | "branch" | "restroom" | "screen";
 

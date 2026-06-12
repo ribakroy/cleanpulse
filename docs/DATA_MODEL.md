@@ -472,3 +472,54 @@ Fallback:
 - `updatedByUserId`
 
 המסך `/super/email-settings` מנהל את ההגדרות בלי secrets ובלי הפעלת מיילים חיים.
+
+## 11. Detected Shifts
+
+### `detected_shifts`
+
+משמרות שזוהו מפעילות בפועל. הן לא מחליפות `shifts` ידניות ולא מקבלות `shiftId` ידני עד שאדם מאשר אותן.
+
+- `organizationId`
+- `branchId` אם ידוע
+- `restroomIds` אם ידועים
+- `assignedUserIds` עובדים שזוהו בפעילות
+- `managerUserId` רק אם מנהל/מנהל אזור פעל בפועל
+- `inferredStartAt`
+- `inferredEndAt`
+- `confirmedStartAt`
+- `confirmedEndAt`
+- `shiftName`
+- `daysOfWeek`
+- `source: "detected"`
+- `status: "draft" | "needs_completion" | "confirmed" | "dismissed"`
+- `missingFields`
+- `confidence`
+- `createdFromActivityLogIds`
+- `completionRequestedAt`
+- `completionRequestedToUserIds`
+- `confirmedByUserId`
+- `confirmedAt`
+- `dismissedByUserId`
+- `dismissedAt`
+
+### Activity logs
+
+`activity_logs` ממשיכים לתמוך ב־`shiftId` למשמרת ידנית. נוסף `detectedShiftId` לשיוך למשמרת שזוהתה.
+
+פעולות מערכת:
+
+- `detected_shift_created`
+- `detected_shift_updated`
+- `detected_shift_completion_requested`
+- `detected_shift_confirmed`
+- `detected_shift_dismissed`
+
+### Email
+
+תבנית `shift_completion_required` משתמשת ב־Magic Login Link ליעד:
+
+```text
+/admin/shifts?detectedShiftId=...
+```
+
+בשלב זה נשלח רק דרך mock provider.

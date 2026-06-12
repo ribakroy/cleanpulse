@@ -33,6 +33,12 @@ export const collectionDefinitions: { [K in CollectionName]: CollectionDefinitio
     defaultSortField: "createdAt",
     softDeleteStrategy: "isActive",
   },
+  detected_shifts: {
+    directory: "detected_shifts",
+    datePartitioned: false,
+    defaultSortField: "updatedAt",
+    softDeleteStrategy: "unsupported",
+  },
   magic_login_tokens: {
     directory: "magic_login_tokens",
     datePartitioned: false,

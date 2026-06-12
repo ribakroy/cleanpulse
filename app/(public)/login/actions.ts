@@ -4,9 +4,12 @@ import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSessionCookie } from "@/lib/auth/session";
-import { getDefaultRouteForRole } from "@/lib/auth/permissions";
+import { getDefaultRouteForRole, isAreaManager, isOperationsWorker } from "@/lib/auth/permissions";
+import { createActivityLog } from "@/lib/data/repositories/activity-logs";
+import { attachActivityLogToDetectedShift } from "@/lib/data/repositories/detected-shifts";
 import { normalizeEmail } from "@/lib/data/repositories/_shared";
 import { getUserByEmailForAuth } from "@/lib/data/repositories/users";
+import { detectOrUpdateShiftFromActivity } from "@/lib/shifts/detect-shift";
 
 export type LoginActionState = {
   email: string;
@@ -74,6 +77,34 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
   loginAttempts.delete(email);
 
   await createSessionCookie(user);
+  if (isOperationsWorker(user) || isAreaManager(user)) {
+    const timestamp = new Date().toISOString();
+    const detectedShift = await detectOrUpdateShiftFromActivity({
+      user,
+      actionType: "user_login",
+      timestamp,
+    });
+    const log = await createActivityLog({
+      organizationId: user.organizationId,
+      actorUserId: user.id,
+      actorFullName: user.fullName,
+      actorRole: user.role,
+      incidentId: null,
+      action: "user_login",
+      actionType: "user_login",
+      targetType: "session",
+      targetId: user.id,
+      detectedShiftId: detectedShift.id,
+      metadata: {
+        actorName: user.fullName,
+        actorRole: user.role,
+        shiftLinkType: "detected",
+        detectedShiftStatus: detectedShift.status,
+      },
+    });
+
+    await attachActivityLogToDetectedShift(user.organizationId, detectedShift.id, log.id);
+  }
 
   revalidatePath("/", "layout");
   redirect(getDefaultRouteForRole(user.role));

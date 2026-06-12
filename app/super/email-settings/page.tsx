@@ -29,6 +29,7 @@ const templates: BrandedEmailTemplateKey[] = [
   "incident_resolved",
   "restroom_reset",
   "shift_summary",
+  "shift_completion_required",
   "user_invite",
   "password_reset",
 ];
@@ -40,6 +41,7 @@ const templateLabels: Record<BrandedEmailTemplateKey, string> = {
   incident_resolved: "טיפול הושלם",
   restroom_reset: "ניקוי מקיף",
   shift_summary: "סיכום משמרת",
+  shift_completion_required: "השלמת משמרת",
   user_invite: "הזמנת משתמש",
   password_reset: "איפוס סיסמה",
 };
@@ -51,6 +53,7 @@ function normalizeTemplate(value: string | undefined): BrandedEmailTemplateKey {
 function getPreviewTargetPath(template: BrandedEmailTemplateKey) {
   if (template === "worker_task_assigned") return "/work";
   if (template === "shift_summary") return "/admin/reports/team?shiftId=preview";
+  if (template === "shift_completion_required") return "/admin/shifts?detectedShiftId=preview";
   if (template === "user_invite") return "/admin/dashboard";
   if (template === "password_reset") return "/login";
   return "/admin/incidents/incident_preview";
@@ -190,6 +193,7 @@ export default async function SuperEmailSettingsPage({ searchParams }: EmailSett
                   <option value="user_invite">user_invite</option>
                   <option value="password_reset">password_reset</option>
                   <option value="system_notification">system_notification</option>
+                  <option value="shift_completion_required">shift_completion_required</option>
                 </Select>
                 <Button type="submit" variant="secondary">
                   יצירת קישור QA

@@ -1,4 +1,4 @@
-import type { ActivityLogRecord, IncidentRecord, SafeUserRecord, ShiftRecord } from "@/lib/data/types";
+import type { ActivityLogRecord, DetectedShiftRecord, IncidentRecord, SafeUserRecord, ShiftRecord } from "@/lib/data/types";
 import { getDurationMinutes } from "@/lib/reports/metrics";
 
 export type TeamMemberActivitySummary = {
@@ -16,11 +16,15 @@ export type TeamMemberActivitySummary = {
   branchIds: string[];
   restroomIds: string[];
   shiftIds: string[];
+  detectedShiftIds: string[];
 };
 
 export type ShiftActivitySummary = {
   shiftId: string;
   shiftName: string;
+  shiftType: "manual" | "detected";
+  status?: string | undefined;
+  missingFields?: string[] | undefined;
   totalActions: number;
   actorCount: number;
 };
@@ -63,16 +67,23 @@ export function calculateTeamActivityReport(input: {
   incidents: IncidentRecord[];
   activityLogs: ActivityLogRecord[];
   shifts?: ShiftRecord[] | undefined;
+  detectedShifts?: DetectedShiftRecord[] | undefined;
 }): TeamActivityReport {
   const usersById = new Map(input.users.map((user) => [user.id, user] as const));
   const incidentsById = new Map(input.incidents.map((incident) => [incident.id, incident] as const));
   const shiftsById = new Map((input.shifts ?? []).map((shift) => [shift.id, shift] as const));
+  const detectedShiftsById = new Map((input.detectedShifts ?? []).map((shift) => [shift.id, shift] as const));
   const summaries = new Map<string, TeamMemberActivitySummary & {
     responseMinutes: number[];
     handlingMinutes: number[];
     resolutionMinutes: number[];
   }>();
-  const shiftCounts = new Map<string, { totalActions: number; actorKeys: Set<string> }>();
+  const shiftCounts = new Map<string, {
+    id: string;
+    type: "manual" | "detected";
+    totalActions: number;
+    actorKeys: Set<string>;
+  }>();
 
   for (const log of input.activityLogs) {
     if (!log.actorUserId && !log.actorFullName) {
@@ -95,6 +106,7 @@ export function calculateTeamActivityReport(input: {
       branchIds: [],
       restroomIds: [],
       shiftIds: [],
+      detectedShiftIds: [],
       responseMinutes: [],
       handlingMinutes: [],
       resolutionMinutes: [],
@@ -144,10 +156,32 @@ export function calculateTeamActivityReport(input: {
       if (!current.shiftIds.includes(log.shiftId)) {
         current.shiftIds.push(log.shiftId);
       }
-      const shiftSummary = shiftCounts.get(log.shiftId) ?? { totalActions: 0, actorKeys: new Set<string>() };
+      const shiftKey = `manual:${log.shiftId}`;
+      const shiftSummary = shiftCounts.get(shiftKey) ?? {
+        id: log.shiftId,
+        type: "manual" as const,
+        totalActions: 0,
+        actorKeys: new Set<string>(),
+      };
       shiftSummary.totalActions += 1;
       shiftSummary.actorKeys.add(actorKey);
-      shiftCounts.set(log.shiftId, shiftSummary);
+      shiftCounts.set(shiftKey, shiftSummary);
+    }
+
+    if (log.detectedShiftId) {
+      if (!current.detectedShiftIds.includes(log.detectedShiftId)) {
+        current.detectedShiftIds.push(log.detectedShiftId);
+      }
+      const shiftKey = `detected:${log.detectedShiftId}`;
+      const shiftSummary = shiftCounts.get(shiftKey) ?? {
+        id: log.detectedShiftId,
+        type: "detected" as const,
+        totalActions: 0,
+        actorKeys: new Set<string>(),
+      };
+      shiftSummary.totalActions += 1;
+      shiftSummary.actorKeys.add(actorKey);
+      shiftCounts.set(shiftKey, shiftSummary);
     }
 
     summaries.set(actorKey, current);
@@ -171,10 +205,15 @@ export function calculateTeamActivityReport(input: {
     }))
     .sort((left, right) => right.resolvedIncidents - left.resolvedIncidents || right.totalActions - left.totalActions);
 
-  const shifts = Array.from(shiftCounts.entries())
-    .map(([shiftId, shiftSummary]) => ({
-      shiftId,
-      shiftName: shiftsById.get(shiftId)?.name ?? "משמרת לא זמינה",
+  const shifts = Array.from(shiftCounts.values())
+    .map((shiftSummary) => ({
+      shiftId: shiftSummary.id,
+      shiftName: shiftSummary.type === "manual"
+        ? shiftsById.get(shiftSummary.id)?.name ?? "משמרת לא זמינה"
+        : detectedShiftsById.get(shiftSummary.id)?.shiftName ?? "משמרת שזוהתה",
+      shiftType: shiftSummary.type,
+      status: shiftSummary.type === "detected" ? detectedShiftsById.get(shiftSummary.id)?.status : undefined,
+      missingFields: shiftSummary.type === "detected" ? detectedShiftsById.get(shiftSummary.id)?.missingFields : undefined,
       totalActions: shiftSummary.totalActions,
       actorCount: shiftSummary.actorKeys.size,
     }))

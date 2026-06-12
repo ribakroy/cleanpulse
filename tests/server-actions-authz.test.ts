@@ -21,6 +21,8 @@ const mocks = vi.hoisted(() => ({
   listRestroomsByOrganization: vi.fn(),
   getShiftById: vi.fn(),
   listShiftsByOrganization: vi.fn(),
+  detectOrUpdateShiftFromActivity: vi.fn(),
+  attachActivityLogToDetectedShift: vi.fn(),
   revalidatePath: vi.fn(),
   bcryptHash: vi.fn(),
 }));
@@ -68,6 +70,14 @@ vi.mock("@/lib/data/repositories/restrooms", () => ({
 vi.mock("@/lib/data/repositories/shifts", () => ({
   getShiftById: mocks.getShiftById,
   listShiftsByOrganization: mocks.listShiftsByOrganization,
+}));
+
+vi.mock("@/lib/shifts/detect-shift", () => ({
+  detectOrUpdateShiftFromActivity: mocks.detectOrUpdateShiftFromActivity,
+}));
+
+vi.mock("@/lib/data/repositories/detected-shifts", () => ({
+  attachActivityLogToDetectedShift: mocks.attachActivityLogToDetectedShift,
 }));
 
 const owner: SafeUserRecord = {
@@ -136,10 +146,15 @@ describe("server action authorization", () => {
     vi.clearAllMocks();
     mocks.requireUser.mockResolvedValue(owner);
     mocks.bcryptHash.mockResolvedValue("hash");
-    mocks.createActivityLog.mockResolvedValue({});
+    mocks.createActivityLog.mockResolvedValue({ id: "activity_log_1" });
     mocks.updateIncidentStatus.mockResolvedValue({});
     mocks.resolveOpenIncidentsForRestroom.mockResolvedValue({ closedCount: 0, closedIncidentIds: [], resetAt: "2026-06-12T08:00:00.000Z" });
     mocks.listShiftsByOrganization.mockResolvedValue([]);
+    mocks.detectOrUpdateShiftFromActivity.mockResolvedValue({
+      id: "detected_shift_1",
+      status: "needs_completion",
+    });
+    mocks.attachActivityLogToDetectedShift.mockResolvedValue({});
   });
 
   it("blocks business admins from creating super_admin users", async () => {
@@ -207,9 +222,10 @@ describe("server action authorization", () => {
         shiftResolution: "matched",
       }),
     }));
+    expect(mocks.detectOrUpdateShiftFromActivity).not.toHaveBeenCalled();
   });
 
-  it("does not invent shiftId when worker acts outside matching shift", async () => {
+  it("uses detected shift when worker acts outside matching manual shift", async () => {
     vi.mocked(requireUser).mockResolvedValue(worker);
     vi.mocked(getIncidentById).mockResolvedValue(incident({}));
     mocks.listShiftsByOrganization.mockResolvedValue([
@@ -231,11 +247,25 @@ describe("server action authorization", () => {
 
     await startInProgressIncidentAction("incident_1");
 
+    expect(mocks.detectOrUpdateShiftFromActivity).toHaveBeenCalledWith(expect.objectContaining({
+      user: worker,
+      actionType: "status_in_progress",
+      branchId: "branch_1",
+      restroomId: "restroom_1",
+    }));
     expect(createActivityLog).toHaveBeenCalledWith(expect.objectContaining({
       shiftId: undefined,
+      detectedShiftId: "detected_shift_1",
       metadata: expect.objectContaining({
         shiftResolution: "outside_shift",
+        shiftLinkType: "detected",
+        detectedShiftStatus: "needs_completion",
       }),
     }));
+    expect(mocks.attachActivityLogToDetectedShift).toHaveBeenCalledWith(
+      "org_1",
+      "detected_shift_1",
+      "activity_log_1",
+    );
   });
 });

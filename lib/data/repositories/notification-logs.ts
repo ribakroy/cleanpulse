@@ -5,7 +5,9 @@ import type { NotificationChannel, NotificationLogStatus, NotificationProvider }
 
 export type CreateNotificationLogInput = {
   organizationId: string;
-  incidentId: string;
+  incidentId?: string | null | undefined;
+  targetType?: string | undefined;
+  targetId?: string | undefined;
   recipientId?: string | null | undefined;
   provider: NotificationProvider;
   channel?: NotificationChannel | undefined;
@@ -27,7 +29,9 @@ export async function createNotificationLog(input: CreateNotificationLogInput) {
   const record: NotificationLogRecord = {
     id: createPrefixedId("notification_log"),
     organizationId: input.organizationId,
-    incidentId: input.incidentId,
+    incidentId: input.incidentId ?? null,
+    targetType: input.targetType,
+    targetId: input.targetId,
     recipientId: input.recipientId ?? null,
     provider: input.provider,
     channel: input.channel ?? "email",

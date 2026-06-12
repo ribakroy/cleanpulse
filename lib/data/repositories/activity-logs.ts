@@ -16,6 +16,7 @@ export type CreateActivityLogInput = {
   restroomId?: string | undefined;
   branchId?: string | undefined;
   shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
   metadata?: Record<string, unknown> | undefined;
 };
 
@@ -52,6 +53,7 @@ export async function createActivityLog(input: CreateActivityLogInput) {
     restroomId: input.restroomId,
     branchId: input.branchId,
     shiftId: input.shiftId,
+    detectedShiftId: input.detectedShiftId,
     metadata: input.metadata ?? {},
     createdAt: nowIso(),
   };

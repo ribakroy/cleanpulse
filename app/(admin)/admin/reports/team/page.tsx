@@ -22,6 +22,7 @@ import {
 import { requireUser } from "@/lib/auth/session";
 import { listActivityLogsByOrganization } from "@/lib/data/repositories/activity-logs";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
+import { listDetectedShiftsByOrganization } from "@/lib/data/repositories/detected-shifts";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { listShiftsByOrganization } from "@/lib/data/repositories/shifts";
@@ -43,12 +44,14 @@ interface PageProps {
     userId?: string;
     role?: string;
     shiftId?: string;
+    shiftLink?: string;
     action?: string;
     managerId?: string;
   }>;
 }
 
 const roleFilterOptions: UserRole[] = ["owner", "admin", "area_manager", "operations_worker", "manager", "cleaner"];
+const shiftLinkOptions = new Set(["confirmed", "detected", "needs_completion", "no_shift"]);
 
 const actionLabels: Record<string, string> = {
   status_acknowledged: "אישור קבלה",
@@ -66,6 +69,13 @@ const actionLabels: Record<string, string> = {
   shift_created: "יצירת משמרת",
   shift_updated: "עדכון משמרת",
   shift_disabled: "השבתת משמרת",
+  user_login: "כניסה למערכת",
+  work_portal_viewed: "כניסה לאזור עבודה",
+  detected_shift_created: "זיהוי משמרת",
+  detected_shift_updated: "עדכון זיהוי משמרת",
+  detected_shift_completion_requested: "בקשת השלמת משמרת",
+  detected_shift_confirmed: "אישור משמרת שזוהתה",
+  detected_shift_dismissed: "דחיית משמרת שזוהתה",
 };
 
 function normalizeReportDate(value: string | undefined): string {
@@ -121,6 +131,37 @@ function buildTeamReportHref(params: Record<string, string>, patch: Record<strin
   return query ? `/admin/reports/team?${query}` : "/admin/reports/team";
 }
 
+function getDetectedShiftStatusLabel(status: string | undefined) {
+  if (status === "confirmed") return "משמרת שזוהתה ואושרה";
+  if (status === "needs_completion") return "משמרת שזוהתה - דורשת השלמה";
+  if (status === "dismissed") return "משמרת שזוהתה - נדחתה";
+  if (status === "draft") return "משמרת שזוהתה";
+  return "משמרת שזוהתה";
+}
+
+function getShiftLinkLabel(input: {
+  shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
+  detectedStatus?: string | undefined;
+}) {
+  if (input.shiftId) return "משמרת ידנית";
+  if (input.detectedShiftId) return getDetectedShiftStatusLabel(input.detectedStatus);
+  return "ללא שיוך משמרת";
+}
+
+function matchesShiftLinkFilter(input: {
+  shiftId?: string | undefined;
+  detectedShiftId?: string | undefined;
+  detectedStatus?: string | undefined;
+}, filter: string) {
+  if (!filter) return true;
+  if (filter === "confirmed") return Boolean(input.shiftId || input.detectedStatus === "confirmed");
+  if (filter === "detected") return Boolean(input.detectedShiftId);
+  if (filter === "needs_completion") return input.detectedStatus === "needs_completion";
+  if (filter === "no_shift") return !input.shiftId && !input.detectedShiftId;
+  return true;
+}
+
 export default async function TeamReportsPage({ searchParams }: PageProps) {
   const user = await requireUser();
 
@@ -136,16 +177,18 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
   const filterUser = params.userId || "";
   const filterRole = roleFilterOptions.includes(params.role as UserRole) ? params.role as UserRole : "";
   const filterShift = params.shiftId || "";
+  const filterShiftLink = shiftLinkOptions.has(params.shiftLink ?? "") ? params.shiftLink ?? "" : "";
   const filterAction = params.action || "";
   const filterManager = params.managerId || "";
 
-  const [allIncidents, allBranches, allRestrooms, users, activityLogs, shifts] = await Promise.all([
+  const [allIncidents, allBranches, allRestrooms, users, activityLogs, shifts, detectedShifts] = await Promise.all([
     listIncidentsByOrganization(user.organizationId),
     listBranchesByOrganization(user.organizationId),
     listRestroomsByOrganization(user.organizationId),
     listUsersByOrganization(user.organizationId),
     listActivityLogsByOrganization(user.organizationId, { limit: 1000 }),
     listShiftsByOrganization(user.organizationId),
+    listDetectedShiftsByOrganization(user.organizationId),
   ]);
 
   const scopedIncidents = filterIncidentsForUser(user, allIncidents);
@@ -156,7 +199,15 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
   const visibleBranchIds = new Set(branches.map((branch) => branch.id));
   const visibleRestroomIds = new Set(restrooms.map((restroom) => restroom.id));
   const scopedShifts = shifts.filter((shift) => !shift.branchId || visibleBranchIds.has(shift.branchId));
+  const scopedDetectedShifts = detectedShifts.filter((shift) => {
+    if (shift.branchId && !visibleBranchIds.has(shift.branchId)) return false;
+    if (shift.restroomIds?.length && shift.restroomIds.some((restroomId) => !visibleRestroomIds.has(restroomId))) return false;
+    return Boolean(shift.branchId || shift.restroomIds?.length || isOrganizationOwner(user));
+  });
   const shiftNames = new Map(scopedShifts.map((shift) => [shift.id, shift.name] as const));
+  const detectedShiftNames = new Map(scopedDetectedShifts.map((shift) => [shift.id, shift.shiftName ?? "משמרת שזוהתה"] as const));
+  const detectedShiftsById = new Map(scopedDetectedShifts.map((shift) => [shift.id, shift] as const));
+  const visibleDetectedShiftIds = new Set(scopedDetectedShifts.map((shift) => shift.id));
   const usersById = new Map(users.map((reportUser) => [reportUser.id, reportUser] as const));
   const userNames = new Map(users.map((reportUser) => [reportUser.id, reportUser.fullName] as const));
   const incidentsById = new Map(scopedIncidents.map((incident) => [incident.id, incident] as const));
@@ -175,11 +226,12 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
   const baseScopedLogs = activityLogs.filter((log) => {
     if (!isLogInDateRange(log.createdAt, startDate, endDate)) return false;
     if (log.incidentId) return incidentIds.has(log.incidentId);
+    if (log.detectedShiftId && !visibleDetectedShiftIds.has(log.detectedShiftId)) return false;
     if (log.restroomId && !visibleRestroomIds.has(log.restroomId)) return false;
     if (log.branchId && !visibleBranchIds.has(log.branchId)) return false;
     if (filterRestroom && log.restroomId !== filterRestroom) return false;
     if (filterBranch && log.branchId !== filterBranch) return false;
-    return Boolean(log.branchId || log.restroomId);
+    return Boolean(log.branchId || log.restroomId || log.detectedShiftId);
   });
   const managerScopedLogs = selectedManager ? baseScopedLogs.filter((log) => {
     if (log.incidentId) {
@@ -209,7 +261,12 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
       const actorRole = log.actorRole ?? (log.actorUserId ? usersById.get(log.actorUserId)?.role : undefined);
       if (actorRole !== filterRole) return false;
     }
-    if (filterShift && log.shiftId !== filterShift) return false;
+    if (filterShift && log.shiftId !== filterShift && log.detectedShiftId !== filterShift) return false;
+    if (filterShiftLink && !matchesShiftLinkFilter({
+      shiftId: log.shiftId,
+      detectedShiftId: log.detectedShiftId,
+      detectedStatus: log.detectedShiftId ? detectedShiftsById.get(log.detectedShiftId)?.status : undefined,
+    }, filterShiftLink)) return false;
     if (filterAction && log.action !== filterAction) return false;
     return true;
   });
@@ -218,8 +275,9 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
     incidents: filteredIncidents,
     activityLogs: scopedLogs,
     shifts: scopedShifts,
+    detectedShifts: scopedDetectedShifts,
   });
-  const unassignedShiftLogs = scopedLogs.filter((log) => !log.shiftId);
+  const unassignedShiftLogs = scopedLogs.filter((log) => !log.shiftId && !log.detectedShiftId);
   const recentLogs = scopedLogs.slice(0, 12);
   const filterState = {
     startDate,
@@ -229,6 +287,7 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
     userId: filterUser,
     role: filterRole,
     shiftId: filterShift,
+    shiftLink: filterShiftLink,
     action: filterAction,
     managerId: filterManager,
   };
@@ -352,9 +411,21 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
               <option value="">כל המשמרות</option>
               {scopedShifts.map((shift) => (
                 <option key={shift.id} value={shift.id}>
-                  {shift.name}
+                  {shift.name} · ידנית
                 </option>
               ))}
+              {scopedDetectedShifts.map((shift) => (
+                <option key={shift.id} value={shift.id}>
+                  {(shift.shiftName ?? "משמרת שזוהתה")} · זוהתה
+                </option>
+              ))}
+            </Select>
+            <Select name="shiftLink" label="סוג שיוך משמרת" defaultValue={filterShiftLink}>
+              <option value="">כל סוגי השיוך</option>
+              <option value="confirmed">משמרת ידנית/מאושרת</option>
+              <option value="detected">משמרת שזוהתה</option>
+              <option value="needs_completion">דורש השלמה</option>
+              <option value="no_shift">ללא משמרת</option>
             </Select>
             <Select name="action" label="פעולה" defaultValue={filterAction}>
               <option value="">כל הפעולות</option>
@@ -470,16 +541,25 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
                       </td>
                       <td className="rounded-l-[var(--radius-md)] px-3 py-3">
                         <div className="flex max-w-sm flex-wrap gap-1">
-                          {member.shiftIds.length === 0 ? (
+                          {member.shiftIds.length === 0 && member.detectedShiftIds.length === 0 ? (
                             <span className="text-xs text-muted">לא זמין</span>
                           ) : (
-                            member.shiftIds.slice(0, 4).map((shiftId) => (
-                              <Link key={shiftId} href={buildTeamReportHref(filterState, { shiftId })}>
-                                <Badge variant="outline" className="text-[11px] hover:border-brand/40">
-                                  {shiftNames.get(shiftId) ?? "משמרת לא ידועה"}
-                                </Badge>
-                              </Link>
-                            ))
+                            <>
+                              {member.shiftIds.slice(0, 3).map((shiftId) => (
+                                <Link key={shiftId} href={buildTeamReportHref(filterState, { shiftId })}>
+                                  <Badge variant="outline" className="text-[11px] hover:border-brand/40">
+                                    {shiftNames.get(shiftId) ?? "משמרת לא ידועה"}
+                                  </Badge>
+                                </Link>
+                              ))}
+                              {member.detectedShiftIds.slice(0, 3).map((shiftId) => (
+                                <Link key={shiftId} href={buildTeamReportHref(filterState, { shiftId })}>
+                                  <Badge variant="warning" className="text-[11px] hover:border-brand/40">
+                                    {detectedShiftNames.get(shiftId) ?? "משמרת שזוהתה"}
+                                  </Badge>
+                                </Link>
+                              ))}
+                            </>
                           )}
                         </div>
                       </td>
@@ -509,19 +589,33 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
                   href={buildTeamReportHref(filterState, { shiftId: shift.shiftId })}
                   className="rounded-[var(--radius-md)] border border-border bg-white p-4 transition hover:border-brand/35"
                 >
-                  <p className="font-bold text-foreground">{shift.shiftName}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-bold text-foreground">{shift.shiftName}</p>
+                    <Badge variant={shift.shiftType === "manual" ? "outline" : shift.status === "needs_completion" ? "warning" : "secondary"}>
+                      {shift.shiftType === "manual" ? "משמרת ידנית" : getDetectedShiftStatusLabel(shift.status)}
+                    </Badge>
+                  </div>
                   <p className="text-sm text-muted">
                     {shift.totalActions} פעולות מתועדות · {shift.actorCount} עובדים פעילים
                   </p>
                   <p className="mt-1 text-xs text-muted">
-                    משויכים: {(scopedShifts.find((candidate) => candidate.id === shift.shiftId)?.assignedUserIds ?? []).length} עובדים
+                    משויכים: {shift.shiftType === "manual"
+                      ? (scopedShifts.find((candidate) => candidate.id === shift.shiftId)?.assignedUserIds ?? []).length
+                      : (detectedShiftsById.get(shift.shiftId)?.assignedUserIds ?? []).length} עובדים
                   </p>
                   <p className="mt-1 text-xs text-muted">
-                    {(scopedShifts.find((candidate) => candidate.id === shift.shiftId)?.assignedUserIds ?? [])
+                    {(shift.shiftType === "manual"
+                      ? scopedShifts.find((candidate) => candidate.id === shift.shiftId)?.assignedUserIds ?? []
+                      : detectedShiftsById.get(shift.shiftId)?.assignedUserIds ?? [])
                       .slice(0, 4)
                       .map((userId) => userNames.get(userId) ?? "עובד לא זמין")
                       .join(" · ") || "אין עובדים משויכים"}
                   </p>
+                  {shift.missingFields?.length ? (
+                    <p className="mt-1 text-xs font-semibold text-amber-700">
+                      חסר: {shift.missingFields.join(", ")}
+                    </p>
+                  ) : null}
                 </Link>
               ))}
             </div>
@@ -567,12 +661,25 @@ export default async function TeamReportsPage({ searchParams }: PageProps) {
               <div key={log.id} className="rounded-[var(--radius-md)] border border-border bg-white p-3 text-sm">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-bold text-foreground">{log.actorFullName ?? "משתמש מערכת"}</p>
-                  <Badge variant="outline">{actionLabels[log.action] ?? log.action}</Badge>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">{actionLabels[log.action] ?? log.action}</Badge>
+                    <Badge variant={log.detectedShiftId ? "warning" : log.shiftId ? "secondary" : "outline"}>
+                      {getShiftLinkLabel({
+                        shiftId: log.shiftId,
+                        detectedShiftId: log.detectedShiftId,
+                        detectedStatus: log.detectedShiftId ? detectedShiftsById.get(log.detectedShiftId)?.status : undefined,
+                      })}
+                    </Badge>
+                  </div>
                 </div>
                 <p className="mt-1 text-xs text-muted">
                   {log.branchId ? branchNames.get(log.branchId) ?? "סניף לא ידוע" : "ללא סניף"} ·
                   {log.restroomId ? restroomNames.get(log.restroomId) ?? "אזור לא ידוע" : " ללא אזור"} ·
-                  {log.shiftId ? shiftNames.get(log.shiftId) ?? "משמרת לא ידועה" : "ללא שיוך משמרת"}
+                  {log.shiftId
+                    ? shiftNames.get(log.shiftId) ?? "משמרת לא ידועה"
+                    : log.detectedShiftId
+                      ? detectedShiftNames.get(log.detectedShiftId) ?? "משמרת שזוהתה"
+                      : "ללא שיוך משמרת"}
                 </p>
               </div>
             ))

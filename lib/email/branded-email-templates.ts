@@ -55,6 +55,12 @@ const templateDefaults: Record<BrandedEmailTemplateKey, { subject: string; title
     lead: "דוח הצוות למשמרת מוכן לצפייה.",
     cta: "צפייה בדוח צוות",
   },
+  shift_completion_required: {
+    subject: "נדרשת השלמת פרטי משמרת ב-CleanPulse",
+    title: "משמרת שזוהתה דורשת השלמה",
+    lead: "CleanPulse זיהתה פעילות צוות שמתאימה למשמרת, אבל חסרים פרטים לאישור מלא.",
+    cta: "השלמת פרטי המשמרת",
+  },
   user_invite: {
     subject: "הוזמנת ל-CleanPulse",
     title: "כניסה ראשונה ל-CleanPulse",

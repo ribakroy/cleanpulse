@@ -12,6 +12,7 @@ const templates: BrandedEmailTemplateKey[] = [
   "incident_resolved",
   "restroom_reset",
   "shift_summary",
+  "shift_completion_required",
   "user_invite",
   "password_reset",
 ];

@@ -21,6 +21,7 @@ import {
   canViewReports,
   canViewScreens,
   canViewSettings,
+  canViewShifts,
 } from "@/lib/auth/permissions";
 import type { SafeUserRecord } from "@/lib/data/types";
 import { cn } from "@/lib/utils/cn";
@@ -39,7 +40,7 @@ const navItems: NavItem[] = [
   { href: "/admin/branches", label: "סניפים ומיקומים", icon: Building2, visible: canViewLocations },
   { href: "/admin/screens", label: "מסכים וקישורים", icon: TabletSmartphone, visible: canViewScreens },
   { href: "/admin/users", label: "משתמשים", icon: UserCog, visible: canManageUsers },
-  { href: "/admin/shifts", label: "משמרות", icon: CalendarClock, visible: canManageUsers },
+  { href: "/admin/shifts", label: "משמרות", icon: CalendarClock, visible: canViewShifts },
   { href: "/admin/recipients", label: "נמעני מייל", icon: Mail, visible: canManageRecipients },
   { href: "/admin/settings", label: "הגדרות", icon: Settings, visible: canViewSettings },
 ];

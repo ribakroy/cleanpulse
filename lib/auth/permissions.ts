@@ -1,5 +1,6 @@
 import type {
   BranchRecord,
+  DetectedShiftRecord,
   IncidentRecord,
   RestroomRecord,
   SafeUserRecord,
@@ -156,6 +157,14 @@ export function canManageUsers(user: RoleUser) {
   return isOrganizationOwner(user);
 }
 
+export function canManageManualShifts(user: RoleUser) {
+  return isOrganizationOwner(user);
+}
+
+export function canViewShifts(user: RoleUser) {
+  return isOrganizationOwner(user) || isAreaManager(user);
+}
+
 export function canManageOrganizationSettings(user: RoleUser) {
   return isOrganizationOwner(user);
 }
@@ -236,6 +245,42 @@ export function canResetRestroom(user: ScopedUser, restroom: RestroomRecord | st
   }
 
   return canViewRestroom(user, restroom, branchId);
+}
+
+export function canViewDetectedShift(user: ScopedUser, detectedShift: DetectedShiftRecord) {
+  if (isOrganizationOwner(user)) {
+    return true;
+  }
+
+  if (!isAreaManager(user)) {
+    return false;
+  }
+
+  if (detectedShift.restroomIds?.length) {
+    return detectedShift.restroomIds.every((restroomId) => canViewRestroom(user, restroomId, detectedShift.branchId));
+  }
+
+  if (detectedShift.branchId) {
+    return canViewBranch(user, detectedShift.branchId);
+  }
+
+  return false;
+}
+
+export function canCompleteDetectedShift(user: ScopedUser, detectedShift: DetectedShiftRecord) {
+  if (!canViewDetectedShift(user, detectedShift)) {
+    return false;
+  }
+
+  if (detectedShift.status === "confirmed" || detectedShift.status === "dismissed") {
+    return isOrganizationOwner(user);
+  }
+
+  if (isOrganizationOwner(user)) {
+    return true;
+  }
+
+  return Boolean(isAreaManager(user) && (detectedShift.branchId || detectedShift.restroomIds?.length));
 }
 
 export function filterIncidentsForUser<T extends IncidentRecord>(user: ScopedUser, incidents: T[]) {
