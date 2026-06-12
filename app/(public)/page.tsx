@@ -237,9 +237,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="how" className="scroll-mt-24 bg-white py-16 sm:py-20">
+        <section id="how" className="scroll-section scroll-mt-24 bg-white py-16 sm:py-20">
           <div className="container-shell">
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="scroll-card-grid grid gap-5 md:grid-cols-3">
               {highlights.map(({ icon: Icon, title, body, image }, index) => (
                 <article key={title} className="highlight-photo-card home-rise" style={{ animationDelay: `${index * 90}ms` }}>
                   <div className="highlight-photo-media">
@@ -258,16 +258,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-[#f4faff] py-24 sm:py-32">
+        <section className="scroll-section bg-[#f4faff] py-24 sm:py-32">
           <div className="container-shell space-y-14">
-            <div className="mx-auto max-w-4xl text-center">
+            <div className="scroll-copy mx-auto max-w-4xl text-center">
               <p className="section-label">מה משתנה ברגע</p>
               <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 מהאורח הראשון ועד נוהל הסגירה.
               </h2>
             </div>
 
-            <div className="story-photo-grid">
+            <div className="scroll-card-grid story-photo-grid">
               {storySteps.map((step) => (
                 <article key={step.number} className="story-photo-panel">
                   <Image src={step.image} alt={step.alt} fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
@@ -283,16 +283,16 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="closer-section bg-white py-24 sm:py-32">
+        <section className="closer-section scroll-section bg-white py-24 sm:py-32">
           <div className="container-shell space-y-10">
-            <div className="max-w-3xl">
+            <div className="scroll-copy max-w-3xl">
               <p className="section-label">מבט מקרוב</p>
               <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 כל רגע קטן מקבל מקום ברור.
               </h2>
             </div>
 
-            <div className="closer-rail" aria-label="מבט מקרוב על CleanPulse">
+            <div className="closer-rail scroll-media" aria-label="מבט מקרוב על CleanPulse">
               <div className="closer-track">
                 {[...closerItems, ...closerItems].map((item, index) => (
                   <article key={`${item.label}-${index}`} className="closer-card motion-card" style={{ animationDelay: `${(index % closerItems.length) * 90}ms` }}>
@@ -311,9 +311,9 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="before-after-section bg-[#f4faff] py-24 sm:py-32">
+        <section className="before-after-section scroll-section bg-[#f4faff] py-24 sm:py-32">
           <div className="container-shell space-y-10">
-            <div className="mx-auto max-w-4xl text-center">
+            <div className="scroll-copy mx-auto max-w-4xl text-center">
               <p className="section-label">לפני ואחרי</p>
               <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 רואים מיד כשמקום יוצא משליטה.
@@ -323,12 +323,14 @@ export default function HomePage() {
               </p>
             </div>
 
-            <BeforeAfterSlider
-              beforeImage="/home/cp-before-dirty.webp"
-              afterImage="/home/cp-before-clean.webp"
-              beforeAlt="אזור שירותים לא נעים לפני טיפול"
-              afterAlt="אותו אזור שירותים לאחר טיפול וניקיון"
-            />
+            <div className="scroll-media">
+              <BeforeAfterSlider
+                beforeImage="/home/cp-before-dirty.webp"
+                afterImage="/home/cp-before-clean.webp"
+                beforeAlt="אזור שירותים לא נעים לפני טיפול"
+                afterAlt="אותו אזור שירותים לאחר טיפול וניקיון"
+              />
+            </div>
           </div>
         </section>
 
@@ -343,14 +345,14 @@ export default function HomePage() {
           visual={<QrScanMotion />}
         />
 
-        <section id="managers" className="scroll-mt-24 bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-24 sm:py-32">
+        <section id="managers" className="scroll-section scroll-mt-24 bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-24 sm:py-32">
           <div className="container-shell grid gap-12 lg:grid-cols-[0.84fr_1.16fr] lg:items-center">
-            <div className="space-y-7">
+            <div className="scroll-copy space-y-7">
               <p className="section-label">למנהלים</p>
               <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 לראות בדיוק מה דורש טיפול.
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="scroll-card-grid grid gap-3 sm:grid-cols-2">
                 {managerPoints.map((point) => (
                   <div key={point} className="rounded-3xl border border-white bg-white/78 px-5 py-4 text-lg font-extrabold text-brand-deep shadow-soft">
                     {point}
@@ -359,7 +361,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="premium-media-frame aspect-[16/10]">
+            <div className="premium-media-frame scroll-media aspect-[16/10]">
               <Image
                 src="/home/cp-manager-dashboard.webp"
                 alt="מסך דשבורד ניהולי בסביבה תפעולית יוקרתית"
@@ -380,9 +382,9 @@ export default function HomePage() {
           reverse
         />
 
-        <section className="bg-[#f4faff] py-24 sm:py-32">
+        <section className="scroll-section bg-[#f4faff] py-24 sm:py-32">
           <div className="container-shell grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
-            <div className="space-y-7">
+            <div className="scroll-copy space-y-7">
               <p className="section-label">מסניף לרשת</p>
               <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 בנוי לצמוח מסניף אחד לרשת.
@@ -390,7 +392,7 @@ export default function HomePage() {
               <p className="max-w-xl text-lg font-bold leading-8 text-muted">
                 סניפים, אזורי שירותים, מסכים ו־QR. אותו שקט, גם כשהעסק גדל.
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="scroll-card-grid grid gap-3 sm:grid-cols-2">
                 {scaleItems.map(({ label, icon: Icon }) => (
                   <div key={label} className="flex items-center gap-3 rounded-3xl bg-white px-5 py-4 shadow-soft">
                     <span className="flex size-10 items-center justify-center rounded-2xl bg-[#f4faff] text-brand">
@@ -402,7 +404,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="premium-media-frame aspect-[16/10]">
+            <div className="premium-media-frame scroll-media aspect-[16/10]">
               <Image
                 src="/home/cp-scale-network.webp"
                 alt="רשת סניפים עם נקודות שירות מחוברות"
@@ -414,10 +416,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="pricing" className="pricing-section scroll-mt-24 bg-white py-24 sm:py-32">
+        <section id="pricing" className="pricing-section scroll-section scroll-mt-24 bg-white py-24 sm:py-32">
           <div className="container-shell space-y-12">
             <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
-              <div className="space-y-5">
+              <div className="scroll-copy space-y-5">
                 <p className="section-label">מחירים</p>
                 <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                   להתחיל קטן. לגדול נקי.
@@ -427,7 +429,7 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="pricing-media-frame">
+              <div className="pricing-media-frame scroll-media">
                 <Image
                   src="/home/cp-pricing.webp"
                   alt="טאבלט עם תצוגת תוכניות CleanPulse בסביבת שירותים יוקרתית"
@@ -438,7 +440,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="pricing-grid">
+            <div className="pricing-grid scroll-card-grid">
               {pricingPlans.map((plan) => (
                 <article key={plan.name} className={`pricing-plan motion-card ${plan.featured ? "pricing-plan-featured" : ""}`}>
                   <div className="flex items-start justify-between gap-4">
@@ -479,10 +481,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="relative isolate overflow-hidden bg-white py-24 sm:py-32">
+        <section className="scroll-section relative isolate overflow-hidden bg-white py-24 sm:py-32">
           <div className="absolute inset-x-0 top-0 h-1/2 bg-[#f4faff]" aria-hidden="true" />
           <div className="container-shell relative z-10 space-y-12">
-            <div className="premium-media-frame mx-auto aspect-[16/7] max-w-6xl">
+            <div className="premium-media-frame scroll-media mx-auto aspect-[16/7] max-w-6xl">
               <Image
                 src="/home/cp-trust.webp"
                 alt="אזור שירותים נקי עם סימני אמון ובקרה"
@@ -493,14 +495,14 @@ export default function HomePage() {
               <div className="trust-image-overlay" aria-hidden="true" />
             </div>
 
-            <div className="mx-auto max-w-4xl text-center">
+            <div className="scroll-copy mx-auto max-w-4xl text-center">
               <p className="section-label">אמון</p>
               <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
                 פחות רעש. יותר ודאות.
               </h2>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="scroll-card-grid grid gap-4 md:grid-cols-3">
               {trustItems.map(({ icon: Icon, title }) => (
                 <article key={title} className="trust-panel">
                   <Icon className="size-7 text-brand" aria-hidden="true" />
@@ -511,11 +513,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="contact" className="final-photo-cta scroll-mt-24">
+        <section id="contact" className="final-photo-cta scroll-section scroll-mt-24">
           <Image src="/home/cp-contact.webp" alt="מנהל תפעול עם טאבלט ליד אזור שירותים יוקרתי" fill sizes="100vw" className="object-cover" />
           <div className="final-photo-overlay" aria-hidden="true" />
           <div className="container-shell relative z-10 grid gap-10 py-24 text-white lg:grid-cols-[1fr_26rem] lg:items-end sm:py-32">
-            <div className="max-w-3xl space-y-6">
+            <div className="scroll-copy max-w-3xl space-y-6">
               <p className="text-sm font-extrabold text-brand-water">צור קשר</p>
               <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight sm:text-6xl">
                 בואו לראות את המקום שלכם עובד בשקט.
@@ -525,7 +527,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="contact-panel">
+            <div className="contact-panel scroll-media">
               <div className="flex items-center gap-3">
                 <span className="flex size-11 items-center justify-center rounded-full bg-white text-brand-deep">
                   <CreditCard className="size-5" aria-hidden="true" />
@@ -583,14 +585,14 @@ function ImageStorySection({
   reverse?: boolean;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 bg-white py-24 sm:py-32">
+    <section id={id} className="scroll-section scroll-mt-24 bg-white py-24 sm:py-32">
       <div className={`container-shell grid gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:items-center ${reverse ? "lg:[&>*:first-child]:order-2" : ""}`}>
-        <div className="premium-media-frame aspect-[16/10]">
+        <div className="premium-media-frame scroll-media aspect-[16/10]">
           <Image src={image} alt={alt} fill sizes="(max-width: 1024px) 100vw, 55vw" className="object-cover" />
           {visual}
         </div>
 
-        <div className="space-y-6">
+        <div className="scroll-copy space-y-6">
           <p className="section-label">{label}</p>
           <h2 className="text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
             {title}
