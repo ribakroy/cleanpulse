@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { canViewScreens, canManageSettings } from "@/lib/auth/permissions";
+import { canViewScreens, canManageSettings, filterRestroomsForUser, filterScreensForUser } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import {
   listScreensByOrganization,
@@ -32,8 +32,12 @@ export default async function AdminScreensPage() {
   if (!canViewScreens(user))
     return <NoAccessState description="למשתמש הנוכחי אין הרשאה." />;
   const canEdit = canManageSettings(user);
-  const screens = await listScreensByOrganization(user.organizationId);
-  const restrooms = await listRestroomsByOrganization(user.organizationId);
+  const [allScreens, allRestrooms] = await Promise.all([
+    listScreensByOrganization(user.organizationId),
+    listRestroomsByOrganization(user.organizationId),
+  ]);
+  const screens = filterScreensForUser(user, allScreens);
+  const restrooms = filterRestroomsForUser(user, allRestrooms);
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 

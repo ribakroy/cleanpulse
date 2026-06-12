@@ -5,6 +5,7 @@ import { loginAction } from '@/app/(public)/login/actions';
 import * as bcrypt from 'bcrypt';
 import * as usersRepo from '@/lib/data/repositories/users';
 import * as sessionRepo from '@/lib/auth/session';
+import { redirect } from 'next/navigation';
 
 const mockCompare = vi.fn();
 vi.mock('bcrypt', () => ({
@@ -88,5 +89,30 @@ describe('Login Rate Limit', () => {
     mockCompare.mockResolvedValue(false);
     const resAfterSuccess = await loginAction(initialState, getFormData(email, 'wrong'));
     expect(resAfterSuccess.error).toBe(genericError);
+  });
+
+  it.each([
+    ['super_admin', '/super/dashboard'],
+    ['owner', '/admin/dashboard'],
+    ['admin', '/admin/dashboard'],
+    ['area_manager', '/admin/dashboard'],
+    ['manager', '/admin/dashboard'],
+    ['operations_worker', '/work'],
+    ['cleaner', '/work'],
+  ])('redirects %s to %s after login', async (role, expectedPath) => {
+    const email = `${role}@demo.local`;
+    vi.mocked(usersRepo.getUserByEmailForAuth).mockResolvedValue({
+      id: `user_${role}`,
+      organizationId: 'org_1',
+      email,
+      isActive: true,
+      passwordHash: 'hash',
+      role,
+    } as any);
+    mockCompare.mockResolvedValue(true);
+
+    await loginAction({ email: '', error: null }, getFormData(email, 'correct'));
+
+    expect(redirect).toHaveBeenCalledWith(expectedPath);
   });
 });

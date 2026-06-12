@@ -27,6 +27,12 @@ export const collectionDefinitions: { [K in CollectionName]: CollectionDefinitio
     defaultSortField: "createdAt",
     softDeleteStrategy: "isActive",
   },
+  shifts: {
+    directory: "shifts",
+    datePartitioned: false,
+    defaultSortField: "createdAt",
+    softDeleteStrategy: "isActive",
+  },
   branches: {
     directory: "branches",
     datePartitioned: false,

@@ -71,6 +71,25 @@ export async function updateClosingProcedureAction(formData: FormData): Promise<
       closingResetMode,
     });
 
+    await createActivityLog({
+      organizationId: user.organizationId,
+      actorUserId: user.id,
+      actorFullName: user.fullName,
+      actorRole: user.role,
+      incidentId: null,
+      action: "settings_changed",
+      actionType: "settings_changed",
+      targetType: "organization",
+      targetId: user.organizationId,
+      shiftId: user.defaultShiftId,
+      metadata: {
+        actorName: user.fullName,
+        actorRole: user.role,
+        closingTime: closingTime ?? null,
+        closingResetMode,
+      },
+    });
+
     revalidatePath("/admin/settings");
 
     return {
@@ -111,10 +130,17 @@ export async function runClosingResetNowAction(): Promise<ClosingProcedureAction
     await createActivityLog({
       organizationId: user.organizationId,
       actorUserId: user.id,
+      actorFullName: user.fullName,
+      actorRole: user.role,
       incidentId: null,
       action: "closing_reset_run",
+      actionType: "closing_reset_run",
+      targetType: "organization",
+      targetId: user.organizationId,
+      shiftId: user.defaultShiftId,
       metadata: {
         actorName: user.fullName,
+        actorRole: user.role,
         resetAt: result.resetAt,
         closedCount: result.closedCount,
         closedIncidentIds: result.closedIncidentIds,

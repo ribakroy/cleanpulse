@@ -26,6 +26,8 @@
 - `super_admin` (ניהול על פנימי)
 - `owner`
 - `admin`
+- `area_manager`
+- `operations_worker`
 - `manager`
 - `cleaner`
 
@@ -84,10 +86,42 @@ Tenant עליון (כולל הגדרות מנוי וגבייה ידנית עבו
 - `passwordHash`
 - `fullName`
 - `role`
+- `isActive` אופציונלי. חסר = פעיל לצורך תאימות לאחור.
+- `allowedBranchIds` אופציונלי
+- `allowedRestroomIds` אופציונלי
+- `assignedRestroomIds` אופציונלי
+- `phone` אופציונלי
+- `jobTitle` אופציונלי
+- `employeeCode` אופציונלי
+- `defaultShiftId` אופציונלי
+- `lastSeenAt` אופציונלי
+- `lastLoginAt` אופציונלי
+- `createdAt`
+- `updatedAt`
+
+תאימות:
+
+- `manager` נשאר alias למנהל אזור.
+- `cleaner` נשאר alias לעובד תפעולי.
+- משתמשים קיימים בלי scopes נטענים ללא migration חובה.
+
+### `shifts`
+
+מטרת הישות:
+הגדרת משמרות בסיסית לדוחות תפוקת צוות.
+
+שדות עיקריים:
+
+- `id`
+- `organizationId`
+- `branchId` אופציונלי
+- `restroomIds` אופציונלי
+- `assignedUserIds` אופציונלי
+- `name`
+- `startsAt` בפורמט `HH:mm`
+- `endsAt` בפורמט `HH:mm`
+- `daysOfWeek` אופציונלי
 - `isActive`
-- `allowedBranchIds`
-- `allowedRestroomIds`
-- `lastLoginAt`
 - `createdAt`
 - `updatedAt`
 
@@ -272,25 +306,36 @@ Audit trail מוצרי.
 
 - `id`
 - `organizationId`
-- `entityType`
-- `entityId`
 - `incidentId` nullable
-- `actorType` = `public` | `user` | `system`
 - `actorUserId` nullable
+- `actorFullName` אופציונלי
+- `actorRole` אופציונלי
 - `action`
-- `summary`
+- `actionType` אופציונלי
+- `targetType` אופציונלי
+- `targetId` אופציונלי
+- `restroomId` אופציונלי
+- `branchId` אופציונלי
+- `shiftId` אופציונלי
 - `metadata`
 - `createdAt`
+
+Fallback:
+
+- log ישן בלי `actorFullName` מוצג כ־`משתמש מערכת`, `מדווח ציבורי`, או `לא זמין` לפי ההקשר.
 
 ## 4. יחסים
 
 - organization אחד מכיל הרבה users.
 - organization אחד מכיל הרבה branches.
+- organization אחד מכיל הרבה shifts.
 - branch אחד מכיל הרבה restrooms.
+- branch אחד יכול להכיל הרבה shifts.
 - restroom אחד מכיל הרבה screens.
 - screen אחד יכול ליצור הרבה incidents.
 - incident אחד יכול ליצור הרבה activity logs.
 - incident אחד יכול ליצור אפס או יותר notification logs.
+- user אחד יכול להיות משויך ל־`defaultShiftId` אחד.
 
 ## 5. Recipient resolution hierarchy
 
@@ -320,6 +365,14 @@ Audit trail מוצרי.
 - צפייה וטיפול רק בסקופ מוקצה.
 - יכול לשנות סטטוס, לשייך טיפול, להוסיף הערות.
 - לא יכול לנהל organization-wide users בלי הרשאה נוספת.
+
+### `area_manager`
+
+- זהה ל־`manager`, עם שם role חדש וברור יותר.
+
+### `operations_worker`
+
+- זהה ל־`cleaner`, עם שם role חדש וברור יותר.
 
 ### `cleaner`
 

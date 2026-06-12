@@ -5,6 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
+import {
+  filterBranchesForUser,
+  filterIncidentsForUser,
+  filterRestroomsForUser,
+  filterScreensForUser,
+} from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
@@ -33,7 +39,7 @@ export default async function AdminDashboardPage() {
   const user = await requireUser();
 
   // Parallel fetching of all necessary collections
-  const [organization, branches, screens, restrooms, incidents, issueTypes, notificationLogs] = await Promise.all([
+  const [organization, allBranches, allScreens, allRestrooms, allIncidents, issueTypes, notificationLogs] = await Promise.all([
     getOrganizationById(user.organizationId),
     listBranchesByOrganization(user.organizationId),
     listScreensByOrganization(user.organizationId),
@@ -44,6 +50,10 @@ export default async function AdminDashboardPage() {
   ]);
 
   const issueTypeLabels = createIssueTypeLabelMap(issueTypes);
+  const incidents = filterIncidentsForUser(user, allIncidents);
+  const restrooms = filterRestroomsForUser(user, allRestrooms);
+  const branches = filterBranchesForUser(user, allBranches, allRestrooms);
+  const screens = filterScreensForUser(user, allScreens);
   const branchNames = new Map(branches.map((b) => [b.id, b.name] as const));
   const restroomNames = new Map(restrooms.map((r) => [r.id, r.name] as const));
 
@@ -175,10 +185,10 @@ export default async function AdminDashboardPage() {
       </section>
 
       {/* Main Dashboard Layout */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         
         {/* Urgent Actionable Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <Card className="border shadow-soft">
             <CardHeader className="border-b border-border bg-white/40">
               <div className="flex items-center justify-between">
@@ -289,7 +299,7 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Sidebar Info Column */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           
           {/* Active Screens Connectivity */}
           <Card className="border shadow-soft">

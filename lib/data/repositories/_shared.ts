@@ -17,7 +17,14 @@ export function normalizeEmail(email: string) {
 export function sanitizeUserRecord(user: UserRecord): SafeUserRecord {
   const { passwordHash, ...safeUser } = user;
   void passwordHash;
-  return safeUser;
+
+  return {
+    ...safeUser,
+    isActive: safeUser.isActive ?? true,
+    allowedBranchIds: safeUser.allowedBranchIds ?? [],
+    allowedRestroomIds: safeUser.allowedRestroomIds ?? [],
+    assignedRestroomIds: safeUser.assignedRestroomIds ?? [],
+  };
 }
 
 export function ensureOrganizationOwnership<C extends CollectionName>(

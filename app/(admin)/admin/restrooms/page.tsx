@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { canViewLocations, canManageSettings } from "@/lib/auth/permissions";
+import { canViewLocations, canManageSettings, filterBranchesForUser, filterRestroomsForUser } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import {
   listRestroomsByOrganization,
@@ -31,8 +31,12 @@ export default async function AdminRestroomsPage() {
   if (!canViewLocations(user))
     return <NoAccessState description="למשתמש הנוכחי אין הרשאה." />;
   const canEdit = canManageSettings(user);
-  const restrooms = await listRestroomsByOrganization(user.organizationId);
-  const branches = await listBranchesByOrganization(user.organizationId);
+  const [allRestrooms, allBranches] = await Promise.all([
+    listRestroomsByOrganization(user.organizationId),
+    listBranchesByOrganization(user.organizationId),
+  ]);
+  const restrooms = filterRestroomsForUser(user, allRestrooms);
+  const branches = filterBranchesForUser(user, allBranches, allRestrooms);
 
   async function handleCreate(formData: FormData) {
     "use server";

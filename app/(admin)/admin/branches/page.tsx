@@ -6,9 +6,10 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { canViewLocations, canManageSettings } from "@/lib/auth/permissions";
+import { canViewLocations, canManageSettings, filterBranchesForUser } from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization, createBranch, deactivateBranch } from "@/lib/data/repositories/branches";
+import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
 import { Building2, MapPin } from "lucide-react";
 
 export const metadata = { title: "סניפים | CleanPulse" };
@@ -24,7 +25,11 @@ export default async function AdminBranchesPage() {
   if (!canViewLocations(user))
     return <NoAccessState description="למשתמש הנוכחי אין הרשאה לצפות בסניפים." />;
   const canEdit = canManageSettings(user);
-  const branches = await listBranchesByOrganization(user.organizationId);
+  const [allBranches, allRestrooms] = await Promise.all([
+    listBranchesByOrganization(user.organizationId),
+    listRestroomsByOrganization(user.organizationId),
+  ]);
+  const branches = filterBranchesForUser(user, allBranches, allRestrooms);
 
   async function handleCreateBranch(formData: FormData) {
     "use server";

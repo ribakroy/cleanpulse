@@ -6,6 +6,11 @@
 - המשתמש נשלף מה־data layer לפי email בלבד, server-side.
 - הסיסמה נבדקת מול `passwordHash` עם `bcrypt.compare`.
 - אם המשתמש פעיל, נוצר JWT חתום ונכתב ל־cookie בשם `cleanpulse_session`.
+- אחרי יצירת session מתבצע redirect לפי role:
+  - `super_admin` -> `/super/dashboard`
+  - `owner` / `admin` -> `/admin/dashboard`
+  - `area_manager` / `manager` -> `/admin/dashboard`
+  - `operations_worker` / `cleaner` -> `/work`
 - אם ההתחברות נכשלת, הלקוח מקבל תמיד אותה שגיאה: `פרטי ההתחברות אינם תקינים.`
 
 ## JWT Cookie
@@ -43,33 +48,55 @@
 
 - `owner`: כל ההרשאות.
 - `admin`: כל ההרשאות.
-- `manager`: דיווחים, דוחות, צפייה בהגדרות ובמיקומים.
-- `cleaner`: צפייה בדיווחים ועדכון סטטוס בלבד.
+- `area_manager`: דיווחים ודוחות לפי scope.
+- `operations_worker`: אזור עבודה מצומצם ב־`/work`.
+- `manager`: alias קיים ל־`area_manager`.
+- `cleaner`: alias קיים ל־`operations_worker`.
 
 ## Permission Helpers
 
 - `canManageSettings(user)`
+- `canManageOrganizationSettings(user)`
 - `canManageRecipients(user)`
+- `canManageUsers(user)`
 - `canViewReports(user)`
 - `canResolveIncident(user)`
 - `canViewIncidents(user)`
+- `canViewIncident(user, incident)`
+- `canUpdateIncident(user, incident)`
+- `canResetRestroom(user, restroomId)`
+- `filterIncidentsForUser(user, incidents)`
+- `filterBranchesForUser(user, branches, restrooms)`
+- `filterRestroomsForUser(user, restrooms)`
+- `filterScreensForUser(user, screens)`
 - `assertSameOrganization(user, organizationId)`
+- `resolveShiftForAction(...)` משייך פעולה למשמרת רק אם העובד, הסניף, האזור והשעה מתאימים.
 
 ## Multi-Tenant Scope
 
 - הלקוח לא שולח `organizationId` כנתון אמין.
 - כל עמוד admin משתמש ב־`organizationId` של המשתמש המחובר.
 - כל repository query במסכי admin מסונן לפי `organizationId` מה־session.
+- `owner` ו־`admin` מקבלים full organization access.
+- `area_manager` ו־`manager` מסוננים לפי `allowedBranchIds` ו־`allowedRestroomIds`.
+- `operations_worker` ו־`cleaner` מסוננים לפי `allowedBranchIds`, `allowedRestroomIds`, ו־`assignedRestroomIds`.
+- `manager` ישן בלי scopes נשאר עם full organization access זמני לשמירת תאימות.
+- `cleaner` ישן בלי scopes לא נשבר ב־login, אבל `/work` מציג שאין אזורי עבודה משויכים.
 
 ## Adding Users Manually
 
-בעתיד, ב־`cleanpulse-data`, הוספת משתמש תיעשה ידנית בקובץ JSON ב־collection של `users`:
+הוספת משתמש עסקי מתבצעת דרך `/admin/users` על ידי `owner` או `admin`.
+
+ניהול משמרות בסיסי מתבצע דרך `/admin/shifts` על ידי `owner` או `admin`.
+
+אפשר גם להוסיף ידנית ב־`cleanpulse-data` בעת הצורך:
 
 - חובה `organizationId` תקין.
 - חובה `email` ייחודי בתוך הארגון.
 - חובה `passwordHash` שנוצר מראש עם bcrypt.
 - חובה `role` מתוך הרשימה המוגדרת.
 - חובה `isActive=true|false`.
+- אופציונלי `defaultShiftId` כ־fallback למשמרת קבועה. שיוך עובדים אמיתי למשמרת נשמר גם דרך `assignedUserIds` על `shifts`.
 
 ## Why There Is No Open Registration
 

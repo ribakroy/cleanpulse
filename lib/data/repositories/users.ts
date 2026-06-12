@@ -59,6 +59,10 @@ export async function createUser(data: Omit<UserRecord, "id" | "createdAt" | "up
   const now = nowIso();
   const user: UserRecord = {
     ...data,
+    isActive: data.isActive ?? true,
+    allowedBranchIds: data.allowedBranchIds ?? [],
+    allowedRestroomIds: data.allowedRestroomIds ?? [],
+    assignedRestroomIds: data.assignedRestroomIds ?? [],
     id,
     createdAt: now,
     updatedAt: now,

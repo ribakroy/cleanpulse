@@ -4,15 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
+  CalendarClock,
   ChartColumn,
   LayoutDashboard,
   ListChecks,
   Mail,
   Settings,
   TabletSmartphone,
+  UserCog,
 } from "lucide-react";
 import {
   canManageRecipients,
+  canManageUsers,
   canViewIncidents,
   canViewLocations,
   canViewReports,
@@ -35,6 +38,8 @@ const navItems: NavItem[] = [
   { href: "/admin/reports", label: "דוחות", icon: ChartColumn, visible: canViewReports },
   { href: "/admin/branches", label: "סניפים ומיקומים", icon: Building2, visible: canViewLocations },
   { href: "/admin/screens", label: "מסכים וקישורים", icon: TabletSmartphone, visible: canViewScreens },
+  { href: "/admin/users", label: "משתמשים", icon: UserCog, visible: canManageUsers },
+  { href: "/admin/shifts", label: "משמרות", icon: CalendarClock, visible: canManageUsers },
   { href: "/admin/recipients", label: "נמעני מייל", icon: Mail, visible: canManageRecipients },
   { href: "/admin/settings", label: "הגדרות", icon: Settings, visible: canViewSettings },
 ];

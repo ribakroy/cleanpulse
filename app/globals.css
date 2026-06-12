@@ -89,7 +89,9 @@ select {
 }
 
 .container-shell {
-  width: min(100% - 1.5rem, 76rem);
+  box-sizing: border-box;
+  width: calc(100% - 1.5rem);
+  max-width: 76rem;
   margin-inline: auto;
 }
 
@@ -134,7 +136,7 @@ select {
 
 @media (max-width: 640px) {
   .container-shell {
-    width: min(100% - 1rem, 76rem);
+    width: calc(100% - 1rem);
   }
 }
 

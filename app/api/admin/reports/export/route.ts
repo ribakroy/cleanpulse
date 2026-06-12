@@ -1,6 +1,12 @@
 import { type NextRequest } from "next/server";
 import { requireUser } from "@/lib/auth/session";
-import { canViewReports } from "@/lib/auth/permissions";
+import {
+  canViewReports,
+  filterBranchesForUser,
+  filterIncidentsForUser,
+  filterRestroomsForUser,
+  filterScreensForUser,
+} from "@/lib/auth/permissions";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
 import { listRestroomsByOrganization } from "@/lib/data/repositories/restrooms";
@@ -34,7 +40,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
 
     // 3. Fetch data in parallel (scoped to user organization)
-    const [incidents, branches, restrooms, screens, issueTypes, notificationLogs] = await Promise.all([
+    const [allIncidents, allBranches, allRestrooms, allScreens, issueTypes, notificationLogs] = await Promise.all([
       listIncidentsByOrganization(user.organizationId),
       listBranchesByOrganization(user.organizationId),
       listRestroomsByOrganization(user.organizationId),
@@ -44,6 +50,10 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 4. Apply filtering
+    const incidents = filterIncidentsForUser(user, allIncidents);
+    const restrooms = filterRestroomsForUser(user, allRestrooms);
+    const branches = filterBranchesForUser(user, allBranches, allRestrooms);
+    const screens = filterScreensForUser(user, allScreens);
     const filteredIncidents = filterIncidents(incidents, {
       startDate: startDate || undefined,
       endDate: endDate || undefined,

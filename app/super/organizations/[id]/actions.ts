@@ -9,7 +9,7 @@ import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 
 export async function updateOrgStatusAction(orgId: string, status: "active" | "trial" | "suspended" | "cancelled") {
   try {
-    await requireSuperAdmin();
+    const actor = await requireSuperAdmin();
 
     const isActive = status === "active" || status === "trial";
     const org = await getOrganizationById(orgId);
@@ -24,8 +24,16 @@ export async function updateOrgStatusAction(orgId: string, status: "active" | "t
 
     await createActivityLog({
       organizationId: "system",
+      actorUserId: actor.id,
+      actorFullName: actor.fullName,
+      actorRole: actor.role,
       action: "organization_status_changed",
+      actionType: "organization_status_changed",
+      targetType: "organization",
+      targetId: orgId,
       metadata: {
+        actorName: actor.fullName,
+        actorRole: actor.role,
         orgId,
         orgName: org.name,
         newStatus: status,
@@ -42,7 +50,7 @@ export async function updateOrgStatusAction(orgId: string, status: "active" | "t
 
 export async function updateOrgDetailsAction(orgId: string, formData: FormData) {
   try {
-    await requireSuperAdmin();
+    const actor = await requireSuperAdmin();
 
     const name = formData.get("name")?.toString().trim();
     const plan = formData.get("plan")?.toString() || "basic";
@@ -71,8 +79,19 @@ export async function updateOrgDetailsAction(orgId: string, formData: FormData) 
 
     await createActivityLog({
       organizationId: "system",
+      actorUserId: actor.id,
+      actorFullName: actor.fullName,
+      actorRole: actor.role,
       action: "organization_details_updated",
-      metadata: { orgId, name },
+      actionType: "organization_details_updated",
+      targetType: "organization",
+      targetId: orgId,
+      metadata: {
+        actorName: actor.fullName,
+        actorRole: actor.role,
+        orgId,
+        name,
+      },
     });
 
     revalidatePath(`/super/organizations/${orgId}`);
@@ -84,7 +103,7 @@ export async function updateOrgDetailsAction(orgId: string, formData: FormData) 
 
 export async function resetUserPasswordAction(orgId: string, userId: string, newPasswordPlain: string) {
   try {
-    await requireSuperAdmin();
+    const actor = await requireSuperAdmin();
 
     if (!newPasswordPlain || newPasswordPlain.length < 6) {
       return { success: false, error: "הסיסמה חייבת להכיל 6 תווים לפחות." };
@@ -97,8 +116,19 @@ export async function resetUserPasswordAction(orgId: string, userId: string, new
 
     await createActivityLog({
       organizationId: "system",
+      actorUserId: actor.id,
+      actorFullName: actor.fullName,
+      actorRole: actor.role,
       action: "user_password_reset_by_super",
-      metadata: { userId, orgId },
+      actionType: "user_password_reset_by_super",
+      targetType: "user",
+      targetId: userId,
+      metadata: {
+        actorName: actor.fullName,
+        actorRole: actor.role,
+        userId,
+        orgId,
+      },
     });
 
     revalidatePath(`/super/organizations/${orgId}`);
@@ -116,7 +146,7 @@ export async function createOrgUserAction(
   role: "owner" | "admin" | "manager" | "cleaner"
 ) {
   try {
-    await requireSuperAdmin();
+    const actor = await requireSuperAdmin();
 
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail || !fullName || !passwordPlain) {
@@ -129,7 +159,7 @@ export async function createOrgUserAction(
     }
 
     const passwordHash = await bcrypt.hash(passwordPlain, 12);
-    await createUser({
+    const createdUser = await createUser({
       organizationId: orgId,
       email: normalizedEmail,
       fullName,
@@ -140,8 +170,20 @@ export async function createOrgUserAction(
 
     await createActivityLog({
       organizationId: "system",
+      actorUserId: actor.id,
+      actorFullName: actor.fullName,
+      actorRole: actor.role,
       action: "user_created_by_super",
-      metadata: { orgId, email: normalizedEmail, role },
+      actionType: "user_created_by_super",
+      targetType: "user",
+      targetId: createdUser.id,
+      metadata: {
+        actorName: actor.fullName,
+        actorRole: actor.role,
+        orgId,
+        email: normalizedEmail,
+        role,
+      },
     });
 
     revalidatePath(`/super/organizations/${orgId}`);

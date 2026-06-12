@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/utils/format";
 import { getTimeToAcknowledgement, getTimeToResolution } from "@/lib/utils/sla";
 import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 
-function escapeCsvValue(val: string | number | null | undefined): string {
+export function escapeCsvValue(val: string | number | null | undefined): string {
   if (val === null || typeof val === "undefined") return "";
   const str = String(val);
   

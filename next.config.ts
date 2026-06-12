@@ -5,6 +5,7 @@ import type { NextConfig } from "next";
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["127.0.0.1"],
   reactStrictMode: true,
   turbopack: {
     root: workspaceRoot,

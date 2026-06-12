@@ -7,7 +7,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { canViewReports } from "@/lib/auth/permissions";
+import {
+  canViewReports,
+  filterBranchesForUser,
+  filterIncidentsForUser,
+  filterRestroomsForUser,
+  filterScreensForUser,
+} from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
@@ -137,7 +143,7 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
   const filterStatus = params.status || "";
 
   // 1. Fetch data in parallel
-  const [incidents, branches, restrooms, screens, issueTypes, notificationLogs] = await Promise.all([
+  const [allIncidents, allBranches, allRestrooms, allScreens, issueTypes, notificationLogs] = await Promise.all([
     listIncidentsByOrganization(user.organizationId),
     listBranchesByOrganization(user.organizationId),
     listRestroomsByOrganization(user.organizationId),
@@ -147,6 +153,10 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
   ]);
 
   const issueTypeLabels = createIssueTypeLabelMap(issueTypes);
+  const incidents = filterIncidentsForUser(user, allIncidents);
+  const restrooms = filterRestroomsForUser(user, allRestrooms);
+  const branches = filterBranchesForUser(user, allBranches, allRestrooms);
+  const screens = filterScreensForUser(user, allScreens);
   const branchNames = new Map(branches.map((b) => [b.id, b.name] as const));
   const restroomNames = new Map(restrooms.map((r) => [r.id, r.name] as const));
 
@@ -266,13 +276,22 @@ export default async function AdminReportsPage({ searchParams }: PageProps) {
         title="דוחות"
         description="סיכום תפעולי ברור לפי תקופה, סניף וסוג תקלה."
         actions={
-          <Link
-            href={`/api/admin/reports/export?${queryParams}`}
-            className={`${buttonVariants({ variant: "outline", size: "sm" })} gap-2 bg-white border-border hover:bg-brand-soft/50 font-bold shadow-soft`}
-          >
-            <Download className="size-4 text-brand-deep" />
-            ייצוא ל-CSV
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/reports/team"
+              className={`${buttonVariants({ variant: "secondary", size: "sm" })} gap-2 bg-white border-border hover:bg-brand-soft/50 font-bold shadow-soft`}
+            >
+              <Activity className="size-4 text-brand-deep" />
+              תפוקת עובדים
+            </Link>
+            <Link
+              href={`/api/admin/reports/export?${queryParams}`}
+              className={`${buttonVariants({ variant: "outline", size: "sm" })} gap-2 bg-white border-border hover:bg-brand-soft/50 font-bold shadow-soft`}
+            >
+              <Download className="size-4 text-brand-deep" />
+              ייצוא ל-CSV
+            </Link>
+          </div>
         }
       />
 

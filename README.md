@@ -73,6 +73,27 @@ npm run check
 
 ---
 
+## Route Map עיקרי
+
+- `/login`: התחברות.
+- `/admin/dashboard`: סקירה עסקית.
+- `/admin/incidents`: דיווחים וטיפול.
+- `/admin/reports`: דוחות תפעוליים.
+- `/admin/reports/team`: תמונת פעילות צוות.
+- `/admin/users`: ניהול משתמשים והרשאות.
+- `/admin/shifts`: ניהול משמרות.
+- `/work`: אזור עבודה לעובד תפעולי.
+- `/super/dashboard`: ניהול על פנימי.
+- `/q/[token]` ו־`/k/[token]`: דיווח ציבורי QR/Kiosk.
+
+מסמכים רלוונטיים:
+
+- [docs/USER_MANAGEMENT.md](./docs/USER_MANAGEMENT.md)
+- [docs/ROLE_PERMISSIONS.md](./docs/ROLE_PERMISSIONS.md)
+- [docs/WORKER_PORTAL.md](./docs/WORKER_PORTAL.md)
+
+---
+
 ## עבודה עם GitHub כבסיס נתונים (Production / Dev Cloud)
 
 למעבר לעבודה מול מאגר הנתונים בענן:
@@ -93,4 +114,3 @@ npm run check
 * [צ'קליסט מוכנות לייצור (Production Checklist)](./docs/PRODUCTION_CHECKLIST.md) – שלבי בדיקה ידניים ו-QA לווידוא תקינות המערכת.
 
 *אזהרה: יתכנו אזהרות Next/PostCSS (moderate) בזמן ריצת audit שישאירו תלויות כמות שהן עד לתיקון רשמי של חבילות המקור, אין לאלץ (force) תיקון הפוגע ביציבות.*
-

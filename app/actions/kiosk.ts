@@ -64,9 +64,17 @@ function scheduleIncidentSideEffects(input: {
       await createActivityLog({
         organizationId: input.incident.organizationId,
         actorUserId: null,
+        actorFullName: null,
+        actorRole: null,
         incidentId: input.incident.id,
         action: "incident_created",
+        actionType: "incident_created",
+        targetType: "incident",
+        targetId: input.incident.id,
+        branchId: input.incident.branchId,
+        restroomId: input.incident.restroomId,
         metadata: {
+          actorType: "public",
           source: input.source,
           issueKey: input.issueKey || null,
           rating: input.rating || null,

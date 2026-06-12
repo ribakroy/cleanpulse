@@ -20,7 +20,7 @@ export type CreateOrgResult = {
 export async function createOrganizationAction(formData: FormData): Promise<CreateOrgResult> {
   try {
     // 1. Ensure caller is super_admin
-    await requireSuperAdmin();
+    const actor = await requireSuperAdmin();
 
     // 2. Extract and validate data
     const name = formData.get("name")?.toString().trim();
@@ -92,8 +92,16 @@ export async function createOrganizationAction(formData: FormData): Promise<Crea
     // 8. Log internal activity
     await createActivityLog({
       organizationId: "system",
+      actorUserId: actor.id,
+      actorFullName: actor.fullName,
+      actorRole: actor.role,
       action: "organization_created",
+      actionType: "organization_created",
+      targetType: "organization",
+      targetId: createdOrg.id,
       metadata: {
+        actorName: actor.fullName,
+        actorRole: actor.role,
         orgId: createdOrg.id,
         orgName: createdOrg.name,
         slug: createdOrg.slug,

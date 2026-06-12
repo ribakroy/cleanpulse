@@ -8,7 +8,13 @@ import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
-import { canResolveIncident, canViewIncidents } from "@/lib/auth/permissions";
+import {
+  canResolveIncident,
+  canViewIncidents,
+  filterBranchesForUser,
+  filterIncidentsForUser,
+  filterRestroomsForUser,
+} from "@/lib/auth/permissions";
 import { requireUser } from "@/lib/auth/session";
 import { listBranchesByOrganization } from "@/lib/data/repositories/branches";
 import { listIncidentsByOrganization } from "@/lib/data/repositories/incidents";
@@ -101,7 +107,7 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
   const filterSource = params.source || "";
   const filterSearch = (params.search || "").trim().toLowerCase();
 
-  const [incidents, branches, restrooms, issueTypes, notificationLogs] = await Promise.all([
+  const [allIncidents, allBranches, allRestrooms, issueTypes, notificationLogs] = await Promise.all([
     listIncidentsByOrganization(user.organizationId),
     listBranchesByOrganization(user.organizationId),
     listRestroomsByOrganization(user.organizationId),
@@ -110,6 +116,9 @@ export default async function AdminIncidentsPage({ searchParams }: PageProps) {
   ]);
 
   const issueTypeLabels = createIssueTypeLabelMap(issueTypes);
+  const incidents = filterIncidentsForUser(user, allIncidents);
+  const restrooms = filterRestroomsForUser(user, allRestrooms);
+  const branches = filterBranchesForUser(user, allBranches, allRestrooms);
   const branchNames = new Map(branches.map((b) => [b.id, b.name] as const));
   const restroomNames = new Map(restrooms.map((r) => [r.id, r.name] as const));
 

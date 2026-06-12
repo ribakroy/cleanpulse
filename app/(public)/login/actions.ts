@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSessionCookie } from "@/lib/auth/session";
+import { getDefaultRouteForRole } from "@/lib/auth/permissions";
 import { normalizeEmail } from "@/lib/data/repositories/_shared";
 import { getUserByEmailForAuth } from "@/lib/data/repositories/users";
 
@@ -49,7 +50,7 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
 
   const user = await getUserByEmailForAuth(email);
 
-  if (!user || !user.isActive) {
+  if (!user || user.isActive === false) {
     return {
       email,
       error: genericLoginError,
@@ -75,9 +76,5 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
   await createSessionCookie(user);
 
   revalidatePath("/", "layout");
-  if (user.role === "super_admin") {
-    redirect("/super/dashboard");
-  } else {
-    redirect("/admin/dashboard");
-  }
+  redirect(getDefaultRouteForRole(user.role));
 }

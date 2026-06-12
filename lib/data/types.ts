@@ -18,6 +18,7 @@ export type ClosingResetMode = "reset_open_incidents" | "keep_open_incidents";
 export type CollectionName =
   | "organizations"
   | "users"
+  | "shifts"
   | "branches"
   | "restrooms"
   | "screens"
@@ -66,10 +67,30 @@ export type UserRecord = TimestampedRecord & {
   fullName: string;
   passwordHash: string;
   role: UserRole;
-  isActive: boolean;
+  isActive?: boolean | undefined;
+  allowedBranchIds?: string[] | undefined;
+  allowedRestroomIds?: string[] | undefined;
+  assignedRestroomIds?: string[] | undefined;
+  phone?: string | undefined;
+  jobTitle?: string | undefined;
+  employeeCode?: string | undefined;
+  defaultShiftId?: string | undefined;
+  lastSeenAt?: string | undefined;
 };
 
 export type SafeUserRecord = Omit<UserRecord, "passwordHash">;
+
+export type ShiftRecord = TimestampedRecord & {
+  organizationId: string;
+  branchId?: string | undefined;
+  restroomIds?: string[] | undefined;
+  assignedUserIds?: string[] | undefined;
+  name: string;
+  startsAt: string;
+  endsAt: string;
+  daysOfWeek?: number[] | undefined;
+  isActive: boolean;
+};
 
 export type BranchRecord = TimestampedRecord & {
   organizationId: string;
@@ -154,8 +175,16 @@ export type NotificationLogRecord = CollectionRecordBase & {
 export type ActivityLogRecord = CollectionRecordBase & {
   organizationId: string;
   actorUserId: string | null;
+  actorFullName?: string | null | undefined;
+  actorRole?: UserRole | null | undefined;
   incidentId: string | null;
   action: string;
+  actionType?: string | undefined;
+  targetType?: string | undefined;
+  targetId?: string | undefined;
+  restroomId?: string | undefined;
+  branchId?: string | undefined;
+  shiftId?: string | undefined;
   metadata: Record<string, unknown>;
   createdAt: string;
 };
@@ -163,6 +192,7 @@ export type ActivityLogRecord = CollectionRecordBase & {
 export type CollectionRecordMap = {
   organizations: OrganizationRecord;
   users: UserRecord;
+  shifts: ShiftRecord;
   branches: BranchRecord;
   restrooms: RestroomRecord;
   screens: ScreenRecord;

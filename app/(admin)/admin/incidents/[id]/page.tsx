@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth/session";
-import { canResolveIncident } from "@/lib/auth/permissions";
+import { canResolveIncident, canViewIncident } from "@/lib/auth/permissions";
 import { getIncidentById } from "@/lib/data/repositories/incidents";
 import { getBranchById } from "@/lib/data/repositories/branches";
 import { getRestroomById } from "@/lib/data/repositories/restrooms";
@@ -25,6 +25,7 @@ import {
 import { IncidentActionPanel } from "@/components/admin/incident-action-panel";
 import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTitle } from "@/lib/admin/presenters";
 import { listIssueTypes } from "@/lib/data/repositories/issue-types";
+import { NoAccessState } from "@/components/admin/no-access-state";
 
 export const metadata = {
   title: "פרטי דיווח | CleanPulse",
@@ -48,6 +49,10 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
 
   if (!incident) {
     return notFound();
+  }
+
+  if (!canViewIncident(user, incident)) {
+    return <NoAccessState title="אין גישה לדיווח" description="הדיווח לא משויך לאזור העבודה של המשתמש הנוכחי." />;
   }
 
   // 2. Fetch all related details in parallel
@@ -99,9 +104,33 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
         return "דחיית דיווח";
       case "restroom_reset":
         return "איפוס מצב השירותים";
+      case "worker_note":
+        return "הוספת הערת טיפול";
+      case "closing_reset_run":
+        return "איפוס סוף יום";
       default:
         return action;
     }
+  };
+
+  const getActorLabel = (log: (typeof activityLogs)[number]) => {
+    if (log.actorFullName) {
+      return log.actorFullName;
+    }
+
+    if (typeof log.metadata?.actorName === "string" && log.metadata.actorName.trim()) {
+      return log.metadata.actorName;
+    }
+
+    if (log.actorUserId) {
+      return userMap.get(log.actorUserId) ?? "לא זמין";
+    }
+
+    if (log.metadata?.actorType === "public") {
+      return "מדווח ציבורי";
+    }
+
+    return "משתמש מערכת";
   };
 
   const isResolver = canResolveIncident(user);
@@ -292,11 +321,16 @@ export default async function IncidentDetailPage({ params }: IncidentDetailPageP
                         </div>
                         <p className="text-xs text-muted flex items-center gap-1">
                           <User className="size-3" />
-                          מבצע: {log.actorUserId ? (userMap.get(log.actorUserId) ?? log.actorUserId) : "מדווח ציבורי"}
+                          מבצע: {getActorLabel(log)}
                         </p>
                         {log.metadata?.resolutionNote ? (
                           <div className="text-xs bg-surface-muted p-2 rounded border text-muted">
                             <p>הערה: <strong className="text-foreground">{String(log.metadata.resolutionNote)}</strong></p>
+                          </div>
+                        ) : null}
+                        {log.metadata?.note ? (
+                          <div className="text-xs bg-surface-muted p-2 rounded border text-muted">
+                            <p>הערת טיפול: <strong className="text-foreground">{String(log.metadata.note)}</strong></p>
                           </div>
                         ) : null}
                         {log.action === "restroom_reset" && typeof log.metadata?.closedCount === "number" ? (

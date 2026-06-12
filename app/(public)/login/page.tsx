@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Droplets, ShieldCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+import { getDefaultRouteForRole } from "@/lib/auth/permissions";
 import { getCurrentUser } from "@/lib/auth/session";
 import { env } from "@/lib/utils/env";
 
@@ -15,11 +16,7 @@ export default async function LoginPage() {
   const showDemoNotice = process.env.NODE_ENV !== "production" || env.demoMode;
 
   if (currentUser?.isActive) {
-    if (currentUser.role === "super_admin") {
-      redirect("/super/dashboard");
-    } else {
-      redirect("/admin/dashboard");
-    }
+    redirect(getDefaultRouteForRole(currentUser.role));
   }
 
   return (
