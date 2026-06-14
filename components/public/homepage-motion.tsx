@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const sectionIds = ["how", "report", "managers", "pricing", "contact"];
+const sectionIds = ["how", "scan-story", "managers", "pricing", "contact"];
 
 export function HomepageMotion() {
   useEffect(() => {
@@ -44,42 +44,46 @@ export function HomepageMotion() {
     document.querySelectorAll(".cleanpulse-home .home-reveal-on-scroll").forEach((element) => revealObserver?.observe(element));
 
     const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>(".cleanpulse-home [data-home-nav]"));
-    const sectionObserver =
-      navLinks.length === 0
-        ? null
-        : new IntersectionObserver(
-            (entries) => {
-              const visible = entries
-                .filter((entry) => entry.isIntersecting)
-                .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    const navSections = sectionIds
+      .map((id) => document.querySelector<HTMLElement>(`.cleanpulse-home #${id}`))
+      .filter((section): section is HTMLElement => Boolean(section));
 
-              if (!visible) {
-                return;
-              }
-
-              const href = `#${visible.target.id}`;
-              navLinks.forEach((link) => {
-                if (link.getAttribute("href") === href) {
-                  link.setAttribute("aria-current", "true");
-                } else {
-                  link.removeAttribute("aria-current");
-                }
-              });
-            },
-            { rootMargin: "-28% 0px -58% 0px", threshold: [0.08, 0.24, 0.48] },
-          );
-
-    sectionIds.forEach((id) => {
-      const section = document.querySelector(`.cleanpulse-home #${id}`);
-      if (section) {
-        sectionObserver?.observe(section);
+    const syncActiveNav = () => {
+      if (navLinks.length === 0 || navSections.length === 0) {
+        return;
       }
-    });
+
+      const activeLine = window.innerHeight * 0.42;
+      const activeSection =
+        navSections.find((section) => {
+          const rect = section.getBoundingClientRect();
+
+          return rect.top <= activeLine && rect.bottom >= activeLine;
+        }) ?? navSections[0];
+
+      if (!activeSection) {
+        return;
+      }
+
+      const href = `#${activeSection.id}`;
+      navLinks.forEach((link) => {
+        if (link.getAttribute("href") === href) {
+          link.setAttribute("aria-current", "true");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+    };
+
+    syncActiveNav();
+    window.addEventListener("scroll", syncActiveNav, { passive: true });
+    window.addEventListener("resize", syncActiveNav);
 
     return () => {
       window.removeEventListener("scroll", syncHeader);
+      window.removeEventListener("scroll", syncActiveNav);
+      window.removeEventListener("resize", syncActiveNav);
       revealObserver?.disconnect();
-      sectionObserver?.disconnect();
       root.classList.remove("cleanpulse-home-motion-ready", "cleanpulse-home-scrolled");
       navLinks.forEach((link) => link.removeAttribute("aria-current"));
     };

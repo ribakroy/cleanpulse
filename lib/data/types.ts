@@ -20,6 +20,10 @@ export type SortDirection = "asc" | "desc";
 
 export type ClosingResetMode = "reset_open_incidents" | "keep_open_incidents";
 
+export type ContactLeadStatus = "new" | "contacted" | "qualified" | "demo_scheduled" | "won" | "lost";
+
+export type ContactLeadSource = "homepage_contact_form";
+
 export type CollectionName =
   | "organizations"
   | "users"
@@ -34,7 +38,8 @@ export type CollectionName =
   | "incidents"
   | "notification_recipients"
   | "notification_logs"
-  | "activity_logs";
+  | "activity_logs"
+  | "contact_leads";
 
 export type LogCollectionName = "notification_logs" | "activity_logs";
 
@@ -67,6 +72,20 @@ export type OrganizationRecord = TimestampedRecord & {
   currency?: string;
   closingTime?: string | undefined;
   closingResetMode?: ClosingResetMode | undefined;
+};
+
+export type ContactLeadRecord = TimestampedRecord & {
+  firstName: string;
+  lastName: string;
+  company: string;
+  phone: string;
+  email: string;
+  branchesCount: number | null;
+  message?: string | undefined;
+  source: ContactLeadSource;
+  status: ContactLeadStatus;
+  notes?: string | undefined;
+  lastStatusChangedAt: string;
 };
 
 export type UserRecord = TimestampedRecord & {
@@ -266,6 +285,7 @@ export type CollectionRecordMap = {
   notification_recipients: NotificationRecipientRecord;
   notification_logs: NotificationLogRecord;
   activity_logs: ActivityLogRecord;
+  contact_leads: ContactLeadRecord;
 };
 
 export type CollectionRecord<C extends CollectionName> = CollectionRecordMap[C];

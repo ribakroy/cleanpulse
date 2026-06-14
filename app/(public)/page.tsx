@@ -19,14 +19,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { BeforeAfterSlider } from "@/components/public/before-after-slider";
+import { CleanPulseScanStory } from "@/components/public/cleanpulse-scan-story";
 import { ContactLeadFormModal, ContactLeadModal } from "@/components/public/contact-lead-modal";
 import { HomepageMotion } from "@/components/public/homepage-motion";
 
 const navItems = [
   { label: "איך זה עובד", href: "#how" },
   { label: "למנהלים", href: "#managers" },
-  { label: "דיווח מהיר", href: "#report" },
+  { label: "דיווח מהיר", href: "#scan-story" },
   { label: "מחירים", href: "#pricing" },
   { label: "צור קשר", href: "#contact" },
 ];
@@ -157,7 +157,7 @@ const pricingPlans = [
 
 export default function HomePage() {
   return (
-    <div className="cleanpulse-home min-h-screen overflow-x-hidden bg-white text-foreground">
+    <div className="cleanpulse-home min-h-screen overflow-x-clip bg-white text-foreground">
       <HomepageMotion />
       <header className="site-header sticky top-0 z-50 border-b border-white/70 bg-white/72 backdrop-blur-2xl">
         <div className="container-shell flex h-16 items-center justify-between gap-4">
@@ -317,60 +317,32 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="closer-editorial-grid scroll-media" aria-label="מבט מקרוב על CleanPulse">
-              {closerItems.map((item, index) => (
-                <article
-                  key={item.label}
-                  className={`closer-card home-reveal-on-scroll ${index === 0 ? "closer-card-featured" : ""}`}
-                  style={{ "--reveal-delay": `${index * 90}ms` } as CSSProperties}
-                >
-                  <div className="closer-card-media">
-                    <Image src={item.image} alt={item.alt} fill sizes={index === 0 ? "(max-width: 768px) 100vw, 52vw" : "(max-width: 768px) 100vw, 28vw"} className="object-cover" />
-                    <div className="closer-card-light" aria-hidden="true" />
-                  </div>
-                  <div className="closer-card-copy">
-                    <p>{item.label}</p>
-                    <h3>{item.title}</h3>
-                    <span>{item.body}</span>
-                  </div>
-                </article>
-              ))}
+            <div className="closer-rail scroll-media" aria-label="מבט מקרוב על CleanPulse">
+              <div className="closer-track">
+                {[...closerItems, ...closerItems].map((item, index) => (
+                  <article
+                    key={`${item.label}-${index}`}
+                    className="closer-card"
+                    aria-hidden={index >= closerItems.length}
+                  >
+                    <div className="closer-card-media">
+                      <Image src={item.image} alt={index < closerItems.length ? item.alt : ""} fill sizes="(max-width: 768px) 82vw, 34rem" className="object-cover" />
+                      <div className="closer-card-light" aria-hidden="true" />
+                    </div>
+                    <div className="closer-card-copy">
+                      <p>{item.label}</p>
+                      <h3>{item.title}</h3>
+                      <span>{item.body}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="before-after-section scroll-section bg-[#f4faff] py-24 sm:py-32">
-          <div className="container-shell space-y-10">
-            <div className="scroll-copy mx-auto max-w-4xl text-center">
-              <p className="section-label">לפני ואחרי</p>
-              <h2 className="mt-4 text-balance font-heading text-4xl font-extrabold leading-tight text-brand-deep sm:text-6xl">
-                רואים מיד כשמקום יוצא משליטה.
-              </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-lg font-bold leading-8 text-muted">
-                אותו אזור. שני מצבים. דיווח קטן הופך רגע לא נעים למשימה ברורה.
-              </p>
-            </div>
-
-            <div className="scroll-media">
-              <BeforeAfterSlider
-                beforeImage="/home/cp-before-dirty.webp"
-                afterImage="/home/cp-before-clean.webp"
-                beforeAlt="אזור שירותים לא נעים לפני טיפול"
-                afterAlt="אותו אזור שירותים לאחר טיפול וניקיון"
-              />
-            </div>
-          </div>
-        </section>
-
-        <ImageStorySection
-          id="report"
-          label="דיווח מהיר"
-          title="דיווח שמרגיש טבעי."
-          body="אין אפליקציה. אין התחברות. רק סריקה, בחירה ותודה."
-          image="/home/cp-qr-report.webp"
-          alt="סריקת QR ליד עמדת שירותים יוקרתית"
-          cta={{ label: "נסה מסך דוגמה", href: "/kiosk-demo" }}
-        />
+        {/* Rollback path: remove <CleanPulseScanStory /> and restore the previous ImageStorySection with id="report". */}
+        <CleanPulseScanStory />
 
         <section id="managers" className="scroll-section scroll-mt-24 bg-[linear-gradient(180deg,#f4faff_0%,#ffffff_100%)] py-24 sm:py-32">
           <div className="container-shell grid gap-12 lg:grid-cols-[0.84fr_1.16fr] lg:items-center">
@@ -544,7 +516,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section id="contact" className="final-photo-cta scroll-section scroll-mt-24">
+        <section id="contact" className="final-photo-cta scroll-section scroll-mt-16">
           <Image src="/home/cp-contact.webp" alt="מנהל תפעול עם טאבלט ליד אזור שירותים יוקרתי" fill loading="eager" sizes="100vw" className="object-cover" />
           <div className="final-photo-overlay" aria-hidden="true" />
           <div className="container-shell relative z-10 grid gap-10 py-24 text-white lg:grid-cols-[1fr_26rem] lg:items-end sm:py-32">
@@ -556,11 +528,6 @@ export default function HomePage() {
               <p className="max-w-2xl text-lg font-bold leading-8 text-white/76">
                 דמו קצר, התאמה לפי מספר הסניפים, והבנה מה צריך כדי להתחיל נקי.
               </p>
-              <div className="final-trust-pills" aria-label="מה כולל הדמו">
-                <span>דמו קצר</span>
-                <span>התאמה לפי סניפים</span>
-                <span>בלי התחייבות כבדה</span>
-              </div>
             </div>
 
             <div className="contact-panel scroll-media">

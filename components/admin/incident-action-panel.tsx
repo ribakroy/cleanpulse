@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   acknowledgeIncidentAction,
@@ -36,9 +37,21 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
+  const [portalContainer] = useState<HTMLElement | null>(() => (typeof document === "undefined" ? null : document.body));
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
 
   const allChecklistItemsChecked = cleaningChecklistItems.every((item) => checkedItems[item.id]);
+
+  useEffect(() => {
+    if (!isChecklistOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isChecklistOpen]);
 
   const handleAction = (actionFn: () => Promise<void>) => {
     setError(null);
@@ -93,6 +106,89 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
   };
 
   const isClosed = currentStatus === "resolved" || currentStatus === "dismissed";
+  const cleaningChecklistDialog = (
+    <div
+      className="fixed inset-0 z-[120] grid place-items-center overflow-y-auto overscroll-contain bg-slate-950/50 px-4 py-6 backdrop-blur-sm sm:px-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cleaning-checklist-title"
+      dir="rtl"
+    >
+      <div className="w-[min(100%,42rem)] max-h-[calc(100svh-2rem)] overflow-y-auto rounded-[15px] border border-brand-water/60 bg-white p-4 shadow-[0_24px_80px_rgba(15,39,66,0.22)] sm:p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
+          <div className="space-y-1">
+            <h2 id="cleaning-checklist-title" className="text-xl font-extrabold tracking-tight text-foreground">
+              אישור ניקוי ובדיקה מלאה
+            </h2>
+            <p className="text-sm leading-6 text-muted">
+              סמן כל סעיף שבוצע. רק אחרי שכל הבדיקות מסומנות אפשר לסגור את הפניות באזור.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={closeResetChecklist}
+            disabled={isPending}
+            className="flex size-9 shrink-0 items-center justify-center rounded-[15px] border border-border text-muted transition hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
+            aria-label="סגירת מסך אישור"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-2">
+          {cleaningChecklistItems.map((item) => {
+            const checked = !!checkedItems[item.id];
+
+            return (
+              <label
+                key={item.id}
+                className="flex cursor-pointer items-center gap-3 rounded-[15px] border border-border bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:border-brand-water hover:bg-brand-soft/30"
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={checked}
+                  onChange={() => toggleChecklistItem(item.id)}
+                  disabled={isPending}
+                />
+                <span
+                  className={`flex size-7 shrink-0 items-center justify-center rounded-[15px] border transition ${
+                    checked
+                      ? "border-emerald-500 bg-emerald-500 text-white"
+                      : "border-border bg-white text-transparent"
+                  }`}
+                  aria-hidden="true"
+                >
+                  <CheckCircle2 className="size-4" />
+                </span>
+                <span>{item.label}</span>
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isPending}
+            onClick={closeResetChecklist}
+          >
+            ביטול
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            disabled={isPending || !allChecklistItemsChecked}
+            onClick={handleResetRestroom}
+          >
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+            אשר וסגור פניות פתוחות
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   if (isClosed) {
     return (
@@ -193,88 +289,7 @@ export function IncidentActionPanel({ incidentId, currentStatus }: IncidentActio
         </Button>
       </div>
 
-      {isChecklistOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cleaning-checklist-title"
-        >
-          <div className="w-full max-w-xl rounded-2xl border border-brand-water/60 bg-white p-5 shadow-[0_24px_80px_rgba(15,39,66,0.22)]">
-            <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
-              <div className="space-y-1">
-                <h2 id="cleaning-checklist-title" className="text-xl font-extrabold tracking-tight text-foreground">
-                  אישור ניקוי ובדיקה מלאה
-                </h2>
-                <p className="text-sm leading-6 text-muted">
-                  סמן כל סעיף שבוצע. רק אחרי שכל הבדיקות מסומנות אפשר לסגור את הפניות באזור.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={closeResetChecklist}
-                disabled={isPending}
-                className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border text-muted transition hover:bg-surface-muted hover:text-foreground disabled:opacity-50"
-                aria-label="סגירת מסך אישור"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-2">
-              {cleaningChecklistItems.map((item) => {
-                const checked = !!checkedItems[item.id];
-
-                return (
-                  <label
-                    key={item.id}
-                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-white px-3 py-3 text-sm font-semibold text-foreground transition hover:border-brand-water hover:bg-brand-soft/30"
-                  >
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={checked}
-                      onChange={() => toggleChecklistItem(item.id)}
-                      disabled={isPending}
-                    />
-                    <span
-                      className={`flex size-7 shrink-0 items-center justify-center rounded-full border transition ${
-                        checked
-                          ? "border-emerald-500 bg-emerald-500 text-white"
-                          : "border-border bg-white text-transparent"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      <CheckCircle2 className="size-4" />
-                    </span>
-                    <span>{item.label}</span>
-                  </label>
-                );
-              })}
-            </div>
-
-            <div className="mt-5 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={isPending}
-                onClick={closeResetChecklist}
-              >
-                ביטול
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                disabled={isPending || !allChecklistItemsChecked}
-                onClick={handleResetRestroom}
-              >
-                {isPending ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-                אשר וסגור פניות פתוחות
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {portalContainer && isChecklistOpen ? createPortal(cleaningChecklistDialog, portalContainer) : null}
     </div>
   );
 }

@@ -25,7 +25,8 @@ import { createIssueTypeLabelMap, formatIncidentRatingSubtitle, formatIncidentTi
 import { 
   calculateDashboardMetrics, 
   groupIncidentsByHour, 
-  getScreenConnectivityStatus 
+  getScreenConnectivityStatus,
+  isSameDay,
 } from "@/lib/reports/metrics";
 import { getSlaBadgeStyles } from "@/lib/utils/sla";
 import type { NotificationLogRecord } from "@/lib/data/types";
@@ -86,26 +87,12 @@ export default async function AdminDashboardPage() {
   const metrics = calculateDashboardMetrics(incidents, referenceDate);
 
   // Group today's incidents by hour
-  const todayIncidents = incidents.filter((inc) => {
-    const date = new Date(inc.openedAt);
-    return (
-      date.getFullYear() === referenceDate.getFullYear() &&
-      date.getMonth() === referenceDate.getMonth() &&
-      date.getDate() === referenceDate.getDate()
-    );
-  });
+  const todayIncidents = incidents.filter((inc) => isSameDay(inc.openedAt, referenceDate));
   const hourlyData = groupIncidentsByHour(todayIncidents);
   const maxHourCount = Math.max(...hourlyData.map((d) => d.count), 1);
 
   // Notification logs stats (for today)
-  const todayLogs = (notificationLogs as NotificationLogRecord[]).filter((log) => {
-    const date = new Date(log.createdAt);
-    return (
-      date.getFullYear() === referenceDate.getFullYear() &&
-      date.getMonth() === referenceDate.getMonth() &&
-      date.getDate() === referenceDate.getDate()
-    );
-  });
+  const todayLogs = (notificationLogs as NotificationLogRecord[]).filter((log) => isSameDay(log.createdAt, referenceDate));
   const notifStats = {
     mock_sent: todayLogs.filter((l) => l.status === "mock_sent").length,
     sent: todayLogs.filter((l) => l.status === "sent").length,

@@ -10,6 +10,7 @@ import {
   Mail,
   Server,
   ScrollText,
+  UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -21,6 +22,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/super/dashboard", label: "מרכז השליטה", icon: LayoutDashboard },
+  { href: "/super/leads", label: "CRM לידים", icon: UsersRound },
   { href: "/super/organizations", label: "לקוחות ועסקים", icon: Building2 },
   { href: "/super/billing", label: "גבייה ותוכניות", icon: CreditCard },
   { href: "/super/usage", label: "מדדי שימוש", icon: Activity },

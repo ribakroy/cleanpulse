@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
-  return <main className="flex-1">{children}</main>;
+  return <div className="public-shell flex-1">{children}</div>;
 }

@@ -6,7 +6,7 @@ type ButtonSize = "sm" | "md" | "lg" | "xl";
 type ButtonElement = "button" | "a";
 
 const baseStyles =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/35 disabled:pointer-events-none disabled:opacity-55";
+  "inline-flex items-center justify-center gap-2 rounded-[15px] font-medium whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/35 disabled:pointer-events-none disabled:opacity-55";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:

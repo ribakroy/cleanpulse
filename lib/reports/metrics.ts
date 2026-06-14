@@ -1,5 +1,40 @@
 import type { IncidentRecord, NotificationLogRecord, ScreenRecord } from "@/lib/data/types";
 
+export const REPORTS_TIME_ZONE = "Asia/Jerusalem";
+
+const reportDatePartsFormatter = new Intl.DateTimeFormat("en-CA", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: REPORTS_TIME_ZONE,
+  year: "numeric",
+});
+
+const reportHourFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit",
+  hourCycle: "h23",
+  timeZone: REPORTS_TIME_ZONE,
+});
+
+export function getDateKeyInReportsTimeZone(value: string | Date): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const parts = reportDatePartsFormatter.formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) return "";
+
+  return `${year}-${month}-${day}`;
+}
+
+export function getHourInReportsTimeZone(value: string | Date): string {
+  const date = typeof value === "string" ? new Date(value) : value;
+  const hourPart = reportHourFormatter.formatToParts(date).find((part) => part.type === "hour")?.value ?? "00";
+  const hour = Number(hourPart);
+
+  return String(Number.isFinite(hour) ? hour % 24 : 0).padStart(2, "0");
+}
+
 export interface ReportFilters {
   startDate?: string | undefined; // YYYY-MM-DD
   endDate?: string | undefined;   // YYYY-MM-DD
@@ -10,14 +45,9 @@ export interface ReportFilters {
   status?: string | undefined;
 }
 
-// Check if a date is on the same day as reference date (local timezone)
+// Check if a date is on the same day as reference date in the reports timezone.
 export function isSameDay(dateString: string, referenceDate: Date = new Date()): boolean {
-  const date = new Date(dateString);
-  return (
-    date.getFullYear() === referenceDate.getFullYear() &&
-    date.getMonth() === referenceDate.getMonth() &&
-    date.getDate() === referenceDate.getDate()
-  );
+  return getDateKeyInReportsTimeZone(dateString) === getDateKeyInReportsTimeZone(referenceDate);
 }
 
 // Check if a date is within the last 7 days from reference date
@@ -37,13 +67,12 @@ export function filterIncidents(incidents: IncidentRecord[], filters: ReportFilt
     if (filters.issueKey && incident.issueKey !== filters.issueKey) return false;
     if (filters.status && incident.status !== filters.status) return false;
 
+    const openedDateKey = getDateKeyInReportsTimeZone(incident.openedAt);
     if (filters.startDate) {
-      const start = new Date(filters.startDate + "T00:00:00");
-      if (new Date(incident.openedAt) < start) return false;
+      if (openedDateKey < filters.startDate) return false;
     }
     if (filters.endDate) {
-      const end = new Date(filters.endDate + "T23:59:59");
-      if (new Date(incident.openedAt) > end) return false;
+      if (openedDateKey > filters.endDate) return false;
     }
 
     return true;
@@ -240,7 +269,7 @@ export function calculateReportMetrics(
 export function groupIncidentsByDay(incidents: IncidentRecord[]): { label: string; count: number }[] {
   const counts: Record<string, number> = {};
   for (const inc of incidents) {
-    const day = inc.openedAt.substring(0, 10);
+    const day = getDateKeyInReportsTimeZone(inc.openedAt);
     counts[day] = (counts[day] || 0) + 1;
   }
   
@@ -259,11 +288,7 @@ export function groupIncidentsByHour(incidents: IncidentRecord[]): { label: stri
   }
   
   for (const inc of incidents) {
-    // openedAt is ISO, let's parse hour from string, but adjust for Israel time (e.g. +3 hours for local representation, or just UTC)
-    // To match the user's local metadata, let's convert to Israel timezone or local timezone
-    const date = new Date(inc.openedAt);
-    const hour = date.getHours();
-    const hourStr = String(hour).padStart(2, "0") + ":00";
+    const hourStr = `${getHourInReportsTimeZone(inc.openedAt)}:00`;
     counts[hourStr] = (counts[hourStr] || 0) + 1;
   }
 

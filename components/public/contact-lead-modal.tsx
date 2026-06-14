@@ -1,4 +1,5 @@
 import { Mail, X } from "lucide-react";
+import { createContactLeadAction } from "@/app/actions/contact-leads";
 
 const fields = [
   { id: "firstName", label: "שם פרטי", type: "text" },
@@ -37,13 +38,18 @@ export function ContactLeadFormModal() {
           <p className="text-base font-bold leading-7 text-muted">השאירו פרטים ונחזור אליכם עם התאמה קצרה וברורה.</p>
         </div>
 
-        <form className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4" action="#contact" method="get">
+        <form className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4" action={createContactLeadAction}>
           {fields.map((field) => (
             <label key={field.id} className="contact-field">
               <span>{field.label}</span>
               <input name={field.id} type={field.type} min={field.type === "number" ? 1 : undefined} required />
             </label>
           ))}
+
+          <label className="contact-field sm:col-span-2">
+            <span>הערה קצרה</span>
+            <textarea name="message" rows={3} placeholder="מה חשוב לדעת לפני שיחה?" />
+          </label>
 
           <button type="submit" className="contact-submit sm:col-span-2">
             שליחה

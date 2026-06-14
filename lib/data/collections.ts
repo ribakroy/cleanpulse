@@ -99,6 +99,12 @@ export const collectionDefinitions: { [K in CollectionName]: CollectionDefinitio
     defaultSortField: "createdAt",
     softDeleteStrategy: "unsupported",
   },
+  contact_leads: {
+    directory: "contact_leads",
+    datePartitioned: false,
+    defaultSortField: "createdAt",
+    softDeleteStrategy: "unsupported",
+  },
 };
 
 export function isDatePartitionedCollection(collection: CollectionName): collection is DatePartitionedCollectionName {
