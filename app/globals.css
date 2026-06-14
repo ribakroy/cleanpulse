@@ -3794,12 +3794,35 @@ select {
   }
 
   .cleanpulse-home .hero-signal-row {
-    gap: 0.45rem;
+    display: grid;
+    width: 100%;
+    max-width: 24rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .cleanpulse-home .hero-cta-row {
+    width: 100%;
+    max-width: 24rem;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .cleanpulse-home .hero-cta-row a {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
   }
 
   .cleanpulse-home .hero-signal-row span {
-    padding: 0.5rem 0.68rem;
-    font-size: 0.78rem;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.45rem;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.76rem;
   }
 
 }
