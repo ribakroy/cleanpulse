@@ -9,6 +9,7 @@ import { createActivityLog } from "@/lib/data/repositories/activity-logs";
 import { attachActivityLogToDetectedShift } from "@/lib/data/repositories/detected-shifts";
 import { normalizeEmail } from "@/lib/data/repositories/_shared";
 import { getUserByEmailForAuth } from "@/lib/data/repositories/users";
+import { DataLayerError } from "@/lib/data/errors";
 import { detectOrUpdateShiftFromActivity } from "@/lib/shifts/detect-shift";
 
 export type LoginActionState = {
@@ -17,6 +18,7 @@ export type LoginActionState = {
 };
 
 const genericLoginError = "פרטי ההתחברות אינם תקינים.";
+const dataUnavailableError = "שירות הנתונים זמנית לא זמין. נסה שוב בעוד כמה דקות.";
 
 // In-process MVP rate limiter
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -51,7 +53,20 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
     };
   }
 
-  const user = await getUserByEmailForAuth(email);
+  let user: Awaited<ReturnType<typeof getUserByEmailForAuth>>;
+
+  try {
+    user = await getUserByEmailForAuth(email);
+  } catch (error) {
+    if (error instanceof DataLayerError) {
+      return {
+        email,
+        error: dataUnavailableError,
+      };
+    }
+
+    throw error;
+  }
 
   if (!user || user.isActive === false) {
     return {

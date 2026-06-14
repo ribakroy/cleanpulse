@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/auth/login-form";
 import { getDefaultRouteForRole } from "@/lib/auth/permissions";
 import { getMagicLoginErrorMessage } from "@/lib/auth/magic-login-messages";
 import { getCurrentUser } from "@/lib/auth/session";
+import { DataLayerError } from "@/lib/data/errors";
 import { env } from "@/lib/utils/env";
 
 export const metadata = {
@@ -19,7 +20,19 @@ type LoginPageProps = {
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const currentUser = await getCurrentUser();
+  let currentUser: Awaited<ReturnType<typeof getCurrentUser>> = null;
+  let authLookupUnavailable = false;
+
+  try {
+    currentUser = await getCurrentUser();
+  } catch (error) {
+    if (error instanceof DataLayerError) {
+      authLookupUnavailable = true;
+    } else {
+      throw error;
+    }
+  }
+
   const showDemoNotice = process.env.NODE_ENV !== "production" || env.demoMode;
   const params = await searchParams;
   const magicLoginMessage = getMagicLoginErrorMessage(params.magic);
@@ -69,6 +82,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           {magicLoginMessage && (
             <div className="mb-5 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
               {magicLoginMessage}
+            </div>
+          )}
+          {authLookupUnavailable && (
+            <div className="mb-5 rounded-[var(--radius-md)] border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900">
+              שירות הנתונים זמנית לא זמין. נסה שוב בעוד כמה דקות.
             </div>
           )}
 

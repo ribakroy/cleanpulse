@@ -5,6 +5,7 @@ import { loginAction } from '@/app/(public)/login/actions';
 import * as bcrypt from 'bcrypt';
 import * as usersRepo from '@/lib/data/repositories/users';
 import * as sessionRepo from '@/lib/auth/session';
+import { DataLayerError } from '@/lib/data/errors';
 import { redirect } from 'next/navigation';
 
 const mockCompare = vi.fn();
@@ -129,5 +130,20 @@ describe('Login Rate Limit', () => {
     await loginAction({ email: '', error: null }, getFormData(email, 'correct'));
 
     expect(redirect).toHaveBeenCalledWith(expectedPath);
+  });
+
+  it('returns a clean error when the data repository is unavailable', async () => {
+    vi.mocked(usersRepo.getUserByEmailForAuth).mockRejectedValue(
+      new DataLayerError('GITHUB_BRANCH_READ_FAILED', 'GitHub rate limit exceeded'),
+    );
+
+    const res = await loginAction({ email: '', error: null }, getFormData('owner@demo.local', 'correct'));
+
+    expect(res).toEqual({
+      email: 'owner@demo.local',
+      error: 'שירות הנתונים זמנית לא זמין. נסה שוב בעוד כמה דקות.',
+    });
+    expect(sessionRepo.createSessionCookie).not.toHaveBeenCalled();
+    expect(redirect).not.toHaveBeenCalled();
   });
 });

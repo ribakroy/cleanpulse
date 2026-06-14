@@ -38,6 +38,44 @@ type GitHubBranchPayload = {
   };
 };
 
+type GitHubDataRepoConfig = ReturnType<typeof getGitHubDataRepoConfig>;
+type GitHubReadCacheEntry<T> = {
+  expiresAt: number;
+  promise: Promise<T>;
+};
+
+const GITHUB_READ_CACHE_TTL_MS = 60_000;
+const repositoryTreeCache = new Map<string, GitHubReadCacheEntry<GitHubTreeItem[]>>();
+const contentFileCache = new Map<string, GitHubReadCacheEntry<GitHubContentFile | null>>();
+
+function getCachedGitHubRead<T>(
+  cache: Map<string, GitHubReadCacheEntry<T>>,
+  key: string,
+  loader: () => Promise<T>,
+) {
+  const now = Date.now();
+  const cached = cache.get(key);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.promise;
+  }
+
+  const promise = loader().catch((error) => {
+    if (cache.get(key)?.promise === promise) {
+      cache.delete(key);
+    }
+
+    throw error;
+  });
+
+  cache.set(key, {
+    expiresAt: now + GITHUB_READ_CACHE_TTL_MS,
+    promise,
+  });
+
+  return promise;
+}
+
 export class GitHubDataAdapter implements DataAdapter {
   readonly mode = "github" as const;
 
@@ -185,6 +223,26 @@ export class GitHubDataAdapter implements DataAdapter {
     return config;
   }
 
+  private getRepositoryCacheKey(config: GitHubDataRepoConfig) {
+    return `${config.owner}/${config.repo}:${config.branch}`;
+  }
+
+  private clearRepositoryReadCache(config: GitHubDataRepoConfig) {
+    const repositoryKey = this.getRepositoryCacheKey(config);
+
+    for (const key of repositoryTreeCache.keys()) {
+      if (key.startsWith(repositoryKey)) {
+        repositoryTreeCache.delete(key);
+      }
+    }
+
+    for (const key of contentFileCache.keys()) {
+      if (key.startsWith(repositoryKey)) {
+        contentFileCache.delete(key);
+      }
+    }
+  }
+
   private ensureTimestamps<C extends CollectionName>(record: CollectionRecord<C>) {
     const createdAt = "createdAt" in record ? record.createdAt || new Date().toISOString() : undefined;
 
@@ -255,72 +313,80 @@ export class GitHubDataAdapter implements DataAdapter {
       .split("/")
       .map((segment) => encodeURIComponent(segment))
       .join("/");
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${encodedPath}?ref=${encodeURIComponent(
-      config.branch,
-    )}`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${config.token}`,
-      },
-      cache: "no-store",
+    const cacheKey = `${this.getRepositoryCacheKey(config)}:content:${path}:allowNotFound:${Boolean(options?.allowNotFound)}`;
+
+    return getCachedGitHubRead(contentFileCache, cacheKey, async () => {
+      const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${encodedPath}?ref=${encodeURIComponent(
+        config.branch,
+      )}`;
+      const response = await fetch(url, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${config.token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (options?.allowNotFound && response.status === 404) {
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new DataLayerError(
+          "GITHUB_CONTENT_READ_FAILED",
+          `Failed to read "${path}" from GitHub: ${response.status} ${response.statusText}.`,
+        );
+      }
+
+      return (await response.json()) as GitHubContentFile;
     });
-
-    if (options?.allowNotFound && response.status === 404) {
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new DataLayerError(
-        "GITHUB_CONTENT_READ_FAILED",
-        `Failed to read "${path}" from GitHub: ${response.status} ${response.statusText}.`,
-      );
-    }
-
-    return (await response.json()) as GitHubContentFile;
   }
 
   private async listRepositoryTree() {
     const config = this.getRuntimeConfig();
-    const branchUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/branches/${encodeURIComponent(
-      config.branch,
-    )}`;
-    const branchResponse = await fetch(branchUrl, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${config.token}`,
-      },
-      cache: "no-store",
+    const cacheKey = `${this.getRepositoryCacheKey(config)}:tree`;
+
+    return getCachedGitHubRead(repositoryTreeCache, cacheKey, async () => {
+      const branchUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/branches/${encodeURIComponent(
+        config.branch,
+      )}`;
+      const branchResponse = await fetch(branchUrl, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${config.token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!branchResponse.ok) {
+        throw new DataLayerError(
+          "GITHUB_BRANCH_READ_FAILED",
+          `Failed to resolve branch "${config.branch}" in ${config.owner}/${config.repo}.`,
+        );
+      }
+
+      const branchPayload = (await branchResponse.json()) as GitHubBranchPayload;
+      const treeSha = branchPayload.commit.commit.tree.sha;
+      const treeUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${treeSha}?recursive=1`;
+      const treeResponse = await fetch(treeUrl, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${config.token}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!treeResponse.ok) {
+        throw new DataLayerError(
+          "GITHUB_TREE_READ_FAILED",
+          `Failed to read repository tree for ${config.owner}/${config.repo}:${config.branch}.`,
+        );
+      }
+
+      const treePayload = (await treeResponse.json()) as { tree: GitHubTreeItem[] };
+
+      return treePayload.tree;
     });
-
-    if (!branchResponse.ok) {
-      throw new DataLayerError(
-        "GITHUB_BRANCH_READ_FAILED",
-        `Failed to resolve branch "${config.branch}" in ${config.owner}/${config.repo}.`,
-      );
-    }
-
-    const branchPayload = (await branchResponse.json()) as GitHubBranchPayload;
-    const treeSha = branchPayload.commit.commit.tree.sha;
-    const treeUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/git/trees/${treeSha}?recursive=1`;
-    const treeResponse = await fetch(treeUrl, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${config.token}`,
-      },
-      cache: "no-store",
-    });
-
-    if (!treeResponse.ok) {
-      throw new DataLayerError(
-        "GITHUB_TREE_READ_FAILED",
-        `Failed to read repository tree for ${config.owner}/${config.repo}:${config.branch}.`,
-      );
-    }
-
-    const treePayload = (await treeResponse.json()) as { tree: GitHubTreeItem[] };
-
-    return treePayload.tree;
   }
 
   private async writeJsonRecord(path: string, record: unknown, options: { message: string; sha?: string | undefined }) {
@@ -366,5 +432,7 @@ export class GitHubDataAdapter implements DataAdapter {
         )}`,
       );
     }
+
+    this.clearRepositoryReadCache(config);
   }
 }

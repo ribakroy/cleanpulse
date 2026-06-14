@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function IncidentsPolling({ intervalMs = 12000 }: { intervalMs?: number }) {
+export function IncidentsPolling({ intervalMs = 60000 }: { intervalMs?: number }) {
   const router = useRouter();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
